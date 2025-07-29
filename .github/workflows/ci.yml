@@ -1,0 +1,25 @@
+ name: Create artifact directory
+        run: mkdir -p dist
+        shell: bash
+
+      - name: Copy binary (Unix)
+        if: matrix.os != 'windows-latest'
+        run: cp build/${{ matrix.binary }} dist/
+
+      - name: Copy binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cp build/Release/${{ matrix.binary }} dist/
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.binary }}
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/${{ matrix.binary }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
