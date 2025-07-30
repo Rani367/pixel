@@ -1,0 +1,146 @@
+ class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Math </a> </li><li> <a href="/pixel/docs/api/engine" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Engine </a> </li><li> <a href="/pixel/docs/api/input" class="block text-sm py-1 transition-colors text-[--color-accent] font-medium"> Input </a> </li><li> <a href="/pixel/docs/api/audio" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Audio </a> </li><li> <a href="/pixel/docs/api/physics" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Physics </a> </li> </ul>  </div> </nav> </aside> <!-- Content --> <article class="flex-1 min-w-0"> <h1 class="text-3xl font-bold mb-6">Input API Reference</h1>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Keyboard Input</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">key_down(key)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> while the key is held down.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    if key_down(KEY_RIGHT) {
+        player.x = player.x + 200 * dt
+    }
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">key_pressed(key)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> only on the frame the key was pressed.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if key_pressed(KEY_SPACE) {
+    jump()  // Only triggers once per press
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">key_released(key)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> only on the frame the key was released.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if key_released(KEY_SPACE) {
+    end_charge()
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Key Constants</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Letter Keys<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Constant</th><th class="text-left py-2 px-3 font-semibold">Key</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_A</code> - <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_Z</code></td><td class="py-2 px-3">A-Z keys</td></tr></tbody></table></div></h3>
+<h3 class="text-lg font-semibold mt-6 mb-2">Number Keys<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Constant</th><th class="text-left py-2 px-3 font-semibold">Key</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_0</code> - <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_9</code></td><td class="py-2 px-3">0-9 keys</td></tr></tbody></table></div></h3>
+<h3 class="text-lg font-semibold mt-6 mb-2">Arrow Keys<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Constant</th><th class="text-left py-2 px-3 font-semibold">Key</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_UP</code></td><td class="py-2 px-3">Up arrow</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_DOWN</code></td><td class="py-2 px-3">Down arrow</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_LEFT</code></td><td class="py-2 px-3">Left arrow</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_RIGHT</code></td><td class="py-2 px-3">Right arrow</td></tr></tbody></table></div></h3>
+<h3 class="text-lg font-semibold mt-6 mb-2">Common Keys<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Constant</th><th class="text-left py-2 px-3 font-semibold">Key</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_SPACE</code></td><td class="py-2 px-3">Spacebar</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_ENTER</code></td><td class="py-2 px-3">Enter/Return</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_TAB</code></td><td class="py-2 px-3">Tab</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_BACKSPACE</code></td><td class="py-2 px-3">Backspace</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_ESCAPE</code></td><td class="py-2 px-3">Escape</td></tr></tbody></table></div></h3>
+<h3 class="text-lg font-semibold mt-6 mb-2">Modifier Keys<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Constant</th><th class="text-left py-2 px-3 font-semibold">Key</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_SHIFT</code></td><td class="py-2 px-3">Shift (either)</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_CTRL</code></td><td class="py-2 px-3">Control (either)</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_ALT</code></td><td class="py-2 px-3">Alt/Option (either)</td></tr></tbody></table></div></h3>
+<h3 class="text-lg font-semibold mt-6 mb-2">Function Keys<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Constant</th><th class="text-left py-2 px-3 font-semibold">Key</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_F1</code> - <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">KEY_F12</code></td><td class="py-2 px-3">Function keys</td></tr></tbody></table></div></h3>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Mouse Input</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">mouse_x()</h3>
+Returns the mouse X position in window coordinates.
+<h3 class="text-lg font-semibold mt-6 mb-2">mouse_y()</h3>
+Returns the mouse Y position in window coordinates.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    crosshair_x = mouse_x()
+    crosshair_y = mouse_y()
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">mouse_down(button)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> while the mouse button is held.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if mouse_down(MOUSE_LEFT) {
+    // Continuous fire
+    shoot()
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">mouse_pressed(button)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> only on the frame the button was pressed.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if mouse_pressed(MOUSE_LEFT) {
+    // Single click
+    select_item()
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">mouse_released(button)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> only on the frame the button was released.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if mouse_released(MOUSE_LEFT) {
+    drop_item()
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Mouse Button Constants</h2>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Constant</th><th class="text-left py-2 px-3 font-semibold">Button</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">MOUSE_LEFT</code></td><td class="py-2 px-3">Left button</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">MOUSE_RIGHT</code></td><td class="py-2 px-3">Right button</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">MOUSE_MIDDLE</code></td><td class="py-2 px-3">Middle button</td></tr></tbody></table></div>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Input Callbacks</h2>
+<p class="mb-4 leading-relaxed">For event-driven input handling, you can define callback functions.</p>
+<h3 class="text-lg font-semibold mt-6 mb-2">on_key_down(key)</h3>
+Called when a key is pressed.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_key_down(key) {
+    if key == KEY_P {
+        toggle_pause()
+    }
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">on_key_up(key)</h3>
+Called when a key is released.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_key_up(key) {
+    if key == KEY_SPACE {
+        release_arrow()
+    }
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">on_mouse_click(button, x, y)</h3>
+Called when a mouse button is clicked.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_mouse_click(button, x, y) {
+    if button == MOUSE_LEFT {
+        spawn_effect(x, y)
+    }
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">on_mouse_move(x, y)</h3>
+Called when the mouse moves.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_mouse_move(x, y) {
+    cursor_x = x
+    cursor_y = y
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Common Patterns</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">WASD + Arrow Key Movement</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    dx = 0
+    dy = 0
+<p class="mb-4 leading-relaxed">if key_down(KEY_W) or key_down(KEY_UP) {
+        dy = -1
+    }
+    if key_down(KEY_S) or key_down(KEY_DOWN) {
+        dy = 1
+    }
+    if key_down(KEY_A) or key_down(KEY_LEFT) {
+        dx = -1
+    }
+    if key_down(KEY_D) or key_down(KEY_RIGHT) {
+        dx = 1
+    }</p>
+<p class="mb-4 leading-relaxed">player.x = player.x + dx <em> speed </em> dt
+    player.y = player.y + dy <em> speed </em> dt
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Mouse Aiming</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    // Calculate angle from player to mouse
+    dx = mouse_x() - player.x
+    dy = mouse_y() - player.y
+    player.rotation = atan2(dy, dx) * 180 / 3.14159
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Click to Move</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>target_x = 0
+target_y = 0
+moving = false
+<p class="mb-4 leading-relaxed">function on_mouse_click(button, x, y) {
+    if button == MOUSE_LEFT {
+        target_x = x
+        target_y = y
+        moving = true
+    }
+}</p>
+<p class="mb-4 leading-relaxed">function on_update(dt) {
+    if moving {
+        player.x = move_toward(player.x, target_x, speed * dt)
+        player.y = move_toward(player.y, target_y, speed * dt)</p>
+<p class="mb-4 leading-relaxed">if abs(player.x - target_x) &lt; 1 and abs(player.y - target_y) &lt; 1 {
+            moving = false
+        }
+    }
+}
+</code></pre></p> </article> </div> </div> <script type="module">const t=document.getElementById("sidebar-toggle"),e=document.getElementById("sidebar");t?.addEventListener("click",()=>{e?.classList.toggle("hidden"),e?.classList.toggle("block")});</script>  </main> <footer class="border-t border-zinc-200 dark:border-zinc-800 py-8 mt-16"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-600 dark:text-zinc-400"> <div class="flex items-center gap-4"> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+GitHub
+</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html>
