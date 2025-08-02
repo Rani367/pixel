@@ -88,3 +88,277 @@
     display: none;
   }
 </style>
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const examples = [
+  {
+    name: 'Bouncing Ball',
+    code: `x = 400
+y = 300
+dx = 200
+dy = 150
+
+function on_start() {
+    create_window(800, 600, "Bouncing Ball")
+}
+
+function on_update(dt) {
+    x = x + dx * dt
+    y = y + dy * dt
+
+    if x < 20 or x > 780 {
+        dx = -dx
+    }
+    if y < 20 or y > 580 {
+        dy = -dy
+    }
+}
+
+function on_draw() {
+    clear(rgb(20, 20, 40))
+    draw_circle(x, y, 20, CYAN)
+}`
+  },
+  {
+    name: 'Keyboard Movement',
+    code: `x = 400
+y = 300
+speed = 200
+
+function on_start() {
+    create_window(800, 600, "Move with Arrow Keys")
+}
+
+function on_update(dt) {
+    if key_down(KEY_LEFT) {
+        x = x - speed * dt
+    }
+    if key_down(KEY_RIGHT) {
+        x = x + speed * dt
+    }
+    if key_down(KEY_UP) {
+        y = y - speed * dt
+    }
+    if key_down(KEY_DOWN) {
+        y = y + speed * dt
+    }
+}
+
+function on_draw() {
+    clear(rgb(20, 20, 40))
+    draw_rect(x - 25, y - 25, 50, 50, YELLOW)
+    draw_text("Use arrow keys to move", 280, 550, default_font(20), WHITE)
+}`
+  },
+  {
+    name: 'Particles',
+    code: `particles = []
+
+function on_start() {
+    create_window(800, 600, "Click to spawn particles")
+}
+
+function on_update(dt) {
+    if mouse_pressed(MOUSE_LEFT) {
+        i = 0
+        while i < 10 {
+            p = {}
+            p.x = mouse_x()
+            p.y = mouse_y()
+            p.vx = random_range(-100, 100)
+            p.vy = random_range(-200, -50)
+            p.life = 1.0
+            list_add(particles, p)
+            i = i + 1
+        }
+    }
+
+    i = 0
+    while i < list_length(particles) {
+        p = particles[i]
+        p.x = p.x + p.vx * dt
+        p.y = p.y + p.vy * dt
+        p.vy = p.vy + 400 * dt
+        p.life = p.life - dt
+        if p.life <= 0 {
+            list_remove(particles, i)
+        } else {
+            i = i + 1
+        }
+    }
+}
+
+function on_draw() {
+    clear(rgb(20, 20, 40))
+    i = 0
+    while i < list_length(particles) {
+        p = particles[i]
+        alpha = floor(p.life * 255)
+        draw_circle(p.x, p.y, 5, rgba(255, 100, 50, alpha))
+        i = i + 1
+    }
+    draw_text("Click to spawn particles", 280, 550, default_font(20), WHITE)
+}`
+  }
+];
+---
+
+<BaseLayout title="Playground">
+  <div class="h-[calc(100vh-4rem)] flex flex-col">
+    <!-- Toolbar -->
+    <div class="border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between bg-zinc-50 dark:bg-zinc-900">
+      <div class="flex items-center gap-4">
+        <label class="text-sm font-medium">
+          Example:
+          <select id="example-select" class="ml-2 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm">
+            {examples.map((ex, i) => (
+              <option value={i}>{ex.name}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <button
+        id="run-btn"
+        class="px-4 py-2 bg-[--color-accent] text-zinc-900 font-medium rounded-lg hover:bg-[--color-accent-dark] transition-colors flex items-center gap-2"
+      >
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        Run
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex min-h-0">
+      <!-- Editor Panel -->
+      <div class="w-1/2 border-r border-zinc-200 dark:border-zinc-800 flex flex-col">
+        <div class="px-4 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+          game.pixel
+        </div>
+        <div id="editor" class="flex-1 overflow-auto scrollbar-hide"></div>
+      </div>
+
+      <!-- Output Panel -->
+      <div class="w-1/2 flex flex-col">
+        <div class="px-4 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+          Output
+        </div>
+        <div class="flex-1 bg-zinc-900 flex items-center justify-center">
+          <canvas id="canvas" width="800" height="600" style="width: 800px; height: 600px; display: block;"></canvas>
+        </div>
+        <div class="h-32 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-950">
+          <div class="px-4 py-2 text-xs font-medium text-zinc-500 border-b border-zinc-800">
+            Console
+          </div>
+          <div id="console" class="p-4 font-mono text-sm text-zinc-400 overflow-auto scrollbar-hide h-[calc(100%-2rem)]">
+            <p class="text-zinc-500">// Output will appear here when you run your code</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ examples }}>
+  // Store examples in window for access
+  window.pixelExamples = examples;
+</script>
+
+<script>
+  import { EditorView, basicSetup } from 'codemirror';
+  import { javascript } from '@codemirror/lang-javascript';
+  import { oneDark } from '@codemirror/theme-one-dark';
+
+  // Get examples from window
+  const examples = (window as any).pixelExamples;
+
+  // Initialize CodeMirror
+  const editorContainer = document.getElementById('editor');
+  let editor: EditorView;
+
+  if (editorContainer) {
+    editor = new EditorView({
+      doc: examples[0].code,
+      extensions: [
+        basicSetup,
+        javascript(),
+        oneDark,
+        EditorView.theme({
+          '&': { height: '100%' },
+          '.cm-scroller': { overflow: 'auto' }
+        })
+      ],
+      parent: editorContainer
+    });
+  }
+
+  // Example selector
+  const exampleSelect = document.getElementById('example-select') as HTMLSelectElement;
+  exampleSelect?.addEventListener('change', () => {
+    const idx = parseInt(exampleSelect.value);
+    if (editor && examples[idx]) {
+      editor.dispatch({
+        changes: {
+          from: 0,
+          to: editor.state.doc.length,
+          insert: examples[idx].code
+        }
+      });
+    }
+  });
+
+  // Console output helpers
+  const consoleEl = document.getElementById('console');
+  function logToConsole(msg: string, className = 'text-zinc-400') {
+    if (consoleEl) {
+      const p = document.createElement('p');
+      p.className = className;
+      p.textContent = msg;
+      consoleEl.appendChild(p);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+  }
+  function clearConsole() {
+    if (consoleEl) consoleEl.innerHTML = '';
+  }
+
+  // WASM Module state
+  let pixelModule: any = null;
+  let isRunning = false;
+
+  // Load WASM module
+  async function loadPixelModule() {
+    if (pixelModule) return pixelModule;
+
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+        ? import.meta.env.BASE_URL
+        : import.meta.env.BASE_URL + '/';
+      script.src = baseUrl + 'wasm/pixel.js';
+
+      // Configure Module before script loads
+      (window as any).Module = {
+        canvas: canvas,
+        arguments: [],
+        noInitialRun: true,
+
+        print: (text: string) => {
+          console.log(text);
+          logToConsole(text);
+        },
+
+        printErr: (text: string) => {
+          console.error(text);
+          logToConsole(text, 'text-red-400');
+        },
+
+        setStatus: (text: string) => {
+          if (text) logToConsole(text, 'text-zinc-500');
+        },
+
+        onRuntimeInitialized: () => {
+          pi
