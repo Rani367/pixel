@@ -1,0 +1,36 @@
+d="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    <div id="error"></div>
+    <div id="audio-unlock" class="hidden">
+        <button id="audio-unlock-btn">Click to Start</button>
+        <p>Audio requires user interaction to play</p>
+    </div>
+    <footer>
+        Made with Placeholder
+    </footer>
+
+    <script>
+        var Module = {
+            canvas: (function() {
+                var canvas = document.getElementById('canvas');
+                canvas.addEventListener('webglcontextlost', function(e) {
+                    alert('WebGL context lost. Please reload the page.');
+                    e.preventDefault();
+                }, false);
+                return canvas;
+            })(),
+
+            setStatus: function(text) {
+                var loadingText = document.getElementById('loading-text');
+                if (loadingText) {
+                    if (text) {
+                        loadingText.textContent = text;
+                    }
+                }
+
+                // Hide loading when done
+                if (!text || text === '') {
+                    var loading = document.getElementById('loading');
+                    if (loading)
