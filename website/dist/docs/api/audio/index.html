@@ -1,0 +1,43 @@
+c
+        play_music_loop(game_music)
+    }
+    load_scene(name)
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Sound with Cooldown</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>shoot_sound = none
+shoot_cooldown = 0
+<p class="mb-4 leading-relaxed">function on_start() {
+    shoot_sound = load_sound("sounds/shoot.wav")
+}</p>
+<p class="mb-4 leading-relaxed">function on_update(dt) {
+    shoot_cooldown = shoot_cooldown - dt</p>
+<p class="mb-4 leading-relaxed">if mouse_down(MOUSE_LEFT) and shoot_cooldown &lt;= 0 {
+        shoot()
+        play_sound(shoot_sound)
+        shoot_cooldown = 0.1  // 100ms between sounds
+    }
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Randomized Sounds</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>hit_sounds = []
+<p class="mb-4 leading-relaxed">function on_start() {
+    push(hit_sounds, load_sound("sounds/hit1.wav"))
+    push(hit_sounds, load_sound("sounds/hit2.wav"))
+    push(hit_sounds, load_sound("sounds/hit3.wav"))
+}</p>
+<p class="mb-4 leading-relaxed">function play_hit_sound() {
+    index = floor(random() * len(hit_sounds))
+    play_sound(hit_sounds[index])
+}
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Supported Formats</h2>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Format</th><th class="text-left py-2 px-3 font-semibold">Extension</th><th class="text-left py-2 px-3 font-semibold">Notes</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3">WAV</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">.wav</code></td><td class="py-2 px-3">Uncompressed, best for short sounds</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3">OGG Vorbis</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">.ogg</code></td><td class="py-2 px-3">Compressed, good for music</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3">MP3</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">.mp3</code></td><td class="py-2 px-3">Compressed, widely supported</td></tr></tbody></table></div>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Best Practices</h2>
+<li class="ml-4 list-decimal"><strong>Load audio in on_start()</strong>: Loading files takes time, do it once at startup</li>
+<li class="ml-4 list-decimal"><strong>Use WAV for sound effects</strong>: Lower latency for short sounds</li>
+<li class="ml-4 list-decimal"><strong>Use OGG for music</strong>: Good compression for longer tracks</li>
+<li class="ml-4 list-decimal"><strong>Set reasonable volumes</strong>: Start at 0.7-0.8 to leave headroom</li>
+<li class="ml-4 list-decimal"><strong>Handle missing files</strong>: The game continues if audio fails to load</li> </article> </div> </div> <script type="module">const t=document.getElementById("sidebar-toggle"),e=document.getElementById("sidebar");t?.addEventListener("click",()=>{e?.classList.toggle("hidden"),e?.classList.toggle("block")});</script>  </main> <footer class="border-t border-zinc-200 dark:border-zinc-800 py-8 mt-16"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-600 dark:text-zinc-400"> <div class="flex items-center gap-4"> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+GitHub
+</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html>
