@@ -33,4 +33,47 @@ d="progress-bar"></div>
                 // Hide loading when done
                 if (!text || text === '') {
                     var loading = document.getElementById('loading');
-                    if (loading)
+                    if (loading)owsers require user interaction before playing audio
+                var audioUnlock = document.getElementById('audio-unlock');
+                var ctx = null;
+                try {
+                    var AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        ctx = new AudioContext();
+                        if (ctx.state === 'suspended') {
+                            audioUnlock.classList.remove('hidden');
+                        }
+                    }
+                } catch (e) {
+                    // Audio context not available
+                }
+
+                audioUnlock.addEventListener('click', function() {
+                    if (ctx && ctx.state === 'suspended') {
+                        ctx.resume();
+                    }
+                    // Also try to unlock SDL audio
+                    if (typeof SDL !== 'undefined' && SDL.audioContext) {
+                        SDL.audioContext.resume();
+                    }
+                    audioUnlock.classList.add('hidden');
+                });
+            },
+
+            print: function(text) {
+                console.log(text);
+            },
+
+            printErr: function(text) {
+                console.error(text);
+                var errorDiv = document.getElementById('error');
+                if (errorDiv && text.indexOf('exception') !== -1) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = 'Error: ' + text;
+                }
+            }
+        };
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>
