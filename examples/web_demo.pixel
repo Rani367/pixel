@@ -1,0 +1,19 @@
+  if ball_y > 620 {
+        game_over = true
+    }
+}
+
+function on_draw() {
+    // Dark blue background
+    clear(rgb(20, 30, 50))
+
+    // Draw paddle
+    draw_rect(paddle_x, paddle_y, paddle_width, paddle_height, rgb(100, 200, 255))
+
+    // Draw ball
+    draw_circle(ball_x, ball_y, ball_radius, rgb(255, 200, 100))
+
+    // Draw score
+    draw_rect(10, 10, 120, 30, rgba(0, 0, 0, 128))
+
+    if game_over {
