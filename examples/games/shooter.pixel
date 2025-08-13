@@ -1,0 +1,271 @@
+   return
+    }
+
+    spawn_timer = spawn_timer + dt
+
+    // Spawn faster in later waves
+    interval = SPAWN_INTERVAL - wave * 0.1
+    if interval < 0.5 {
+        interval = 0.5
+    }
+
+    if spawn_timer >= interval {
+        spawn_timer = 0
+        spawn_enemy()
+        enemies_spawned = enemies_spawned + 1
+    }
+}
+
+function spawn_enemy() {
+    if len(enemies) >= MAX_ENEMIES {
+        return
+    }
+
+    enemy = {}
+
+    // Spawn at random edge
+    side = floor(random() * 4)
+    if side == 0 {
+        // Top
+        enemy.x = random_range(0, WINDOW_WIDTH)
+        enemy.y = -ENEMY_SIZE
+    }
+    if side == 1 {
+        // Bottom
+        enemy.x = random_range(0, WINDOW_WIDTH)
+        enemy.y = WINDOW_HEIGHT + ENEMY_SIZE
+    }
+    if side == 2 {
+        // Left
+        enemy.x = -ENEMY_SIZE
+        enemy.y = random_range(0, WINDOW_HEIGHT)
+    }
+    if side == 3 {
+        // Right
+        enemy.x = WINDOW_WIDTH + ENEMY_SIZE
+        enemy.y = random_range(0, WINDOW_HEIGHT)
+    }
+
+    // Enemy type based on wave
+    enemy_type = floor(random() * min(wave, 3))
+
+    if enemy_type == 0 {
+        // Basic enemy
+        enemy.health = 25
+        enemy.speed = ENEMY_BASE_SPEED + wave * 5
+        enemy.color = RED
+        enemy.points = 10
+    }
+    if enemy_type == 1 {
+        // Fast enemy
+        enemy.health = 15
+        enemy.speed = ENEMY_BASE_SPEED * 1.5 + wave * 5
+        enemy.color = ORANGE
+        enemy.points = 15
+    }
+    if enemy_type == 2 {
+        // Tank enemy
+        enemy.health = 75
+        enemy.speed = ENEMY_BASE_SPEED * 0.6 + wave * 3
+        enemy.color = MAGENTA
+        enemy.points = 25
+    }
+
+    push(enemies, enemy)
+}
+
+function check_wave_complete() {
+    if enemies_spawned >= enemies_per_wave and len(enemies) == 0 {
+        // Next wave
+        wave = wave + 1
+        enemies_per_wave = 5 + wave * 2
+        enemies_spawned = 0
+        spawn_timer = -1.5  // Brief pause between waves
+
+        // Heal player slightly
+        player_health = min(player_health + 20, player_max_health)
+    }
+}
+
+function on_draw() {
+    // Clear screen
+    clear(rgb(20, 25, 30))
+
+    // Draw grid background
+    draw_grid()
+
+    // Draw particles (behind everything)
+    draw_particles_list()
+
+    // Draw bullets
+    i = 0
+    while i < len(bullets) {
+        bullet = bullets[i]
+        draw_circle(bullet.x, bullet.y, BULLET_SIZE / 2, YELLOW)
+        i = i + 1
+    }
+
+    // Draw enemies
+    i = 0
+    while i < len(enemies) {
+        enemy = enemies[i]
+        draw_circle(enemy.x, enemy.y, ENEMY_SIZE / 2, enemy.color)
+
+        // Health bar
+        if enemy.health < 75 {
+            bar_width = ENEMY_SIZE
+            bar_height = 4
+            health_pct = enemy.health / 75
+            if enemy.color == MAGENTA {
+                health_pct = enemy.health / 75
+            }
+            if enemy.color == RED {
+                health_pct = enemy.health / 25
+            }
+            if enemy.color == ORANGE {
+                health_pct = enemy.health / 15
+            }
+
+            draw_rect(enemy.x - bar_width / 2, enemy.y - ENEMY_SIZE / 2 - 8, bar_width, bar_height, GRAY)
+            draw_rect(enemy.x - bar_width / 2, enemy.y - ENEMY_SIZE / 2 - 8, bar_width * health_pct, bar_height, GREEN)
+        }
+
+        i = i + 1
+    }
+
+    // Draw player
+    draw_player()
+
+    // Draw UI
+    draw_ui()
+
+    // Draw game over
+    if game_over {
+        draw_game_over()
+    }
+
+    // Draw pause
+    if paused and not game_over {
+        draw_paused()
+    }
+}
+
+function draw_grid() {
+    grid_size = 50
+    x = 0
+    while x < WINDOW_WIDTH {
+        draw_line(x, 0, x, WINDOW_HEIGHT, rgba(255, 255, 255, 20))
+        x = x + grid_size
+    }
+    y = 0
+    while y < WINDOW_HEIGHT {
+        draw_line(0, y, WINDOW_WIDTH, y, rgba(255, 255, 255, 20))
+        y = y + grid_size
+    }
+}
+
+function draw_particles_list() {
+    i = 0
+    while i < len(particles) {
+        p = particles[i]
+        alpha = floor(255 * (p.life / PARTICLE_LIFETIME))
+        // Draw particle with fade
+        draw_circle(p.x, p.y, p.size / 2, p.color)
+        i = i + 1
+    }
+}
+
+function draw_player() {
+    // Player body
+    draw_circle(player_x, player_y, PLAYER_SIZE / 2, CYAN)
+
+    // Gun barrel
+    gun_length = PLAYER_SIZE / 2 + 10
+    gun_end_x = player_x + cos(player_angle) * gun_length
+    gun_end_y = player_y + sin(player_angle) * gun_length
+    draw_line(player_x, player_y, gun_end_x, gun_end_y, WHITE)
+
+    // Small circle at gun tip
+    draw_circle(gun_end_x, gun_end_y, 4, WHITE)
+}
+
+function draw_ui() {
+    // Health bar background
+    bar_x = 20
+    bar_y = 20
+    bar_width = 200
+    bar_height = 20
+
+    draw_rect(bar_x, bar_y, bar_width, bar_height, rgb(60, 60, 60))
+
+    // Health bar fill
+    health_pct = player_health / player_max_health
+    health_color = GREEN
+    if health_pct < 0.5 {
+        health_color = YELLOW
+    }
+    if health_pct < 0.25 {
+        health_color = RED
+    }
+    draw_rect(bar_x, bar_y, bar_width * health_pct, bar_height, health_color)
+
+    // Health text
+    health_text = "HP: " + to_string(player_health)
+    draw_text(health_text, bar_x + 5, bar_y + 2, tiny_font, WHITE)
+
+    // Score
+    score_text = "Score: " + to_string(score)
+    draw_text(score_text, WINDOW_WIDTH - text_width(score_text, small_font) - 20, 20, small_font, WHITE)
+
+    // Wave
+    wave_text = "Wave " + to_string(wave)
+    draw_text(wave_text, WINDOW_WIDTH / 2 - text_width(wave_text, small_font) / 2, 20, small_font, YELLOW)
+
+    // Enemies remaining
+    enemies_left = enemies_per_wave - enemies_spawned + len(enemies)
+    if enemies_left < 0 {
+        enemies_left = len(enemies)
+    }
+    enemies_text = "Enemies: " + to_string(enemies_left)
+    draw_text(enemies_text, 20, 50, tiny_font, GRAY)
+}
+
+function draw_game_over() {
+    // Darken screen
+    draw_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, rgba(0, 0, 0, 150))
+
+    // Game over text
+    msg = "GAME OVER"
+    msg_width = text_width(msg, font)
+    draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 60, font, RED)
+
+    // Final score
+    score_msg = "Final Score: " + to_string(score)
+    score_width = text_width(score_msg, small_font)
+    draw_text(score_msg, WINDOW_WIDTH / 2 - score_width / 2, WINDOW_HEIGHT / 2, small_font, WHITE)
+
+    // Wave reached
+    wave_msg = "Wave Reached: " + to_string(wave)
+    wave_width = text_width(wave_msg, small_font)
+    draw_text(wave_msg, WINDOW_WIDTH / 2 - wave_width / 2, WINDOW_HEIGHT / 2 + 35, small_font, YELLOW)
+
+    // Restart
+    restart_msg = "Press SPACE to restart"
+    restart_width = text_width(restart_msg, small_font)
+    draw_text(restart_msg, WINDOW_WIDTH / 2 - restart_width / 2, WINDOW_HEIGHT / 2 + 90, small_font, GRAY)
+}
+
+function draw_paused() {
+    // Darken screen
+    draw_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, rgba(0, 0, 0, 150))
+
+    // Paused text
+    msg = "PAUSED"
+    msg_width = text_width(msg, font)
+    draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 24, font, WHITE)
+
+    // Resume hint
+    hint = "Press P or ESC to resume"
+    hint_width = text_width(hint, small_font)
+    draw_text(hint, WINDOW_WIDTH / 2 - hint_width / 2, WINDOW_HEIGHT / 2 + 40, small_font, GRAY)
+}
