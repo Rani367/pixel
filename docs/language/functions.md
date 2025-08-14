@@ -139,4 +139,50 @@ function on_key_up(key) {
     // Key was released
 }
 
-function on
+function onon == MOUSE_LEFT {
+        shoot(x, y)
+    }
+}
+
+function on_mouse_move(x, y) {
+    cursor_x = x
+    cursor_y = y
+}
+```
+
+## Recursion
+
+Functions can call themselves:
+
+```pixel
+function factorial(n) {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n - 1)
+}
+
+println(factorial(5))  // 120
+```
+
+## Common Patterns
+
+### Helper Functions
+
+```pixel
+function distance(x1, y1, x2, y2) {
+    dx = x2 - x1
+    dy = y2 - y1
+    return sqrt(dx * dx + dy * dy)
+}
+
+function is_in_range(enemy) {
+    d = distance(player.x, player.y, enemy.x, enemy.y)
+    return d < attack_range
+}
+```
+
+### State Machines
+
+```pixel
+state
