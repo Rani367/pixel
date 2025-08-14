@@ -1,0 +1,110 @@
+on greet(name) {
+    println("Hello, " + name + "!")
+}
+<p class="mb-4 leading-relaxed">greet("World")  // Hello, World!
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Return Values</h2>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function add(a, b) {
+    return a + b
+}
+<p class="mb-4 leading-relaxed">result = add(3, 4)  // 7
+</code></pre></p>
+<p class="mb-4 leading-relaxed">Functions without an explicit return statement return <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">none</code>.</p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Multiple Parameters</h2>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function create_enemy(x, y, health) {
+    enemy = {}
+    enemy.x = x
+    enemy.y = y
+    enemy.health = health
+    return enemy
+}
+<p class="mb-4 leading-relaxed">boss = create_enemy(400, 100, 500)
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">No Parameters</h2>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function get_random_color() {
+    r = random_int(0, 255)
+    g = random_int(0, 255)
+    b = random_int(0, 255)
+    return rgb(r, g, b)
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Early Return</h2>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function divide(a, b) {
+    if b == 0 {
+        println("Error: division by zero")
+        return none
+    }
+    return a / b
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">First-Class Functions</h2>
+<p class="mb-4 leading-relaxed">Functions are values. You can store them in variables and pass them around:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function double(x) {
+    return x * 2
+}
+<p class="mb-4 leading-relaxed">operation = double
+result = operation(5)  // 10
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Anonymous Functions</h2>
+<p class="mb-4 leading-relaxed">Create functions without naming them:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>add = function(a, b) {
+    return a + b
+}
+<p class="mb-4 leading-relaxed">result = add(3, 4)  // 7
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Closures</h2>
+<p class="mb-4 leading-relaxed">Functions capture variables from their enclosing scope:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function make_counter() {
+    count = 0
+    return function() {
+        count = count + 1
+        return count
+    }
+}
+<p class="mb-4 leading-relaxed">counter = make_counter()
+println(counter())  // 1
+println(counter())  // 2
+println(counter())  // 3
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Game Callbacks</h2>
+<p class="mb-4 leading-relaxed">Pixel automatically calls these functions if you define them:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_start() {
+    // Called once when the game starts
+    create_window(800, 600, "My Game")
+}
+<p class="mb-4 leading-relaxed">function on_update(dt) {
+    // Called every frame
+    // dt = time since last frame in seconds
+    player_x = player_x + speed * dt
+}</p>
+<p class="mb-4 leading-relaxed">function on_draw() {
+    // Called every frame after on_update
+    clear(BLACK)
+    draw_sprite(player)
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Input Callbacks</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_key_down(key) {
+    if key == KEY_SPACE {
+        jump()
+    }
+}
+<p class="mb-4 leading-relaxed">function on_key_up(key) {
+    // Key was released
+}</p>
+<p class="mb-4 leading-relaxed">function on_mouse_click(button, x, y) {
+    if button == MOUSE_LEFT {
+        shoot(x, y)
+    }
+}</p>
+<p class="mb-4 leading-relaxed">function on_mouse_move(x, y) {
+    cursor_x = x
+    cursor_y = y
+}
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Recursion</h2>
+<p class="mb-4 leading-relaxed">Functions can call themselves:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function factorial(n) {
+    if n &lt;= 1 {
+        return 1
+    
