@@ -35,4 +35,49 @@ Exit a loop immediately:
 ```pixel
 i = 0
 while i < 100 {
-   
+   i < len(items) {
+    println(items[i])
+    i = i + 1
+}
+```
+
+### Game Loop Check
+
+```pixel
+function on_update(dt) {
+    if game_over {
+        if key_pressed(KEY_SPACE) {
+            restart_game()
+        }
+        return  // Skip rest of update
+    }
+
+    // Normal game update
+    update_player(dt)
+    update_enemies(dt)
+}
+```
+
+### Search Loop
+
+```pixel
+found = false
+i = 0
+while i < len(enemies) and not found {
+    if enemies[i].health <= 0 {
+        found = true
+    }
+    i = i + 1
+}
+```
+
+### Countdown
+
+```pixel
+countdown = 10
+while countdown > 0 {
+    println(countdown)
+    countdown = countdown - 1
+}
+println("Go!")
+```
