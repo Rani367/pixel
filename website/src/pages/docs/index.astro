@@ -1,0 +1,74 @@
+x
+const docsPath = path.join(process.cwd(), '..', 'docs', 'index.md');
+let content = '';
+try {
+  content = fs.readFileSync(docsPath, 'utf-8');
+} catch (e) {
+  content = '# Documentation\n\nWelcome to Pixel documentation.';
+}
+
+// Simple markdown to HTML (basic conversion)
+function parseMarkdown(md: string): string {
+  return md
+    // Headers
+    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-6 mb-2">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-8 mb-3">$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mb-6">$1</h1>')
+    // Bold and italic
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Code blocks
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>$2</code></pre>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm">$1</code>')
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[--color-accent] hover:underline">$1</a>')
+    // Lists
+    .replace(/^\- (.*$)/gim, '<li class="ml-4">$1</li>')
+    // Paragraphs
+    .replace(/\n\n/g, '</p><p class="mb-4">')
+    // Wrap in paragraph
+    ;
+}
+
+const html = parseMarkdown(content);
+
+const sidebar = [
+  { title: 'Getting Started', href: '/pixel/docs/getting-started' },
+  { title: 'Installation', href: '/pixel/docs/installation' },
+  {
+    title: 'Language',
+    items: [
+      { title: 'Basics', href: '/pixel/docs/language/basics' },
+      { title: 'Control Flow', href: '/pixel/docs/language/control-flow' },
+      { title: 'Functions', href: '/pixel/docs/language/functions' },
+      { title: 'Data Structures', href: '/pixel/docs/language/data-structures' },
+    ]
+  },
+  {
+    title: 'API Reference',
+    items: [
+      { title: 'Core', href: '/pixel/docs/api/core' },
+      { title: 'Math', href: '/pixel/docs/api/math' },
+      { title: 'Engine', href: '/pixel/docs/api/engine' },
+      { title: 'Input', href: '/pixel/docs/api/input' },
+      { title: 'Audio', href: '/pixel/docs/api/audio' },
+      { title: 'Physics', href: '/pixel/docs/api/physics' },
+    ]
+  },
+];
+---
+
+<BaseLayout title="Documentation">
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <!-- Mobile sidebar toggle -->
+    <button
+      id="sidebar-toggle"
+      class="md:hidden mb-4 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-medium flex items-center gap-2"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+      Menu
+   
