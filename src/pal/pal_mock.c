@@ -100,3 +100,46 @@ void pal_mock_set_mouse_button(PalMouseButton button, bool down) {
     if (button >= 1 && button <= 3) {
         mock_mouse_down[button] = down;
  
+
+    strncpy(font->path, path ? path : "", sizeof(font->path) - 1);
+    font->path[sizeof(font->path) - 1] = '\0';
+    font->size = size;
+    font->is_default = false;
+
+    return font;
+}
+
+PalFont* pal_mock_font_default(int size) {
+    record_call("pal_font_default");
+
+    PalFont* font = malloc(sizeof(PalFont));
+    if (!font) return NULL;
+
+    font->path[0] = '\0';
+    font->size = size;
+    font->is_default = true;
+
+    return font;
+}
+
+void pal_mock_font_destroy(PalFont* font) {
+    record_call("pal_font_destroy");
+    free(font);
+}
+
+void pal_mock_draw_text(PalWindow* window, PalFont* font, const char* text,
+                        int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    (void)window; (void)font; (void)text;
+    (void)x; (void)y; (void)r; (void)g; (void)b; (void)a;
+    record_call("pal_draw_text");
+}
+
+void pal_mock_text_size(PalFont* font, const char* text, int* width, int* height) {
+    // Approximate text size: 8 pixels per character width, font size for height
+    int len = text ? (int)strlen(text) : 0;
+    int char_width = font ? (font->size / 2) : 8;
+    int char_height = font ? font->size : 16;
+
+    if (width) *width = len * char_width;
+    if (height) *height = char_height;
+}
