@@ -35,4 +35,40 @@ int main(void) {
     RUN_TEST(column_tracking);
 
     TEST_SUITE("Lexer - Error Handling");
-    RUN_TEST(unexpected_character
+    RUN_TEST(unexpected_character#include "../test_framework.h"
+#include "compiler/lexer.h"
+
+TEST(single_char_tokens) {
+    Lexer lexer;
+    lexer_init(&lexer, "( ) { } [ ] , . ; : %");
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_LEFT_PAREN);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_RIGHT_PAREN);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_LEFT_BRACE);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_RIGHT_BRACE);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_LEFT_BRACKET);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_RIGHT_BRACKET);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_COMMA);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_DOT);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_SEMICOLON);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_COLON);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_PERCENT);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(operator_tokens) {
+    Lexer lexer;
+    lexer_init(&lexer, "+ - * / = ! < >");
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_PLUS);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_MINUS);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_STAR);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_SLASH);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_BANG);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_LESS);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_GREATER);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(two_
