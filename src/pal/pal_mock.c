@@ -143,3 +143,16 @@ void pal_mock_text_size(PalFont* font, const char* text, int* width, int* height
     if (width) *width = len * char_width;
     if (height) *height = char_height;
 }
+// Mock PAL backend for testing
+// Records all function calls and allows simulating input
+
+#define PAL_MOCK_ENABLED
+#include "pal/pal.h"
+
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// -----------------------------------------------------------------------------
+// Call recording
+// -------------------------------------
