@@ -81,3 +81,31 @@ while countdown > 0 {
 }
 println("Go!")
 ```
+If
+
+```pixel
+if score >= 100 {
+    println("A")
+} else if score >= 70 {
+    println("B")
+} else if score >= 50 {
+    println("C")
+} else {
+    println("F")
+}
+```
+
+### Nested Conditions
+
+```pixel
+if is_alive {
+    if has_key {
+        open_door()
+    }
+}
+```
+
+### Compound Conditions
+
+```pixel
+if hea
