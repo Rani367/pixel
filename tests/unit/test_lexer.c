@@ -72,3 +72,166 @@ TEST(operator_tokens) {
 }
 
 TEST(two_
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_STRING);
+    ASSERT_EQ(tok.length, 14);  // "hello\nworld" = 14
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_STRING);
+    ASSERT_EQ(tok.length, 11);  // "tab\there" = 11
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_STRING);
+    ASSERT_EQ(tok.length, 15);  // "quote\"inside" = 15
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(unterminated_string) {
+    Lexer lexer;
+    lexer_init(&lexer, "\"unterminated");
+
+    Token tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_ERROR);
+}
+
+TEST(single_line_comment) {
+    Lexer lexer;
+    lexer_init(&lexer, "foo // this is a comment\nbar");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.length, 3);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.length, 3);
+    ASSERT_EQ(tok.line, 2);
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(multi_line_comment) {
+    Lexer lexer;
+    lexer_init(&lexer, "foo /* this is\na multi-line\ncomment */ bar");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.line, 1);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.line, 3);
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(unterminated_comment) {
+    Lexer lexer;
+    lexer_init(&lexer, "foo /* this comment never ends");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_ERROR);
+}
+
+TEST(line_tracking) {
+    Lexer lexer;
+    lexer_init(&lexer, "foo\nbar\n  baz");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.line, 1);
+    ASSERT_EQ(tok.column, 1);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.line, 2);
+    ASSERT_EQ(tok.column, 1);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.line, 3);
+    ASSERT_EQ(tok.column, 3);
+}
+
+TEST(column_tracking) {
+    Lexer lexer;
+    lexer_init(&lexer, "foo bar baz");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.column, 1);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.column, 5);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.column, 9);
+}
+
+TEST(unexpected_character) {
+    Lexer lexer;
+    lexer_init(&lexer, "@");
+
+    Token tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_ERROR);
+}
+
+TEST(empty_source) {
+    Lexer lexer;
+    lexer_init(&lexer, "");
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(whitespace_only) {
+    Lexer lexer;
+    lexer_init(&lexer, "   \t\n\n   ");
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(complex_expression) {
+    Lexer lexer;
+    lexer_init(&lexer, "player.x = player.x + 200 * dt");
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // player
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_DOT);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // x
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // player
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_DOT);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // x
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_PLUS);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_NUMBER);      // 200
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_STAR);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // dt
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(function_definition) {
+    Lexer lexer;
+    lexer_init(&lexer, "function on_update(dt) { return dt * 2; }");
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_FUNCTION);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // on_update
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_LEFT_PAREN);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // dt
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_RIGHT_PAREN);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_LEFT_BRACE);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_RETURN);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // dt
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_STAR);
+    ASSERT
