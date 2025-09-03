@@ -185,4 +185,29 @@ function is_in_range(enemy) {
 ### State Machines
 
 ```pixel
-state
+state = "idle"
+
+function update_player(dt) {
+    if state == "idle" {
+        update_idle(dt)
+    } else if state == "walking" {
+        update_walking(dt)
+    } else if state == "jumping" {
+        update_jumping(dt)
+    }
+}
+```
+
+### Factory Functions
+
+```pixel
+function create_bullet(x, y, angle) {
+    bullet = {}
+    bullet.x = x
+    bullet.y = y
+    bullet.vel_x = cos(angle) * BULLET_SPEED
+    bullet.vel_y = sin(angle) * BULLET_SPEED
+    bullet.active = true
+    return bullet
+}
+```
