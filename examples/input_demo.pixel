@@ -1,0 +1,175 @@
+// Input System Demo
+// Demonstrates all input features: keyboard state, mouse state, and callbacks
+
+// State for tracking what was pressed/clicked
+last_key_down = "none"
+last_key_up = "none"
+last_click_x = 0
+last_click_y = 0
+last_click_button = "none"
+
+// Player position (moved with WASD or arrows)
+player_x = 400
+player_y = 300
+player_speed = 200
+
+function on_start() {
+    create_window(800, 600, "Input Demo - Press keys and click!")
+}
+
+function on_update(dt) {
+    // Movement using key_down (continuous movement while held)
+    if key_down(KEY_W) or key_down(KEY_UP) {
+        player_y = player_y - player_speed * dt
+    }
+    if key_down(KEY_S) or key_down(KEY_DOWN) {
+        player_y = player_y + player_speed * dt
+    }
+    if key_down(KEY_A) or key_down(KEY_LEFT) {
+        player_x = player_x - player_speed * dt
+    }
+    if key_down(KEY_D) or key_down(KEY_RIGHT) {
+        player_x = player_x + player_speed * dt
+    }
+
+    // Speed boost with shift
+    if key_down(KEY_SHIFT) {
+        player_speed = 400
+    } else {
+        player_speed = 200
+    }
+
+    // Keep player in bounds
+    if player_x < 25 { player_x = 25 }
+    if player_x > 775 { player_x = 775 }
+    if player_y < 25 { player_y = 25 }
+    if player_y > 575 { player_y = 575 }
+
+    // Escape to quit
+    if key_pressed(KEY_ESCAPE) {
+        // In the future, this could call a quit() function
+    }
+}
+
+function on_draw() {
+    clear(rgb(30, 30, 50))
+
+    // Draw player (circle that changes color based on mouse button state)
+    player_color = WHITE
+    if mouse_down(MOUSE_LEFT) {
+        player_color = RED
+    }
+    if mouse_down(MOUSE_RIGHT) {
+        player_color = BLUE
+    }
+    if mouse_down(MOUSE_MIDDLE) {
+        player_color = GREEN
+    }
+    draw_circle(player_x, player_y, 25, player_color)
+
+    // Draw crosshair at mouse position
+    mx = mouse_x()
+    my = mouse_y()
+    draw_line(mx - 10, my, mx + 10, my, YELLOW)
+    draw_line(mx, my - 10, mx, my + 10, YELLOW)
+
+    // Draw last click position
+    if last_click_button != "none" {
+        draw_circle(last_click_x, last_click_y, 5, ORANGE)
+    }
+
+    // Draw instructions
+    draw_rect(10, 10, 350, 120, rgba(0, 0, 0, 180))
+    // Note: draw_text would require a font, which may not be available
+    // Instructions are in this comment:
+    // - WASD or Arrow keys: Move player
+    // - Hold Shift: Move faster
+    // - Left/Right/Middle click: Changes player color
+    // - Last key down/up and click shown via console
+}
+
+// Input callbacks
+function on_key_down(key) {
+    last_key_down = key_name(key)
+    println("Key down: " + last_key_down)
+}
+
+function on_key_up(key) {
+    last_key_up = key_name(key)
+    println("Key up: " + last_key_up)
+}
+
+function on_mouse_click(x, y, button) {
+    last_click_x = x
+    last_click_y = y
+    if button == MOUSE_LEFT {
+        last_click_button = "left"
+    }
+    if button == MOUSE_RIGHT {
+        last_click_button = "right"
+    }
+    if button == MOUSE_MIDDLE {
+        last_click_button = "middle"
+    }
+    println("Mouse click at (" + to_string(x) + ", " + to_string(y) + ") button: " + last_click_button)
+}
+
+function on_mouse_move(x, y) {
+    // Commented out to avoid console spam
+    // println("Mouse move: " + to_string(x) + ", " + to_string(y))
+}
+
+// Helper to convert key code to name
+function key_name(key) {
+    if key == KEY_A { return "A" }
+    if key == KEY_B { return "B" }
+    if key == KEY_C { return "C" }
+    if key == KEY_D { return "D" }
+    if key == KEY_E { return "E" }
+    if key == KEY_F { return "F" }
+    if key == KEY_G { return "G" }
+    if key == KEY_H { return "H" }
+    if key == KEY_I { return "I" }
+    if key == KEY_J { return "J" }
+    if key == KEY_K { return "K" }
+    if key == KEY_L { return "L" }
+    if key == KEY_M { return "M" }
+    if key == KEY_N { return "N" }
+    if key == KEY_O { return "O" }
+    if key == KEY_P { return "P" }
+    if key == KEY_Q { return "Q" }
+    if key == KEY_R { return "R" }
+    if key == KEY_S { return "S" }
+    if key == KEY_T { return "T" }
+    if key == KEY_U { return "U" }
+    if key == KEY_V { return "V" }
+    if key == KEY_W { return "W" }
+    if key == KEY_X { return "X" }
+    if key == KEY_Y { return "Y" }
+    if key == KEY_Z { return "Z" }
+    if key == KEY_0 { return "0" }
+    if key == KEY_1 { return "1" }
+    if key == KEY_2 { return "2" }
+    if key == KEY_3 { return "3" }
+    if key == KEY_4 { return "4" }
+    if key == KEY_5 { return "5" }
+    if key == KEY_6 { return "6" }
+    if key == KEY_7 { return "7" }
+    if key == KEY_8 { return "8" }
+    if key == KEY_9 { return "9" }
+    if key == KEY_SPACE { return "Space" }
+    if key == KEY_RETURN { return "Return" }
+    if key == KEY_ESCAPE { return "Escape" }
+    if key == KEY_TAB { return "Tab" }
+    if key == KEY_BACKSPACE { return "Backspace" }
+    if key == KEY_UP { return "Up" }
+    if key == KEY_DOWN { return "Down" }
+    if key == KEY_LEFT { return "Left" }
+    if key == KEY_RIGHT { return "Right" }
+    if key == KEY_SHIFT { return "Shift" }
+    if key == KEY_CTRL { return "Ctrl" }
+    if key == KEY_ALT { return "Alt" }
+    if key == KEY_F1 { return "F1" }
+    if key == KEY_F2 { return "F2" }
+    if key == KEY_F3 { return "F3" }
+    if 
