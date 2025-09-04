@@ -12,4 +12,35 @@ unctions
     OP_INVOKE,          // Optimized method call (8-bit name index, 8-bit arg count)
 
     // Collections
-    OP_LIST,            // Create list (8-bit
+    OP_LIST,            // Create list (8-bit#ifndef PH_OPCODES_H
+#define PH_OPCODES_H
+
+#include "core/common.h"
+
+// Bytecode opcodes
+typedef enum {
+    // Constants
+    OP_CONSTANT,        // Push constant from pool (8-bit index)
+    OP_CONSTANT_LONG,   // Push constant (24-bit index)
+
+    // Literals
+    OP_NONE,            // Push none
+    OP_TRUE,            // Push true
+    OP_FALSE,           // Push false
+
+    // Stack operations
+    OP_POP,             // Pop one value
+    OP_POPN,            // Pop N values (8-bit count)
+    OP_DUP,             // Duplicate top of stack
+
+    // Variables
+    OP_GET_LOCAL,       // Get local variable (8-bit slot)
+    OP_SET_LOCAL,       // Set local variable (8-bit slot)
+    OP_GET_GLOBAL,      // Get global variable (8-bit constant index for name)
+    OP_SET_GLOBAL,      // Set global variable (8-bit constant index for name)
+    OP_GET_UPVALUE,     // Get upvalue (8-bit index)
+    OP_SET_UPVALUE,     // Set upvalue (8-bit index)
+
+    // Arithmetic
+    OP_ADD,             // a + b
+    OP_SUBTRACT,        // a
