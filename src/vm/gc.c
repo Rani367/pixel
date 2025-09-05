@@ -335,4 +335,60 @@ static void blacken_object(VM* vm, Object* object) {
 
 static void trace_references(VM* vm) {
 #ifdef DEBUG_LOG_GC
-    printf("[gc] -- trace r
+    printf("[gc] -- trace r   Object* object = vm->objects;
+
+    while (object != NULL) {
+        if (object->marked) {
+            // Object is reachable, unmark it for next cycle
+            object->marked = false;
+            previous = object;
+            object = object->next;
+        } else {
+            // Object is unreachable, free it
+            Object* unreached = object;
+            object = object->next;
+
+            if (previous != NULL) {
+                previous->next = object;
+            } else {
+                vm->objects = object;
+            }
+
+#ifdef DEBUG_LOG_GC
+            printf("[gc] %p free type %d\n", (void*)unreached, unreached->type);
+#endif
+
+            // Track the freed memory (approximate - we don't track exact size per object)
+            // This is a simplification; production GC would track exact sizes
+            vm->bytes_allocated -= sizeof(Object);  // Minimum
+
+            object_free(unreached);
+        }
+    }
+}
+
+// ============================================================================
+// String Table Weak References
+// ============================================================================
+
+// Remove unmarked strings from the intern table
+// This is called before sweep so we can identify strings that will be freed
+extern void strings_remove_white(void);
+
+// ============================================================================
+// Main GC Entry Point
+// ============================================================================
+
+void gc_collect(VM* vm) {
+#ifdef DEBUG_LOG_GC
+    printf("[gc] == gc begin ==\n");
+    size_t before = vm->bytes_allocated;
+#endif
+
+    // Mark phase
+    mark_roots(vm);
+
+    // Trace phase
+    trace_references(vm);
+
+    // 
