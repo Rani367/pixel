@@ -1,0 +1,21 @@
+// Fibonacci Benchmark
+// Measures recursive function call overhead
+// Calculates fib(30) which requires millions of calls
+
+function fib(n) {
+    if n <= 1 {
+        return n
+    }
+    return fib(n - 1) + fib(n - 2)
+}
+
+function on_start() {
+    println("Fibonacci Benchmark")
+    println("==================")
+
+    // Warm up
+    fib(10)
+
+    // Benchmark fib(30)
+    start = clock()
+    result = fib(3
