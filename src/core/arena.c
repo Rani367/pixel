@@ -24,4 +24,14 @@ intptr_t current = (uintptr_t)(block->memory + block->used);
         current = (uintptr_t)block->memory;
         aligned = (current + align - 1) & ~(align - 1);
         padding = aligned - current;
-        total_size = padding + size;
+        total_size = padding + size;tal_used(Arena* arena) {
+    PH_ASSERT(arena != NULL);
+
+    size_t total = 0;
+    ArenaBlock* block = arena->first;
+    while (block != NULL) {
+        total += block->used;
+        block = block->next;
+    }
+    return total;
+}
