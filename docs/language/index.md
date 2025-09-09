@@ -33,3 +33,10 @@ main.pixel
 ```bash
 pixel run game.pixel
 ```
+ syntax and features.
+
+## Contents
+
+1. [Basics](basics.md) - Variables, types, and operators
+2. [Control Flow](control-flow.md) - Conditionals and loops
+3. [Functions](functions.md) - Definin
