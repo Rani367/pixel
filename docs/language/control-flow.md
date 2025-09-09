@@ -108,4 +108,43 @@ if is_alive {
 ### Compound Conditions
 
 ```pixel
-if hea
+if hea if found_target {
+        break  // Exit the loop
+    }
+    i = i + 1
+}
+```
+
+## Continue
+
+Skip to the next iteration:
+
+```pixel
+i = 0
+while i < 10 {
+    i = i + 1
+    if i == 5 {
+        continue  // Skip printing 5
+    }
+    println(i)
+}
+```
+
+## Common Patterns
+
+### Counting Loop
+
+```pixel
+i = 0
+while i < 10 {
+    // Do something with i
+    i = i + 1
+}
+```
+
+### Iterating a List
+
+```pixel
+items = ["sword", "shield", "potion"]
+i = 0
+while 
