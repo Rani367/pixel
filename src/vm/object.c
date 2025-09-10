@@ -440,4 +440,253 @@ ObjParticleEmitter* particle_emitter_new(double x, double y) {
     emitter->size_min = 4;
     emitter->size_max = 8;
     emitter->color = 0xFFFFFFFF;  // White
-   
+    emitter->fade = true;
+    emitter->gravity = 0;
+    // Emission settings
+    emitter->rate = 0;
+    emitter->emit_timer = 0;
+    emitter->active = true;
+    // Particle storage
+    emitter->particle_count = 0;
+    return emitter;
+}
+
+void particle_emitter_emit(ObjParticleEmitter* emitter, int count) {
+    if (!emitter) return;
+
+    for (int i = 0; i < count && emitter->particle_count < PARTICLE_MAX; i++) {
+        Particle* p = &emitter->particles[emitter->particle_count++];
+
+        // Position at emitter
+        p->x = emitter->x;
+        p->y = emitter->y;
+
+        // Random velocity within angle/speed range
+        double angle = particle_random_range(emitter->angle_min, emitter->angle_max);
+        double speed = particle_random_range(emitter->speed_min, emitter->speed_max);
+        double rad = angle * 3.14159265358979 / 180.0;
+        p->vx = cos(rad) * speed;
+        p->vy = sin(rad) * speed;
+
+        // Random lifetime and size
+        p->life = particle_random_range(emitter->life_min, emitter->life_max);
+        p->max_life = p->life;
+        p->size = particle_random_range(emitter->size_min, emitter->size_max);
+        p->color = emitter->color;
+    }
+}
+
+void particle_emitter_update(ObjParticleEmitter* emitter, double dt) {
+    if (!emitter || !emitter->active) return;
+
+    // Rate-based emission
+    if (emitter->rate > 0) {
+        emitter->emit_timer += dt;
+        double interval = 1.0 / emitter->rate;
+        while (emitter->emit_timer >= interval) {
+            particle_emitter_emit(emitter, 1);
+            emitter->emit_timer -= interval;
+        }
+    }
+
+    // Update all particles
+    int alive = 0;
+    for (int i = 0; i < emitter->particle_count; i++) {
+        Particle* p = &emitter->particles[i];
+
+        // Update lifetime
+        p->life -= dt;
+        if (p->life <= 0) {
+            continue;  // Particle is dead
+        }
+
+        // Apply gravity
+        p->vy += emitter->gravity * dt;
+
+        // Update position
+        p->x += p->vx * dt;
+        p->y += p->vy * dt;
+
+        // Apply fade
+        if (emitter->fade) {
+            double alpha = (p->life / p->max_life) * 255.0;
+            p->color = (emitter->color & 0x00FFFFFF) | ((uint32_t)alpha << 24);
+        }
+
+        // Keep alive particles at the front
+        if (alive != i) {
+            emitter->particles[alive] = *p;
+        }
+        alive++;
+    }
+    emitter->particle_count = alive;
+}
+
+// ============================================================================
+// Object Utilities
+// ============================================================================
+
+void object_print(Value value) {
+    switch (OBJ_TYPE(value)) {
+        case OBJ_STRING:
+            printf("%s", AS_CSTRING(value));
+            break;
+        case OBJ_FUNCTION: {
+            ObjFunction* fn = AS_FUNCTION(value);
+            if (fn->name == NULL) {
+                printf("<fn>");
+            } else {
+                printf("<fn %s>", fn->name->chars);
+            }
+            break;
+        }
+        case OBJ_CLOSURE: {
+            ObjClosure* closure = AS_CLOSURE(value);
+            if (closure->function->name == NULL) {
+                printf("<fn>");
+            } else {
+                printf("<fn %s>", closure->function->name->chars);
+            }
+            break;
+        }
+        case OBJ_UPVALUE:
+            printf("<upvalue>");
+            break;
+        case OBJ_STRUCT_DEF: {
+            ObjStructDef* def = AS_STRUCT_DEF(value);
+            printf("<struct %s>", def->name->chars);
+            break;
+        }
+        case OBJ_INSTANCE: {
+            ObjInstance* instance = AS_INSTANCE(value);
+            printf("<%s instance>", instance->struct_def->name->chars);
+            break;
+        }
+        case OBJ_LIST: {
+            ObjList* list = AS_LIST(value);
+            printf("[");
+            for (int i = 0; i < list->count; i++) {
+                if (i > 0) printf(", ");
+                value_print(list->items[i]);
+            }
+            printf("]");
+            break;
+        }
+        case OBJ_NATIVE: {
+            ObjNative* native = AS_NATIVE(value);
+            if (native->name == NULL) {
+                printf("<native fn>");
+            } else {
+                printf("<native fn %s>", native->name->chars);
+            }
+            break;
+        }
+        case OBJ_VEC2: {
+            ObjVec2* vec = AS_VEC2(value);
+            printf("vec2(%g, %g)", vec->x, vec->y);
+            break;
+        }
+        case OBJ_IMAGE: {
+            ObjImage* image = AS_IMAGE(value);
+            if (image->path) {
+                printf("<image %s>", image->path->chars);
+            } else {
+                printf("<image %dx%d>", image->width, image->height);
+            }
+            break;
+        }
+        case OBJ_SPRITE: {
+            ObjSprite* sprite = AS_SPRITE(value);
+            printf("<sprite at (%.1f, %.1f)>", sprite->x, sprite->y);
+            break;
+        }
+        case OBJ_FONT: {
+            ObjFont* font = AS_FONT(value);
+            if (font->is_default) {
+                printf("<font default %d>", font->size);
+            } else {
+                printf("<font %d>", font->size);
+            }
+            break;
+        }
+        case OBJ_SOUND: {
+            ObjSound* sound = AS_SOUND(value);
+            if (sound->path) {
+                printf("<sound %s>", sound->path->chars);
+            } else {
+                printf("<sound>");
+            }
+            break;
+        }
+        case OBJ_MUSIC: {
+            ObjMusic* music = AS_MUSIC(value);
+            if (music->path) {
+                printf("<music %s>", music->path->chars);
+            } else {
+                printf("<music>");
+            }
+            break;
+        }
+        case OBJ_CAMERA: {
+            ObjCamera* camera = AS_CAMERA(value);
+            printf("<camera at (%.1f, %.1f) zoom=%.1f>", camera->x, camera->y, camera->zoom);
+            break;
+        }
+        case OBJ_ANIMATION: {
+            ObjAnimation* anim = AS_ANIMATION(value);
+            printf("<animation %d frames @ %.1f fps>", anim->frame_count, 1.0 / anim->frame_time);
+            break;
+        }
+        case OBJ_PARTICLE_EMITTER: {
+            ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(value);
+            printf("<particle_emitter at (%.1f, %.1f) %d particles>", emitter->x, emitter->y, emitter->particle_count);
+            break;
+        }
+    }
+}
+
+uint32_t object_hash(Value value) {
+    switch (OBJ_TYPE(value)) {
+        case OBJ_STRING:
+            return AS_STRING(value)->hash;
+        case OBJ_VEC2: {
+            // Hash based on x and y
+            ObjVec2* vec = AS_VEC2(value);
+            uint64_t x_bits, y_bits;
+            memcpy(&x_bits, &vec->x, sizeof(x_bits));
+            memcpy(&y_bits, &vec->y, sizeof(y_bits));
+            uint32_t hash = (uint32_t)(x_bits ^ (x_bits >> 32));
+            hash ^= (uint32_t)(y_bits ^ (y_bits >> 32));
+            return hash;
+        }
+        default:
+            // Use pointer as hash for other object types
+            return (uint32_t)(uintptr_t)AS_OBJECT(value);
+    }
+}
+
+const char* object_type_name(ObjectType type) {
+    switch (type) {
+        case OBJ_STRING:     return "string";
+        case OBJ_FUNCTION:   return "function";
+        case OBJ_CLOSURE:    return "closure";
+        case OBJ_UPVALUE:    return "upvalue";
+        case OBJ_STRUCT_DEF: return "struct";
+        case OBJ_INSTANCE:   return "instance";
+        case OBJ_LIST:       return "list";
+        case OBJ_NATIVE:     return "native";
+        case OBJ_VEC2:       return "vec2";
+        case OBJ_IMAGE:      return "image";
+        case OBJ_SPRITE:     return "sprite";
+        case OBJ_FONT:       return "font";
+        case OBJ_SOUND:      return "sound";
+        case OBJ_MUSIC:      return "music";
+        case OBJ_CAMERA:     return "camera";
+        case OBJ_ANIMATION:  return "animation";
+        case OBJ_PARTICLE_EMITTER: return "particle_emitter";
+        default:             return "unknown";
+    }
+}
+
+void object_free(Object* object) {
+    switch (object->type) {
