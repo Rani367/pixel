@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+export function getStaticPaths() {
+  return [
+    { params: { slug: 'getting-started' } },
+    { params: { slug: 'installation' } },
+    { params: { slug: 'language/basics' } },
+    { params: { slug: 'language/control-flow' } },
+    { params: { slug: 'language/functions' } },
+    { params: { slug: 'language/data-structures' } },
+    { params: { slug: 'language/index' } },
+    { params: { slug: 'api/core' } },
+    { params: { slug: 'api/math' } },
+    { params: { slug: 'api/engine' } },
+    { params: { slug: 'api/input' } },
+    { params: { slug: 'api/audio' } },
+    { params: { slug: 'api/physics' } },
+  ];
+}
+
+const { slug } = Astro.params;
+
+// Read the markdown file
+const docsPath = path.join(process.cwd(), '..', 'docs', `${slug}.md`);
+let content = '';
+let title = slug?.split('/').pop() || 'Documentation';
+
+try {
+  content = fs.readFileSync(docsPath, 'utf-8');
+  // Extract title from first heading
+  const titleMatch = content.match(/^#\s+(.+)$/m);
+  if (titleMatch) {
+    title = titleMatch[1];
+  }
+} catch (e) {
+  content = `# Not Found\n\nThe page "${slug}" was
