@@ -77,3 +77,33 @@ d="progress-bar"></div>
     {{{ SCRIPT }}}
 </body>
 </html>
+ {
+                        loading.style.display = 'none';
+                    }
+                }
+            },
+
+            monitorRunDependencies: function(left) {
+                var progressBar = document.getElementById('progress-bar');
+                if (progressBar) {
+                    // Estimate progress (this is approximate)
+                    var total = Module.totalDependencies || left;
+                    if (left < total) {
+                        Module.totalDependencies = total;
+                    }
+                    var percent = total > 0 ? ((total - left) / total) * 100 : 100;
+                    progressBar.style.width = percent + '%';
+                }
+            },
+
+            totalDependencies: 0,
+
+            onRuntimeInitialized: function() {
+                // Hide loading screen
+                var loading = document.getElementById('loading');
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+
+                // Show audio unlock overlay if needed
+                // Most br
