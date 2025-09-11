@@ -13,4 +13,37 @@ while countdown &gt; 0 {
 println("Go!")
 </code></pre> </article> </div> </div> <script type="module">const t=document.getElementById("sidebar-toggle"),e=document.getElementById("sidebar");t?.addEventListener("click",()=>{e?.classList.toggle("hidden"),e?.classList.toggle("block")});</script>  </main> <footer class="border-t border-zinc-200 dark:border-zinc-800 py-8 mt-16"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-600 dark:text-zinc-400"> <div class="flex items-center gap-4"> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
 GitHub
-</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html>
+</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html>="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path> </svg>
+Menu
+</button> <div class="flex gap-12"> <!-- Sidebar --> <aside id="sidebar" class="w-64 shrink-0 hidden md:block"> <nav class="sticky top-24 space-y-6"> <div> <a href="/pixel/docs/getting-started" class="block text-sm font-medium transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Getting Started </a> </div><div> <a href="/pixel/docs/installation" class="block text-sm font-medium transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Installation </a> </div><div>  <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mb-2">Language</h4> <ul class="space-y-1"> <li> <a href="/pixel/docs/language/basics" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Basics </a> </li><li> <a href="/pixel/docs/language/control-flow" class="block text-sm py-1 transition-colors text-[--color-accent] font-medium"> Control Flow </a> </li><li> <a href="/pixel/docs/language/functions" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Functions </a> </li><li> <a href="/pixel/docs/language/data-structures" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Data Structures </a> </li> </ul>  </div><div>  <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mb-2">API Reference</h4> <ul class="space-y-1"> <li> <a href="/pixel/docs/api/core" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Core </a> </li><li> <a href="/pixel/docs/api/math" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Math </a> </li><li> <a href="/pixel/docs/api/engine" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Engine </a> </li><li> <a href="/pixel/docs/api/input" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Input </a> </li><li> <a href="/pixel/docs/api/audio" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Audio </a> </li><li> <a href="/pixel/docs/api/physics" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Physics </a> </li> </ul>  </div> </nav> </aside> <!-- Content --> <article class="flex-1 min-w-0"> <h1 class="text-3xl font-bold mb-6">Control Flow</h1>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">If Statements</h2>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if health &gt; 0 {
+    println("Alive!")
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Else</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if health &gt; 0 {
+    println("Alive!")
+} else {
+    println("Game Over")
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Else If</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if score &gt;= 100 {
+    println("A")
+} else if score &gt;= 70 {
+    println("B")
+} else if score &gt;= 50 {
+    println("C")
+} else {
+    println("F")
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Nested Conditions</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if is_alive {
+    if has_key {
+        open_door()
+    }
+}
+</code></pre>
+<h3 class="text-l
