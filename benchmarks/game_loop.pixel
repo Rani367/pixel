@@ -1,0 +1,107 @@
+// Game Loop Simulation Benchmark
+// Simulates a typical game with many entities being updated
+
+ENTITY_COUNT = 100
+FRAME_COUNT = 1000
+DT = 0.016  // 60 FPS
+
+entities = []
+
+function on_start() {
+    println("Game Loop Simulation Benchmark")
+    println("==============================")
+    println("")
+    println("Simulating " + to_string(ENTITY_COUNT) + " entities for " + to_string(FRAME_COUNT) + " frames")
+    println("")
+
+    // Create entities
+    i = 0
+    while i < ENTITY_COUNT {
+        e = {}
+        e.x = random_range(0, 800)
+        e.y = random_range(0, 600)
+        e.vel_x = random_range(-100, 100)
+        e.vel_y = random_range(-100, 100)
+        e.health = 100
+        e.active = true
+        push(entities, e)
+        i = i + 1
+    }
+
+    // Run simulation
+    start = clock()
+
+    frame = 0
+    while frame < FRAME_COUNT {
+        update_entities(DT)
+        frame = frame + 1
+    }
+
+    elapsed = clock() - start
+
+    println("Results:")
+    println("  Total time: " + to_string(elapsed) + "s")
+    println("  Time per frame: " + to_string(elapsed / FRAME_COUNT * 1000) + "ms")
+    println("  Simulated FPS: " + to_string(FRAME_COUNT / elapsed))
+    println("")
+
+    // Check if we can sustain 60 FPS
+    target_frame_time = 1 / 60
+    actual_frame_time = elapsed / FRAME_COUNT
+
+    if actual_frame_time < target_frame_time {
+        headroom = (target_frame_time - actual_frame_time) / target_frame_time * 100
+        println("Can sustain 60 FPS with " + to_string(round(headroom)) + "% headroom")
+    } else {
+        max_fps = 1 / actual_frame_time
+        println("Maximum sustainable FPS: " + to_string(round(max_fps)))
+    }
+}
+
+function update_entities(dt) {
+    i = 0
+    while i < len(entities) {
+        e = entities[i]
+
+        if e.active {
+            // Move entity
+            e.x = e.x + e.vel_x * dt
+            e.y = e.y + e.vel_y * dt
+
+            // Bounce off walls
+            if e.x < 0 or e.x > 800 {
+                e.vel_x = -e.vel_x
+                e.x = clamp(e.x, 0, 800)
+            }
+            if e.y < 0 or e.y > 600 {
+                e.vel_y = -e.vel_y
+                e.y = clamp(e.y, 0, 600)
+            }
+
+            // Check collision with other entities
+            j = i + 1
+            while j < len(entities) {
+                other = entities[j]
+                if other.active {
+                    dx = other.x - e.x
+                    dy = other.y - e.y
+                    dist_sq = dx * dx + dy * dy
+
+                    if dist_sq < 400 {  // 20 pixel radius
+                        // Collision response
+                        e.health = e.health - 1
+                        other.health = other.health - 1
+                    }
+                }
+                j = j + 1
+            }
+
+            // Deactivate if dead
+            if e.health <= 0 {
+                e.active = false
+            }
+        }
+
+        i = i + 1
+    }
+}
