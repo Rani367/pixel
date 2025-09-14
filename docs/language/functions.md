@@ -211,3 +211,5 @@ function create_bullet(x, y, angle) {
     return bullet
 }
 ```
+_mouse_click(button, x, y) {
+    if butt
