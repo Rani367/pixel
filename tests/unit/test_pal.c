@@ -93,3 +93,48 @@ int main(void) {
 
     TEST_SUMMARY();
 }
+--------------------------------------------------------
+
+TEST(keyboard_input) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+
+    // Initially no keys pressed
+    ASSERT(!pal_key_down(PAL_KEY_SPACE));
+    ASSERT(!pal_key_pressed(PAL_KEY_SPACE));
+    ASSERT(!pal_key_released(PAL_KEY_SPACE));
+
+    // Establish baseline with poll_events, then simulate key press
+    pal_poll_events();  // prev = false
+    pal_mock_set_key(PAL_KEY_SPACE, true);  // down = true
+
+    // Now key should show as pressed (down=true, prev=false)
+    ASSERT(pal_key_down(PAL_KEY_SPACE));
+    ASSERT(pal_key_pressed(PAL_KEY_SPACE));
+    ASSERT(!pal_key_released(PAL_KEY_SPACE));
+
+    // Next frame, still held
+    pal_poll_events();  // prev = true, down = true
+    ASSERT(pal_key_down(PAL_KEY_SPACE));
+    ASSERT(!pal_key_pressed(PAL_KEY_SPACE));  // Not "just pressed"
+    ASSERT(!pal_key_released(PAL_KEY_SPACE));
+
+    // Release key
+    pal_poll_events();  // prev = true
+    pal_mock_set_key(PAL_KEY_SPACE, false);  // down = false
+
+    ASSERT(!pal_key_down(PAL_KEY_SPACE));
+    ASSERT(!pal_key_pressed(PAL_KEY_SPACE));
+    ASSERT(pal_key_released(PAL_KEY_SPACE));
+
+    pal_quit();
+}
+
+TEST(mouse_input) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+
+    // Set mouse position
+    pal_mock_set_mouse_position(400, 300);
+    int x, y;
+    pal_mouse_position(&x, &y);
+    ASSERT_EQ(x, 400);
+   
