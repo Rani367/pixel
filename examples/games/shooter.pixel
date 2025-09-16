@@ -269,3 +269,13 @@ function draw_paused() {
     hint_width = text_width(hint, small_font)
     draw_text(hint, WINDOW_WIDTH / 2 - hint_width / 2, WINDOW_HEIGHT / 2 + 40, small_font, GRAY)
 }
+  move_x = 1
+    }
+
+    // Normalize diagonal movement
+    if move_x != 0 and move_y != 0 {
+        move_x = move_x * 0.707
+        move_y = move_y * 0.707
+    }
+
+    pl
