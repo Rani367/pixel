@@ -1,0 +1,66 @@
+// Pong - Classic two-player game
+// Left player: W/S keys
+// Right player: Up/Down arrow keys
+// First to 10 points wins!
+
+// Game constants
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+PADDLE_WIDTH = 15
+PADDLE_HEIGHT = 100
+PADDLE_SPEED = 400
+BALL_SIZE = 15
+BALL_SPEED = 350
+WINNING_SCORE = 10
+
+// Game state
+left_paddle_y = 0
+right_paddle_y = 0
+ball_x = 0
+ball_y = 0
+ball_vel_x = 0
+ball_vel_y = 0
+left_score = 0
+right_score = 0
+game_over = false
+winner = ""
+
+// Font for score display
+font = none
+
+function on_start() {
+    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Pong")
+    font = default_font(48)
+    reset_game()
+}
+
+function reset_game() {
+    // Center paddles
+    left_paddle_y = WINDOW_HEIGHT / 2 - PADDLE_HEIGHT / 2
+    right_paddle_y = WINDOW_HEIGHT / 2 - PADDLE_HEIGHT / 2
+
+    // Reset scores
+    left_score = 0
+    right_score = 0
+    game_over = false
+    winner = ""
+
+    reset_ball()
+}
+
+function reset_ball() {
+    // Center ball
+    ball_x = WINDOW_WIDTH / 2 - BALL_SIZE / 2
+    ball_y = WINDOW_HEIGHT / 2 - BALL_SIZE / 2
+
+    // Random direction
+    if random() > 0.5 {
+        ball_vel_x = BALL_SPEED
+    } else {
+        ball_vel_x = -BALL_SPEED
+    }
+
+    // Random vertical angle
+    ball_vel_y = random_range(-BALL_SPEED / 2, BALL_SPEED / 2)
+}
+
