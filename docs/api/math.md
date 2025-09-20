@@ -110,3 +110,26 @@ player.rotation = angle * 180 / 3.14159
 
 ## Random Numbers
 
+### random()
+Returns a random number between 0.0 (inclusive) and 1.0 (exclusive).
+
+```pixel
+if random() < 0.1 {
+    spawn_powerup()  // 10% chance
+}
+```
+
+### random_range(min, max)
+Returns a random float between min and max.
+
+```pixel
+spawn_x = random_range(50, window_width() - 50)
+speed = random_range(100, 200)
+```
+
+### random_int(min, max)
+Returns a random integer between min and max (inclusive).
+
+```pixel
+dice = random_int(1, 6)
+en
