@@ -98,4 +98,87 @@
     analyzer_declare_global(analyzer, "KEY_T");
     analyzer_declare_global(analyzer, "KEY_U");
     analyzer_declare_global(analyzer, "KEY_V");
-    analyzer
+    analyzer_declare_global(analyzer, "KEY_W");
+    analyzer_declare_global(analyzer, "KEY_X");
+    analyzer_declare_global(analyzer, "KEY_Y");
+    analyzer_declare_global(analyzer, "KEY_Z");
+    analyzer_declare_global(analyzer, "KEY_0");
+    analyzer_declare_global(analyzer, "KEY_1");
+    analyzer_declare_global(analyzer, "KEY_2");
+    analyzer_declare_global(analyzer, "KEY_3");
+    analyzer_declare_global(analyzer, "KEY_4");
+    analyzer_declare_global(analyzer, "KEY_5");
+    analyzer_declare_global(analyzer, "KEY_6");
+    analyzer_declare_global(analyzer, "KEY_7");
+    analyzer_declare_global(analyzer, "KEY_8");
+    analyzer_declare_global(analyzer, "KEY_9");
+
+    // Mouse button constants
+    analyzer_declare_global(analyzer, "MOUSE_LEFT");
+    analyzer_declare_global(analyzer, "MOUSE_MIDDLE");
+    analyzer_declare_global(analyzer, "MOUSE_RIGHT");
+}
+
+// ============================================================================
+// Commands
+// ============================================================================
+
+static int cmd_run(const char* filename) {
+    // 1. Read source file
+    char* source = read_file(filename);
+    if (!source) {
+        return 1;
+    }
+
+    // 2. Parse source to AST
+    Arena* arena = arena_new(64 * 1024);
+    Parser parser;
+    parser_init(&parser, source, arena);
+
+    int stmt_count = 0;
+    Stmt** stmts = parser_parse(&parser, &stmt_count);
+
+    if (parser_had_error(&parser)) {
+        arena_free(arena);
+        free(source);
+        return 1;
+    }
+
+    // 3. Semantic analysis
+    Analyzer analyzer;
+    analyzer_init(&analyzer, filename, source);
+    declare_builtins(&analyzer);
+
+    if (!analyzer_analyze(&analyzer, stmts, stmt_count)) {
+        analyzer_print_errors(&analyzer, stderr);
+        analyzer_free(&analyzer);
+        arena_free(arena);
+        free(source);
+        return 1;
+    }
+    analyzer_free(&analyzer);
+
+    // 4. Compile to bytecode
+    Codegen codegen;
+    codegen_init(&codegen, filename, source);
+
+    ObjFunction* function = codegen_compile(&codegen, stmts, stmt_count);
+    if (!function) {
+        codegen_print_errors(&codegen, stderr);
+        codegen_free(&codegen);
+        arena_free(arena);
+        free(source);
+        return 1;
+    }
+    codegen_free(&codegen);
+
+    // 5. Initialize VM
+    VM vm;
+    vm_init(&vm);
+    stdlib_init(&vm);
+
+    // 6. Initialize engine
+    Engine* engine = engine_new(&vm);
+    engine_set(engine);
+
+    // 
