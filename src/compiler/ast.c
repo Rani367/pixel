@@ -163,3 +163,58 @@ void ast_print_stmt(Stmt* stmt, int indent) {
             break;
     }
 }
+ start.start_line,
+        .start_column = start.start_column,
+        .end_line = end.end_line,
+        .end_column = end.end_column,
+    };
+}
+
+// ============================================================================
+// Expression Constructors
+// ============================================================================
+
+Expr* expr_literal_null(Arena* arena, Span span) {
+    ExprLiteralNull* expr = arena_alloc(arena, sizeof(ExprLiteralNull));
+    expr->base.type = EXPR_LITERAL_NULL;
+    expr->base.span = span;
+    return (Expr*)expr;
+}
+
+Expr* expr_literal_bool(Arena* arena, bool value, Span span) {
+    ExprLiteralBool* expr = arena_alloc(arena, sizeof(ExprLiteralBool));
+    expr->base.type = EXPR_LITERAL_BOOL;
+    expr->base.span = span;
+    expr->value = value;
+    return (Expr*)expr;
+}
+
+Expr* expr_literal_number(Arena* arena, double value, Span span) {
+    ExprLiteralNumber* expr = arena_alloc(arena, sizeof(ExprLiteralNumber));
+    expr->base.type = EXPR_LITERAL_NUMBER;
+    expr->base.span = span;
+    expr->value = value;
+    return (Expr*)expr;
+}
+
+Expr* expr_literal_string(Arena* arena, const char* value, int length, Span span) {
+    ExprLiteralString* expr = arena_alloc(arena, sizeof(ExprLiteralString));
+    expr->base.type = EXPR_LITERAL_STRING;
+    expr->base.span = span;
+    expr->length = length;
+    // Copy string into arena
+    expr->value = arena_alloc(arena, length + 1);
+    memcpy(expr->value, value, length);
+    expr->value[length] = '\0';
+    return (Expr*)expr;
+}
+
+Expr* expr_identifier(Arena* arena, Token name) {
+    ExprIdentifier* expr = arena_alloc(arena, sizeof(ExprIdentifier));
+    expr->base.type = EXPR_IDENTIFIER;
+    expr->base.span = span_from_token(name);
+    expr->name = name;
+    return (Expr*)expr;
+}
+
+Expr* expr_unary(Aren
