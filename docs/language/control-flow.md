@@ -147,4 +147,24 @@ while i < 10 {
 ```pixel
 items = ["sword", "shield", "potion"]
 i = 0
-while 
+while # Control Flow
+
+## If Statements
+
+```pixel
+if health > 0 {
+    println("Alive!")
+}
+```
+
+### Else
+
+```pixel
+if health > 0 {
+    println("Alive!")
+} else {
+    println("Game Over")
+}
+```
+
+### Else 
