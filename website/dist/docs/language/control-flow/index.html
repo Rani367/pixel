@@ -46,4 +46,88 @@ Menu
     }
 }
 </code></pre>
-<h3 class="text-l
+<h3 class="text-lg font-semibold mt-6 mb-2">Compound Conditions</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if health &gt; 0 and ammo &gt; 0 {
+    can_fight = true
+}
+<p class="mb-4 leading-relaxed">if is_paused or game_over {
+    return
+}
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">While Loops</h2>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>i = 0
+while i &lt; 10 {
+    println(i)
+    i = i + 1
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Infinite Loops</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>while true {
+    update_game()
+    if should_quit {
+        break
+    }
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Break</h2>
+<p class="mb-4 leading-relaxed">Exit a loop immediately:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>i = 0
+while i &lt; 100 {
+    if found_target {
+        break  // Exit the loop
+    }
+    i = i + 1
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Continue</h2>
+<p class="mb-4 leading-relaxed">Skip to the next iteration:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>i = 0
+while i &lt; 10 {
+    i = i + 1
+    if i == 5 {
+        continue  // Skip printing 5
+    }
+    println(i)
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Common Patterns</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Counting Loop</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>i = 0
+while i &lt; 10 {
+    // Do something with i
+    i = i + 1
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Iterating a List</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>items = ["sword", "shield", "potion"]
+i = 0
+while i &lt; len(items) {
+    println(items[i])
+    i = i + 1
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Game Loop Check</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    if game_over {
+        if key_pressed(KEY_SPACE) {
+            restart_game()
+        }
+        return  // Skip rest of update
+    }
+<p class="mb-4 leading-relaxed">// Normal game update
+    update_player(dt)
+    update_enemies(dt)
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Search Loop</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>found = false
+i = 0
+while i &lt; len(enemies) and not found {
+    if enemies[i].health &lt;= 0 {
+        found = true
+    }
+    i = i + 1
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Countdown</h3>
+<pre class="bg-zinc-900 tex
