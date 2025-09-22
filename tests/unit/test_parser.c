@@ -77,3 +77,94 @@ int main(void) {
 
     TEST_SUMMARY();
 }
+na = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "(1 + 2", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+    (void)stmts;  // May be NULL on error
+
+    ASSERT(parser_had_error(&parser));
+
+    arena_free(arena);
+}
+
+TEST(parse_error_recovery) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    // Missing right side of assignment, then valid statement
+    parser_init(&parser, "x = \nfunction foo() { return 1 }", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+    (void)stmts;
+
+    ASSERT(parser_had_error(&parser));
+    // Should still parse the function after recovery
+    ASSERT(count >= 1);
+
+    arena_free(arena);
+}
+
+TEST(parse_empty_input) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 0);
+    ASSERT_NOT_NULL(stmts);
+
+    arena_free(arena);
+}
+
+// ============================================================================
+// Complex Tests
+// ============================================================================
+
+TEST(parse_complex_expression) {
+    Arena* arena = arena_new(0);
+    Expr* expr = parse_expr("player.x + speed * dt", arena);
+
+    ASSERT_NOT_NULL(expr);
+    ASSERT_EQ(expr->type, EXPR_BINARY);
+    ExprBinary* add = (ExprBinary*)expr;
+    ASSERT_EQ(add->operator, TOKEN_PLUS);
+    ASSERT_EQ(add->left->type, EXPR_GET);
+    ASSERT_EQ(add->right->type, EXPR_BINARY);
+
+    arena_free(arena);
+}
+
+TEST(parse_multiple_statements) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "x = 1\ny = 2\nz = x + y", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+    (void)stmts;
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 3);
+
+    arena_free(arena);
+}
+
+TEST(parse_nested_function) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "function outer() { function inner() { return 1 } return inner }", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 1);
+    ASSERT_EQ(stmts[0]->type, STMT_FUNCTION);
+
+    arena_free(arena);
+}
+
+// ============================================================================
+// Main
+// =========
