@@ -22,4 +22,7 @@ typedef struct {
 void table_init(Table* table);
 
 // Free a table's memory (does not free keys or values)
-vo
+void table_free(Table* table);
+
+// Set a key-value pair (returns true if key was new)
+bool table_set(Table* table, co
