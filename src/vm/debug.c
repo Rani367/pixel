@@ -64,3 +64,61 @@ ase OP_ADD:
             return offset + 1;
     }
 }
+ant(Chunk* chunk, int index) {
+    printf("'");
+    value_print(chunk->constants.values[index]);
+    printf("'");
+}
+
+// Simple instruction (no operands)
+static int simple_instruction(const char* name, int offset) {
+    printf("%s\n", name);
+    return offset + 1;
+}
+
+// Byte instruction (1-byte operand)
+static int byte_instruction(const char* name, Chunk* chunk, int offset) {
+    uint8_t slot = chunk->code[offset + 1];
+    printf("%-16s %4d\n", name, slot);
+    return offset + 2;
+}
+
+// Short instruction (2-byte operand, typically for jumps)
+static int jump_instruction(const char* name, int sign, Chunk* chunk, int offset) {
+    uint16_t jump = (uint16_t)(chunk->code[offset + 1] |
+                               (chunk->code[offset + 2] << 8));
+    printf("%-16s %4d -> %d\n", name, offset, offset + 3 + sign * jump);
+    return offset + 3;
+}
+
+// Constant instruction (1-byte constant index)
+static int constant_instruction(const char* name, Chunk* chunk, int offset) {
+    uint8_t index = chunk->code[offset + 1];
+    printf("%-16s %4d ", name, index);
+    print_constant(chunk, index);
+    printf("\n");
+    return offset + 2;
+}
+
+// Long constant instruction (3-byte constant index)
+static int constant_long_instruction(const char* name, Chunk* chunk, int offset) {
+    uint32_t index = chunk->code[offset + 1] |
+                     (chunk->code[offset + 2] << 8) |
+                     (chunk->code[offset + 3] << 16);
+    printf("%-16s %4d ", name, index);
+    print_constant(chunk, (int)index);
+    printf("\n");
+    return offset + 4;
+}
+
+// Invoke instruction (name index + arg count)
+static int invoke_instruction(const char* name, Chunk* chunk, int offset) {
+    uint8_t name_index = chunk->code[offset + 1];
+    uint8_t arg_count = chunk->code[offset + 2];
+    printf("%-16s (%d args) %4d ", name, arg_count, name_index);
+    print_constant(chunk, name_index);
+    printf("\n");
+    return offset + 3;
+}
+
+// Clos
