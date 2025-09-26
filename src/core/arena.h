@@ -13,3 +13,17 @@ size_t arena_total_allocated(Arena* arena);
 size_t arena_total_used(Arena* arena);
 
 #endif // PH_ARENA_H
+na allocator
+typedef struct {
+    ArenaBlock* first;
+    ArenaBlock* current;
+} Arena;
+
+// Create a new arena with the given initial capacity
+Arena* arena_new(size_t initial_capacity);
+
+// Allocate memory from the arena (unaligned)
+void* arena_alloc(Arena* arena, size_t size);
+
+// Allocate memory from the arena with alignment
+void* arena_alloc_aligned(Arena* arena, size_t size, s
