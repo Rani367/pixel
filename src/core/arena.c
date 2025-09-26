@@ -35,3 +35,39 @@ intptr_t current = (uintptr_t)(block->memory + block->used);
     }
     return total;
 }
+#include "arena.h"
+#include <string.h>
+
+static ArenaBlock* arena_block_new(size_t capacity) {
+    ArenaBlock* block = PH_ALLOC(sizeof(ArenaBlock));
+    if (block == NULL) {
+        return NULL;
+    }
+
+    block->memory = PH_ALLOC(capacity);
+    if (block->memory == NULL) {
+        PH_FREE(block);
+        return NULL;
+    }
+
+    block->capacity = capacity;
+    block->used = 0;
+    block->next = NULL;
+    return block;
+}
+
+static void arena_block_free(ArenaBlock* block) {
+    if (block == NULL) {
+        return;
+    }
+    PH_FREE(block->memory);
+    PH_FREE(block);
+}
+
+Arena* arena_new(size_t initial_capacity) {
+    if (initial_capacity == 0) {
+        initial_capacity = PH_ARENA_DEFAULT_CAPACITY;
+    }
+
+    Arena* arena = PH_ALLOC(sizeof(Arena));
+    if (
