@@ -413,3 +413,84 @@ void strings_free(void);
 ObjString* string_intern(const char* chars, int length);
 
 #endif // PH_OBJECT_H
+#ifndef PH_OBJECT_H
+#define PH_OBJECT_H
+
+#include "core/common.h"
+#include "core/table.h"
+#include "vm/value.h"
+
+// Forward declaration for Chunk (defined in Phase 7)
+typedef struct Chunk Chunk;
+
+// Object types
+typedef enum {
+    OBJ_STRING,
+    OBJ_FUNCTION,
+    OBJ_CLOSURE,
+    OBJ_UPVALUE,
+    OBJ_STRUCT_DEF,
+    OBJ_INSTANCE,
+    OBJ_LIST,
+    OBJ_NATIVE,
+    OBJ_VEC2,
+    OBJ_IMAGE,
+    OBJ_SPRITE,
+    OBJ_FONT,
+    OBJ_SOUND,
+    OBJ_MUSIC,
+    OBJ_CAMERA,
+    OBJ_ANIMATION,
+    OBJ_PARTICLE_EMITTER,
+} ObjectType;
+
+// Common header for all heap-allocated objects
+struct Object {
+    ObjectType type;
+    bool marked;            // For garbage collection
+    struct Object* next;    // Intrusive linked list for GC
+};
+
+// ============================================================================
+// Object Type Checking
+// ============================================================================
+
+#define OBJ_TYPE(value)     (AS_OBJECT(value)->type)
+
+#define IS_STRING(v)        (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_STRING)
+#define IS_FUNCTION(v)      (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_FUNCTION)
+#define IS_CLOSURE(v)       (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_CLOSURE)
+#define IS_UPVALUE(v)       (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_UPVALUE)
+#define IS_STRUCT_DEF(v)    (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_STRUCT_DEF)
+#define IS_INSTANCE(v)      (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_INSTANCE)
+#define IS_LIST(v)          (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_LIST)
+#define IS_NATIVE(v)        (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_NATIVE)
+#define IS_VEC2(v)          (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_VEC2)
+#define IS_IMAGE(v)         (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_IMAGE)
+#define IS_SPRITE(v)        (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_SPRITE)
+#define IS_FONT(v)          (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_FONT)
+#define IS_SOUND(v)         (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_SOUND)
+#define IS_MUSIC(v)         (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_MUSIC)
+#define IS_CAMERA(v)        (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_CAMERA)
+#define IS_ANIMATION(v)     (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_ANIMATION)
+#define IS_PARTICLE_EMITTER(v) (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_PARTICLE_EMITTER)
+
+// ============================================================================
+// String Object
+// ============================================================================
+
+typedef struct {
+    Object obj;
+    uint32_t length;
+    uint32_t hash;
+    char chars[];           // Flexible array member
+} ObjString;
+
+#define AS_STRING(v)        ((ObjString*)AS_OBJECT(v))
+#define AS_CSTRING(v)       (((ObjString*)AS_OBJECT(v))->chars)
+
+// Create a new string by copying characters
+ObjString* string_copy(const char* chars, int length);
+
+// Take ownership of a heap-allocated string
+ObjString* string_take(char* 
