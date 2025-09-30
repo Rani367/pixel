@@ -101,3 +101,105 @@ void engine_run(Engine* engine) {
     }
 #endif
 }
+// Game Engine Core Implementation
+
+#include "engine/engine.h"
+#include "engine/physics.h"
+#include "core/table.h"
+#include <stdlib.h>
+#include <string.h>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+// ============================================================================
+// Global Engine Instance
+// ============================================================================
+
+static Engine* g_engine = NULL;
+
+Engine* engine_get(void) {
+    return g_engine;
+}
+
+void engine_set(Engine* engine) {
+    g_engine = engine;
+}
+
+// ============================================================================
+// Lifecycle
+// ============================================================================
+
+Engine* engine_new(VM* vm) {
+    Engine* engine = (Engine*)malloc(sizeof(Engine));
+    if (!engine) return NULL;
+
+    engine->vm = vm;
+    engine->window = NULL;
+    engine->camera = NULL;
+
+    engine->on_start = NULL;
+    engine->on_update = NULL;
+    engine->on_draw = NULL;
+
+    engine->on_key_down = NULL;
+    engine->on_key_up = NULL;
+    engine->on_mouse_click = NULL;
+    engine->on_mouse_move = NULL;
+
+    engine->current_scene[0] = '\0';
+    engine->scene_changed = false;
+    engine->next_scene[0] = '\0';
+
+    engine->running = false;
+    engine->window_created = false;
+
+    engine->time = 0.0;
+    engine->delta_time = 0.0;
+    engine->last_time = 0.0;
+    engine->target_fps = ENGINE_TARGET_FPS;
+
+    engine->last_mouse_x = 0;
+    engine->last_mouse_y = 0;
+
+    return engine;
+}
+
+void engine_free(Engine* engine) {
+    if (!engine) return;
+
+    if (engine->window) {
+        pal_window_destroy(engine->window);
+        engine->window = NULL;
+    }
+
+    if (g_engine == engine) {
+        g_engine = NULL;
+    }
+
+    free(engine);
+}
+
+bool engine_init(Engine* engine, PalBackend backend) {
+    if (!engine) return false;
+
+    // Set up texture destructor callback for image objects
+    image_set_texture_destructor(pal_texture_destroy);
+
+    // Set up font destructor callback for font objects
+    font_set_destructor(pal_font_destroy);
+
+    // Set up sound destructor callback for sound objects
+    sound_set_destructor(pal_sound_destroy);
+
+    // Set up music destructor callback for music objects
+    music_set_destructor(pal_music_destroy);
+
+    return pal_init(backend);
+}
+
+void engine_shutdown(Engine* engine) {
+    if (!engine) return;
+
+    if (engine->w
