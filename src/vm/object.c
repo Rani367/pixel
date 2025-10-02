@@ -690,3 +690,64 @@ const char* object_type_name(ObjectType type) {
 
 void object_free(Object* object) {
     switch (object->type) {
+        case OBJ_STRING:
+            // Remove from intern table
+            // (The string is freed with the object)
+            break;
+        case OBJ_FUNCTION: {
+            ObjFunction* function = (ObjFunction*)object;
+            if (function->chunk != NULL) {
+                chunk_free(function->chunk);
+                PH_FREE(function->chunk);
+            }
+            break;
+        }
+        case OBJ_CLOSURE: {
+            ObjClosure* closure = (ObjClosure*)object;
+            PH_FREE(closure->upvalues);
+            break;
+        }
+        case OBJ_UPVALUE:
+            // Nothing extra to free
+            break;
+        case OBJ_STRUCT_DEF: {
+            ObjStructDef* def = (ObjStructDef*)object;
+            PH_FREE(def->fields);
+            table_free(&def->methods);
+            break;
+        }
+        case OBJ_INSTANCE: {
+            ObjInstance* instance = (ObjInstance*)object;
+            PH_FREE(instance->fields);
+            break;
+        }
+        case OBJ_LIST: {
+            ObjList* list = (ObjList*)object;
+            PH_FREE(list->items);
+            break;
+        }
+        case OBJ_NATIVE:
+            // Nothing extra to free
+            break;
+        case OBJ_VEC2:
+            // Nothing extra to free
+            break;
+        case OBJ_IMAGE: {
+            ObjImage* image = (ObjImage*)object;
+            image_destroy_texture(image);
+            break;
+        }
+        case OBJ_SPRITE:
+            // Sprite doesn't own its image; image is a reference
+            break;
+        case OBJ_FONT: {
+            ObjFont* font = (ObjFont*)object;
+            font_destroy_handle(font);
+            break;
+        }
+        case OBJ_SOUND: {
+            ObjSound* sound = (ObjSound*)object;
+            sound_destroy_handle(sound);
+            break;
+        }
+    
