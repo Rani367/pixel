@@ -34,3 +34,20 @@ PH_ARRAY_DEFINE(IntArray, int);
 PH_ARRAY_DEFINE(PtrArray, void*);
 
 #endif // PH_ARRAY_H
+he end of the array
+#define ph_array_push(arr, value) \
+    do { \
+        if ((arr)->count >= (arr)->capacity) { \
+            int new_cap = PH_GROW_CAPACITY((arr)->capacity); \
+            (arr)->data = PH_REALLOC((arr)->data, sizeof(*(arr)->data) * new_cap); \
+            (arr)->capacity = new_cap; \
+        } \
+        (arr)->data[(arr)->count] = (value); \
+        (arr)->count++; \
+    } while (0)
+
+// Pop a value from the end of the array
+#define ph_array_pop(arr) \
+    ((arr)->data[--(arr)->count])
+
+// Get the last element without re
