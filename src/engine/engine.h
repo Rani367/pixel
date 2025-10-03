@@ -79,4 +79,49 @@ void engine_shutdown(Engine* engine);
 // ============================================================================
 
 // Create the game window (can be called from native or auto-created)
-bool engine_create_window(Engine* engi
+bool engine_create_window(Engine* engine, const char* title, int width, int height);
+
+// Set window title
+void engine_set_title(Engine* engine, const char* title);
+
+// Get window dimensions
+int engine_get_width(Engine* engine);
+int engine_get_height(Engine* engine);
+
+// ============================================================================
+// Callback Detection and Game Loop
+// ============================================================================
+
+// Detect callbacks from VM globals (call after vm_interpret runs top-level code)
+void engine_detect_callbacks(Engine* engine);
+
+// Check if any game callbacks are defined
+bool engine_has_callbacks(Engine* engine);
+
+// Run the main game loop
+void engine_run(Engine* engine);
+
+// Stop the game loop
+void engine_stop(Engine* engine);
+
+// ============================================================================
+// Scene Management
+// ============================================================================
+
+// Load a new scene (switches at start of next frame)
+void engine_load_scene(Engine* engine, const char* scene_name);
+
+// Get the current scene name (returns "" for default scene)
+const char* engine_get_scene(Engine* engine);
+
+// ============================================================================
+// Global Access (for native functions)
+// ============================================================================
+
+// Get the global engine instance
+Engine* engine_get(void);
+
+// Set the global engine instance
+void engine_set(Engine* engine);
+
+#endif // PH_ENGINE_H
