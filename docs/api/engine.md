@@ -135,4 +135,111 @@ player.y = 300
 Draws a sprite at its current position with all transformations.
 
 ```pixel
-function on_draw() 
+function on_draw() raws text at the specified position.
+
+```pixel
+draw_text("Score: 100", 20, 20, ui_font, WHITE)
+```
+
+### text_width(text, font)
+Returns the pixel width of the text.
+
+```pixel
+width = text_width("Hello", font)
+centered_x = window_width() / 2 - width / 2
+```
+
+### text_height(text, font)
+Returns the pixel height of the text.
+
+## Camera
+
+### camera_set_position(x, y)
+Sets the camera position (affects all drawing).
+
+```pixel
+camera_set_position(player.x - 400, player.y - 300)
+```
+
+### camera_set_zoom(zoom)
+Sets the camera zoom level (1.0 = normal).
+
+### camera_follow(sprite, smoothing)
+Makes the camera follow a sprite with optional smoothing (0-1).
+
+```pixel
+camera_follow(player, 0.1)  // Smooth follow
+```
+
+### camera_shake(intensity, duration)
+Adds screen shake effect.
+
+```pixel
+camera_shake(5, 0.3)  // 5 pixel shake for 0.3 seconds
+```
+
+### screen_to_world(x, y)
+Converts screen coordinates to world coordinates.
+
+### world_to_screen(x, y)
+Converts world coordinates to screen coordinates.
+
+## Particles
+
+### create_emitter(x, y)
+Creates a particle emitter at position.
+
+```pixel
+emitter = create_emitter(400, 300)
+```
+
+### emitter_emit(emitter, count)
+Emits particles from the emitter.
+
+```pixel
+emitter_emit(explosion, 50)
+```
+
+### Emitter Configuration
+
+| Function | Description |
+|----------|-------------|
+| `emitter_set_color(e, color)` | Particle color |
+| `emitter_set_size(e, min, max)` | Size range |
+| `emitter_set_speed(e, min, max)` | Speed range |
+| `emitter_set_lifetime(e, min, max)` | Lifetime range |
+| `emitter_set_direction(e, angle, spread)` | Direction and spread |
+
+### draw_particles(emitter)
+Draws all particles from an emitter.
+
+## Scene Management
+
+### load_scene(name)
+Loads a new scene. Calls `{name}_on_start()` if it exists.
+
+```pixel
+load_scene("menu")     // Calls menu_on_start()
+load_scene("level1")   // Calls level1_on_start()
+```
+
+### get_scene()
+Returns the current scene name.
+
+### Scene Callbacks
+
+Define scene-specific callbacks:
+
+```pixel
+function menu_on_start() {
+    // Initialize menu
+}
+
+function menu_on_update(dt) {
+    // Update menu
+}
+
+function menu_on_draw() {
+    // Draw menu
+}
+```
