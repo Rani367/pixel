@@ -227,4 +227,120 @@ TEST(compile_global_read) {
     }
     ASSERT(found);
 
-  
+  wn();
+}
+
+// ============================================================================
+// Struct Compilation Tests
+// ============================================================================
+
+TEST(compile_struct) {
+    setup();
+    ObjFunction* fn = compile_source("struct Point { x, y }");
+    ASSERT_NOT_NULL(fn);
+
+    // Should have OP_CONSTANT (struct def), OP_SET_GLOBAL
+    Chunk* chunk = fn->chunk;
+    ASSERT_EQ(chunk->code[0], OP_CONSTANT);
+
+    // Check that the constant is a struct definition
+    Value constant = chunk->constants.values[chunk->code[1]];
+    ASSERT(IS_STRUCT_DEF(constant));
+
+    ObjStructDef* def = AS_STRUCT_DEF(constant);
+    ASSERT_EQ(def->field_count, 2);
+    ASSERT_STR_EQ(def->name->chars, "Point");
+
+    teardown();
+}
+
+// ============================================================================
+// Disassembly Tests (visual verification)
+// ============================================================================
+
+TEST(disassemble_compiled_code) {
+    setup();
+
+    const char* source =
+        "function factorial(n) {\n"
+        "    if n <= 1 {\n"
+        "        return 1\n"
+        "    }\n"
+        "    return n * factorial(n - 1)\n"
+        "}\n"
+        "factorial(5)";
+
+    ObjFunction* fn = compile_source(source);
+    ASSERT_NOT_NULL(fn);
+
+    printf("\n  Compiled factorial:\n  ");
+    disassemble_chunk(fn->chunk, "<script>");
+
+    // Find and disassemble the factorial function
+    for (int i = 0; i < fn->chunk->constants.count; i++) {
+        Value val = fn->chunk->constants.values[i];
+        if (IS_FUNCTION(val)) {
+            ObjFunction* inner = AS_FUNCTION(val);
+            if (inner->name != NULL) {
+                printf("\n  Function %s:\n  ", inner->name->chars);
+                disassemble_chunk(inner->chunk, inner->name->chars);
+            }
+        }
+    }
+
+    teardown();
+}
+
+// ============================================================================
+// Main
+// ============================================================================
+
+int main(void) {
+    TEST_SUITE("Codegen - Literals");
+    RUN_TEST(compile_number);
+    RUN_TEST(compile_string);
+    RUN_TEST(compile_boolean);
+    RUN_TEST(compile_null);
+
+    TEST_SUITE("Codegen - Expressions");
+    RUN_TEST(compile_binary_arithmetic);
+    RUN_TEST(compile_binary_comparison);
+    RUN_TEST(compile_unary);
+    RUN_TEST(compile_and);
+    RUN_TEST(compile_or);
+
+    TEST_SUITE("Codegen - Variables");
+    RUN_TEST(compile_global_assignment);
+    RUN_TEST(compile_global_read);
+
+    TEST_SUITE("Codegen - Control Flow");
+    RUN_TEST(compile_if);
+    RUN_TEST(compile_if_else);
+    RUN_TEST(compile_while);
+
+    TEST_SUITE("Codegen - Functions");
+    RUN_TEST(compile_function_decl);
+    RUN_TEST(compile_function_with_params);
+    RUN_TEST(compile_function_call);
+    RUN_TEST(compile_return);
+
+    TEST_SUITE("Codegen - Closures");
+    RUN_TEST(compile_closure_simple);
+
+    TEST_SUITE("Codegen - Collections");
+    RUN_TEST(compile_list);
+    RUN_TEST(compile_index_get);
+    RUN_TEST(compile_index_set);
+
+    TEST_SUITE("Codegen - Properties");
+    RUN_TEST(compile_property_get);
+    RUN_TEST(compile_property_set);
+
+    TEST_SUITE("Codegen - Structs");
+    RUN_TEST(compile_struct);
+
+    TEST_SUITE("Codegen - Disassembly");
+    RUN_TEST(disassemble_compiled_code);
+
+    TEST_SUMMARY();
+}
