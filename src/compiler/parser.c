@@ -640,4 +640,23 @@ static void init_rules(void) {
     rules[TOKEN_AND]           = (ParseRule){NULL, binary, PREC_AND};
     rules[TOKEN_OR]            = (ParseRule){NULL, binary, PREC_OR};
     rules[TOKEN_DOT]           = (ParseRule){NULL, dot,     PREC_CALL};
-    rules[TOKEN_PLUS_PLUS]     = (ParseRule){NULL, postfix, PREC_CALL}
+    rules[TOKEN_PLUS_PLUS]     = (ParseRule){NULL, postfix, PREC_CALL}#include "compiler/parser.h"
+#include "core/common.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// ============================================================================
+// Precedence Levels
+// ============================================================================
+
+typedef enum {
+    PREC_NONE,
+    PREC_ASSIGNMENT,  // =
+    PREC_OR,          // or
+    PREC_AND,         // and
+    PREC_EQUALITY,    // == !=
+    PREC_COMPARISON,  // < > <= >=
+    PREC_TERM,        // + -
+    PREC_FACTOR,      // * / %
+ 
