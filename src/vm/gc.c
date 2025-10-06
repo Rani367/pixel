@@ -391,4 +391,23 @@ void gc_collect(VM* vm) {
     // Trace phase
     trace_references(vm);
 
-    // 
+    // eferences --\n");
+#endif
+
+    while (vm->gray_count > 0) {
+        Object* object = vm->gray_stack[--vm->gray_count];
+        blacken_object(vm, object);
+    }
+}
+
+// ============================================================================
+// Sweep Phase
+// ============================================================================
+
+static void sweep(VM* vm) {
+#ifdef DEBUG_LOG_GC
+    printf("[gc] -- sweep --\n");
+#endif
+
+    Object* previous = NULL;
+ 
