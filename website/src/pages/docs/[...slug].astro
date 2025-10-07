@@ -36,4 +36,21 @@ try {
     title = titleMatch[1];
   }
 } catch (e) {
-  content = `# Not Found\n\nThe page "${slug}" was
+  content = `# Not Found\n\nThe page "${slug}" was not found.`;
+}
+
+// Simple markdown to HTML
+function parseMarkdown(md: string): string {
+  // First, handle tables
+  let result = md.replace(/\n\|(.+)\|\n\|[-\s|]+\|\n((?:\|.+\|\n?)+)/g, (match, header, body) => {
+    const headers = header.split('|').map((h: string) => h.trim()).filter((h: string) => h);
+    const rows = body.trim().split('\n').map((row: string) => {
+      return row.split('|').map((cell: string) => cell.trim()).filter((cell: string) => cell !== '');
+    });
+
+    let table = '<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse">';
+    table += '<thead><tr class="border-b border-zinc-300 dark:border-zinc-700">';
+    headers.forEach((h: string) => {
+      table += `<th class="text-left py-2 px-3 font-semibold">${h}</th>`;
+    });
+    table += '</tr
