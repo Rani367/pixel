@@ -119,4 +119,175 @@ function update_enemy(enemy, dt) {
     }
 
     // Face player
-    look_at(enemy, p
+    look_at(enemy, p# Physics & Collision API Reference
+
+## Collision Detection
+
+### collides(sprite1, sprite2)
+Returns `true` if two sprites overlap (AABB collision).
+
+```pixel
+if collides(player, enemy) {
+    take_damage()
+}
+```
+
+### collides_rect(x1, y1, w1, h1, x2, y2, w2, h2)
+Returns `true` if two rectangles overlap.
+
+```pixel
+if collides_rect(player_x, player_y, 30, 40, coin_x, coin_y, 20, 20) {
+    collect_coin()
+}
+```
+
+### collides_point(x, y, sprite)
+Returns `true` if a point is inside a sprite.
+
+```pixel
+if collides_point(mouse_x(), mouse_y(), button) {
+    button_hovered = true
+}
+```
+
+### collides_circle(x1, y1, r1, x2, y2, r2)
+Returns `true` if two circles overlap.
+
+```pixel
+if collides_circle(ball_x, ball_y, 10, player_x, player_y, 25) {
+    bounce_ball()
+}
+```
+
+## Distance
+
+### distance(x1, y1, x2, y2)
+Returns the distance between two points.
+
+```pixel
+dist = distance(player.x, player.y, enemy.x, enemy.y)
+if dist < attack_range {
+    can_attack = true
+}
+```
+
+## Sprite Physics Properties
+
+Sprites have built-in physics properties that are automatically updated each frame.
+
+### Velocity
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `velocity_x` | Number | Horizontal velocity (pixels/sec) |
+| `velocity_y` | Number | Vertical velocity (pixels/sec) |
+
+```pixel
+player.velocity_x = 200  // Move right at 200 px/sec
+player.velocity_y = -400 // Jump upward
+```
+
+### Acceleration
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `acceleration_x` | Number | Horizontal acceleration |
+| `acceleration_y` | Number | Vertical acceleration |
+
+```pixel
+// Apply thrust
+if key_down(KEY_RIGHT) {
+    player.acceleration_x = 500
+} else {
+    player.acceleration_x = 0
+}
+```
+
+### Friction
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `friction` | Number | 0 | Velocity damping (0-1) |
+
+```pixel
+player.friction = 0.1  // Slow down gradually
+```
+
+### Gravity
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `gravity_scale` | Number | 1 | Gravity multiplier |
+| `grounded` | Boolean | false | Whether sprite is on ground |
+
+```pixel
+player.gravity_scale = 1    // Normal gravity
+player.gravity_scale = 0    // No gravity (flying)
+player.gravity_scale = 0.5  // Half gravity (moon)
+
+if player.grounded {
+    can_jump = true
+}
+```
+
+## Global Gravity
+
+### set_gravity(strength)
+Sets the global gravity value (pixels/sec^2). Default is 980.
+
+```pixel
+set_gravity(500)   // Low gravity
+set_gravity(1500)  // High gravity
+set_gravity(0)     // No gravity
+```
+
+## Physics Helpers
+
+### apply_force(sprite, force_x, force_y)
+Applies a force to a sprite, modifying its velocity.
+
+```pixel
+if key_pressed(KEY_SPACE) and player.grounded {
+    apply_force(player, 0, -800)  // Jump
+    player.grounded = false
+}
+```
+
+### move_toward(current, target, max_delta)
+Moves a value toward a target by at most max_delta.
+
+```pixel
+function on_update(dt) {
+    // Smoothly move toward target
+    player.x = move_toward(player.x, target_x, speed * dt)
+    player.y = move_toward(player.y, target_y, speed * dt)
+}
+```
+
+### look_at(sprite, x, y)
+Rotates a sprite to face a point.
+
+```pixel
+function on_update(dt) {
+    // Face the mouse cursor
+    look_at(player, mouse_x(), mouse_y())
+}
+```
+
+## Math Utilities
+
+### lerp(a, b, t)
+Linear interpolation between a and b by factor t (0-1).
+
+```pixel
+// Smooth camera follow
+camera_x = lerp(camera_x, target_x, 0.1)
+camera_y = lerp(camera_y, target_y, 0.1)
+```
+
+### lerp_angle(a, b, t)
+Interpolates between two angles, handling wraparound.
+
+```pixel
+// Smooth rotation toward target
+current_a
