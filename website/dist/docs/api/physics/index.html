@@ -1,0 +1,222 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-37fxchfa> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="A beginner-friendly programming language for making 2D games"><link rel="icon" type="image/svg+xml" href="/pixel/favicon.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><title>Physics &amp; Collision API Reference - Pixel</title><script>
+      // Check for saved theme or system preference
+      const theme = localStorage.getItem('theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    </script><link rel="stylesheet" href="/pixel/_astro/_slug_.CeoB1NFG.css"></head> <body class="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans antialiased" data-astro-cid-37fxchfa> <header class="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm"> <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between"> <a href="/pixel/" class="flex items-center gap-2 font-semibold text-lg hover:text-[--color-accent] transition-colors"> <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[--color-accent]"> <rect x="4" y="4" width="6" height="6"></rect> <rect x="14" y="4" width="6" height="6"></rect> <rect x="4" y="14" width="6" height="6"></rect> <rect x="14" y="14" width="6" height="6"></rect> </svg>
+Pixel
+</a> <div class="flex items-center gap-6"> <a href="/pixel/docs" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"> Docs </a><a href="/pixel/playground" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"> Playground </a> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" aria-label="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"> <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path> </svg> </a> <button id="theme-toggle" type="button" class="p-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" aria-label="Toggle dark mode"> <!-- Sun icon (shown in dark mode) --> <svg class="hidden dark:block w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path> </svg> <!-- Moon icon (shown in light mode) --> <svg class="block dark:hidden w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path> </svg> </button> <script type="module">const t=document.getElementById("theme-toggle");t?.addEventListener("click",()=>{const e=document.documentElement.classList.toggle("dark");localStorage.setItem("theme",e?"dark":"light")});</script> </div> </nav> </header> <main data-astro-cid-37fxchfa>  <div class="max-w-6xl mx-auto px-4 py-12"> <!-- Mobile sidebar toggle --> <button id="sidebar-toggle" class="md:hidden mb-4 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-medium flex items-center gap-2"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path> </svg>
+Menu
+</button> <div class="flex gap-12"> <!-- Sidebar --> <aside id="sidebar" class="w-64 shrink-0 hidden md:block"> <nav class="sticky top-24 space-y-6"> <div> <a href="/pixel/docs/getting-started" class="block text-sm font-medium transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Getting Started </a> </div><div> <a href="/pixel/docs/installation" class="block text-sm font-medium transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Installation </a> </div><div>  <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mb-2">Language</h4> <ul class="space-y-1"> <li> <a href="/pixel/docs/language/basics" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Basics </a> </li><li> <a href="/pixel/docs/language/control-flow" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Control Flow </a> </li><li> <a href="/pixel/docs/language/functions" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Functions </a> </li><li> <a href="/pixel/docs/language/data-structures" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Data Structures </a> </li> </ul>  </div><div>  <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mb-2">API Reference</h4> <ul class="space-y-1"> <li> <a href="/pixel/docs/api/core" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Core </a> </li><li> <a href="/pixel/docs/api/math" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Math </a> </li><li> <a href="/pixel/docs/api/engine" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Engine </a> </li><li> <a href="/pixel/docs/api/input" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Input </a> </li><li> <a href="/pixel/docs/api/audio" class="block text-sm py-1 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"> Audio </a> </li><li> <a href="/pixel/docs/api/physics" class="block text-sm py-1 transition-colors text-[--color-accent] font-medium"> Physics </a> </li> </ul>  </div> </nav> </aside> <!-- Content --> <article class="flex-1 min-w-0"> <h1 class="text-3xl font-bold mb-6">Physics & Collision API Reference</h1>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Collision Detection</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">collides(sprite1, sprite2)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> if two sprites overlap (AABB collision).
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if collides(player, enemy) {
+    take_damage()
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">collides_rect(x1, y1, w1, h1, x2, y2, w2, h2)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> if two rectangles overlap.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if collides_rect(player_x, player_y, 30, 40, coin_x, coin_y, 20, 20) {
+    collect_coin()
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">collides_point(x, y, sprite)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> if a point is inside a sprite.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if collides_point(mouse_x(), mouse_y(), button) {
+    button_hovered = true
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">collides_circle(x1, y1, r1, x2, y2, r2)</h3>
+Returns <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code> if two circles overlap.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if collides_circle(ball_x, ball_y, 10, player_x, player_y, 25) {
+    bounce_ball()
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Distance</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">distance(x1, y1, x2, y2)</h3>
+Returns the distance between two points.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>dist = distance(player.x, player.y, enemy.x, enemy.y)
+if dist &lt; attack_range {
+    can_attack = true
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Sprite Physics Properties</h2>
+<p class="mb-4 leading-relaxed">Sprites have built-in physics properties that are automatically updated each frame.</p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Velocity</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Property</th><th class="text-left py-2 px-3 font-semibold">Type</th><th class="text-left py-2 px-3 font-semibold">Description</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">velocity_x</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Horizontal velocity (pixels/sec)</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">velocity_y</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Vertical velocity (pixels/sec)</td></tr></tbody></table></div>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>player.velocity_x = 200  // Move right at 200 px/sec
+player.velocity_y = -400 // Jump upward
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Acceleration</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Property</th><th class="text-left py-2 px-3 font-semibold">Type</th><th class="text-left py-2 px-3 font-semibold">Description</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">acceleration_x</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Horizontal acceleration</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">acceleration_y</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Vertical acceleration</td></tr></tbody></table></div>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>// Apply thrust
+if key_down(KEY_RIGHT) {
+    player.acceleration_x = 500
+} else {
+    player.acceleration_x = 0
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Friction</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Property</th><th class="text-left py-2 px-3 font-semibold">Type</th><th class="text-left py-2 px-3 font-semibold">Default</th><th class="text-left py-2 px-3 font-semibold">Description</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">friction</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">0</td><td class="py-2 px-3">Velocity damping (0-1)</td></tr></tbody></table></div>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>player.friction = 0.1  // Slow down gradually
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Gravity</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Property</th><th class="text-left py-2 px-3 font-semibold">Type</th><th class="text-left py-2 px-3 font-semibold">Default</th><th class="text-left py-2 px-3 font-semibold">Description</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">gravity_scale</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">1</td><td class="py-2 px-3">Gravity multiplier</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">grounded</code></td><td class="py-2 px-3">Boolean</td><td class="py-2 px-3">false</td><td class="py-2 px-3">Whether sprite is on ground</td></tr></tbody></table></div>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>player.gravity_scale = 1    // Normal gravity
+player.gravity_scale = 0    // No gravity (flying)
+player.gravity_scale = 0.5  // Half gravity (moon)
+<p class="mb-4 leading-relaxed">if player.grounded {
+    can_jump = true
+}
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Global Gravity</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">set_gravity(strength)</h3>
+Sets the global gravity value (pixels/sec^2). Default is 980.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>set_gravity(500)   // Low gravity
+set_gravity(1500)  // High gravity
+set_gravity(0)     // No gravity
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Physics Helpers</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">apply_force(sprite, force_x, force_y)</h3>
+Applies a force to a sprite, modifying its velocity.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if key_pressed(KEY_SPACE) and player.grounded {
+    apply_force(player, 0, -800)  // Jump
+    player.grounded = false
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">move_toward(current, target, max_delta)</h3>
+Moves a value toward a target by at most max_delta.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    // Smoothly move toward target
+    player.x = move_toward(player.x, target_x, speed * dt)
+    player.y = move_toward(player.y, target_y, speed * dt)
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">look_at(sprite, x, y)</h3>
+Rotates a sprite to face a point.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    // Face the mouse cursor
+    look_at(player, mouse_x(), mouse_y())
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Math Utilities</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">lerp(a, b, t)</h3>
+Linear interpolation between a and b by factor t (0-1).
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>// Smooth camera follow
+camera_x = lerp(camera_x, target_x, 0.1)
+camera_y = lerp(camera_y, target_y, 0.1)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">lerp_angle(a, b, t)</h3>
+Interpolates between two angles, handling wraparound.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>// Smooth rotation toward target
+current_angle = lerp_angle(current_angle, target_angle, 0.1)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">clamp(value, min, max)</h3>
+Constrains a value between min and max.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>player.x = clamp(player.x, 0, window_width() - player.width)
+health = clamp(health, 0, max_health)
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Common Patterns</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Platformer Physics</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>GRAVITY = 1200
+JUMP_FORCE = 500
+MOVE_SPEED = 200
+<p class="mb-4 leading-relaxed">function on_update(dt) {
+    // Horizontal movement
+    if key_down(KEY_LEFT) {
+        player.velocity_x = -MOVE_SPEED
+    } else if key_down(KEY_RIGHT) {
+        player.velocity_x = MOVE_SPEED
+    } else {
+        player.velocity_x = 0
+    }</p>
+<p class="mb-4 leading-relaxed">// Jumping
+    if key_pressed(KEY_SPACE) and player.grounded {
+        player.velocity_y = -JUMP_FORCE
+        player.grounded = false
+    }</p>
+<p class="mb-4 leading-relaxed">// Apply gravity
+    player.velocity_y = player.velocity_y + GRAVITY * dt</p>
+<p class="mb-4 leading-relaxed">// Move player
+    player.x = player.x + player.velocity_x * dt
+    player.y = player.y + player.velocity_y * dt</p>
+<p class="mb-4 leading-relaxed">// Ground collision (simple)
+    if player.y &gt; ground_y {
+        player.y = ground_y
+        player.velocity_y = 0
+        player.grounded = true
+    }
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Top-Down Movement</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    dx = 0
+    dy = 0
+<p class="mb-4 leading-relaxed">if key_down(KEY_W) { dy = -1 }
+    if key_down(KEY_S) { dy = 1 }
+    if key_down(KEY_A) { dx = -1 }
+    if key_down(KEY_D) { dx = 1 }</p>
+<p class="mb-4 leading-relaxed">// Normalize diagonal movement
+    if dx != 0 and dy != 0 {
+        dx = dx * 0.707
+        dy = dy * 0.707
+    }</p>
+<p class="mb-4 leading-relaxed">player.x = player.x + dx <em> speed </em> dt
+    player.y = player.y + dy <em> speed </em> dt
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Bullet/Projectile</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>bullets = []
+<p class="mb-4 leading-relaxed">function spawn_bullet(x, y, angle) {
+    bullet = {}
+    bullet.x = x
+    bullet.y = y
+    bullet.vel_x = cos(angle) * BULLET_SPEED
+    bullet.vel_y = sin(angle) * BULLET_SPEED
+    push(bullets, bullet)
+}</p>
+<p class="mb-4 leading-relaxed">function update_bullets(dt) {
+    i = len(bullets) - 1
+    while i &gt;= 0 {
+        b = bullets[i]
+        b.x = b.x + b.vel_x * dt
+        b.y = b.y + b.vel_y * dt</p>
+<p class="mb-4 leading-relaxed">// Remove if off screen
+        if b.x &lt; 0 or b.x &gt; window_width() or b.y &lt; 0 or b.y &gt; window_height() {
+            remove(bullets, i)
+        }
+        i = i - 1
+    }
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Simple Enemy AI</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function update_enemy(enemy, dt) {
+    // Move toward player
+    dx = player.x - enemy.x
+    dy = player.y - enemy.y
+    dist = sqrt(dx <em> dx + dy </em> dy)
+<p class="mb-4 leading-relaxed">if dist &gt; 0 {
+        enemy.x = enemy.x + (dx / dist) <em> enemy.speed </em> dt
+        enemy.y = enemy.y + (dy / dist) <em> enemy.speed </em> dt
+    }</p>
+<p class="mb-4 leading-relaxed">// Face player
+    look_at(enemy, player.x, player.y)
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Bounce Off Walls</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    ball.x = ball.x + ball.vel_x * dt
+    ball.y = ball.y + ball.vel_y * dt
+<p class="mb-4 leading-relaxed">// Bounce off sides
+    if ball.x &lt;= 0 or ball.x &gt;= window_width() - ball_size {
+        ball.vel_x = -ball.vel_x
+    }</p>
+<p class="mb-4 leading-relaxed">// Bounce off top/bottom
+    if ball.y &lt;= 0 or ball.y &gt;= window_height() - ball_size {
+        ball.vel_y = -ball.vel_y
+    }
+}
+</code></pre></p> </article> </div> </div> <script type="module">const t=document.getElementById("sidebar-toggle"),e=document.getElementById("sidebar");t?.addEventListener("click",()=>{e?.classList.toggle("hidden"),e?.classList.toggle("block")});</script>  </main> <footer class="border-t border-zinc-200 dark:border-zinc-800 py-8 mt-16"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-600 dark:text-zinc-400"> <div class="flex items-center gap-4"> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+GitHub
+</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html>
