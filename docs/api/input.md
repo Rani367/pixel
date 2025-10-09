@@ -68,3 +68,120 @@ function on_update(dt) {
     }
 }
 ```
+|
+| `KEY_A` - `KEY_Z` | A-Z keys |
+
+### Number Keys
+| Constant | Key |
+|----------|-----|
+| `KEY_0` - `KEY_9` | 0-9 keys |
+
+### Arrow Keys
+| Constant | Key |
+|----------|-----|
+| `KEY_UP` | Up arrow |
+| `KEY_DOWN` | Down arrow |
+| `KEY_LEFT` | Left arrow |
+| `KEY_RIGHT` | Right arrow |
+
+### Common Keys
+| Constant | Key |
+|----------|-----|
+| `KEY_SPACE` | Spacebar |
+| `KEY_ENTER` | Enter/Return |
+| `KEY_TAB` | Tab |
+| `KEY_BACKSPACE` | Backspace |
+| `KEY_ESCAPE` | Escape |
+
+### Modifier Keys
+| Constant | Key |
+|----------|-----|
+| `KEY_SHIFT` | Shift (either) |
+| `KEY_CTRL` | Control (either) |
+| `KEY_ALT` | Alt/Option (either) |
+
+### Function Keys
+| Constant | Key |
+|----------|-----|
+| `KEY_F1` - `KEY_F12` | Function keys |
+
+## Mouse Input
+
+### mouse_x()
+Returns the mouse X position in window coordinates.
+
+### mouse_y()
+Returns the mouse Y position in window coordinates.
+
+```pixel
+function on_update(dt) {
+    crosshair_x = mouse_x()
+    crosshair_y = mouse_y()
+}
+```
+
+### mouse_down(button)
+Returns `true` while the mouse button is held.
+
+```pixel
+if mouse_down(MOUSE_LEFT) {
+    // Continuous fire
+    shoot()
+}
+```
+
+### mouse_pressed(button)
+Returns `true` only on the frame the button was pressed.
+
+```pixel
+if mouse_pressed(MOUSE_LEFT) {
+    // Single click
+    select_item()
+}
+```
+
+### mouse_released(button)
+Returns `true` only on the frame the button was released.
+
+```pixel
+if mouse_released(MOUSE_LEFT) {
+    drop_item()
+}
+```
+
+## Mouse Button Constants
+
+| Constant | Button |
+|----------|--------|
+| `MOUSE_LEFT` | Left button |
+| `MOUSE_RIGHT` | Right button |
+| `MOUSE_MIDDLE` | Middle button |
+
+## Input Callbacks
+
+For event-driven input handling, you can define callback functions.
+
+### on_key_down(key)
+Called when a key is pressed.
+
+```pixel
+function on_key_down(key) {
+    if key == KEY_P {
+        toggle_pause()
+    }
+}
+```
+
+### on_key_up(key)
+Called when a key is released.
+
+```pixel
+function on_key_up(key) {
+    if key == KEY_SPACE {
+        release_arrow()
+    }
+}
+```
+
+### on_mouse_click(button, x, y)
+Calle
