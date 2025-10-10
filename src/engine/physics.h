@@ -43,4 +43,9 @@ bool physics_collides_point(ObjSprite* sprite, double px, double py);
 // ============================================================================
 
 // Check if two sprites overlap (circle collision using min dimension as radius)
-bool physics_collides_circle(ObjSprite* a, ObjSprite* b)
+bool physics_collides_circle(ObjSprite* a, ObjSprite* b)p_angle(double a, double b, double t);
+
+// Normalize an angle to 0-360 range
+double physics_normalize_angle(double angle);
+
+#endif // PH_PHYSICS_H
