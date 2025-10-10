@@ -14,3 +14,25 @@ static inline void unpack_color(uint32_t color, uint8_t* r, uint8_t* g, uint8_t*
 void engine_natives_init(VM* vm);
 
 #endif // PH_ENGINE_NATIVES_H
+ and input
+
+#ifndef PH_ENGINE_NATIVES_H
+#define PH_ENGINE_NATIVES_H
+
+#include "vm/vm.h"
+#include "vm/value.h"
+#include <stdint.h>
+
+// ============================================================================
+// Color Constants (packed as 0xRRGGBBAA)
+// ============================================================================
+
+#define COLOR_RED       0xFF0000FFu
+#define COLOR_GREEN     0x00FF00FFu
+#define COLOR_BLUE      0x0000FFFFu
+#define COLOR_WHITE     0xFFFFFFFFu
+#define COLOR_BLACK     0x000000FFu
+#define COLOR_YELLOW    0xFFFF00FFu
+#define COLOR_CYAN      0x00FFFFFFu
+#define COLOR_MAGENTA   0xFF00FFFFu
+#defin
