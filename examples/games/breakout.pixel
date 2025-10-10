@@ -1,0 +1,274 @@
+// Breakout - Classic brick-breaking game
+// Move paddle with Left/Right arrow keys or A/D
+// Launch ball with SPACE
+// Break all bricks to win!
+
+// Game constants
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+PADDLE_WIDTH = 100
+PADDLE_HEIGHT = 15
+PADDLE_Y = 550
+PADDLE_SPEED = 500
+BALL_SIZE = 12
+BALL_SPEED = 400
+BRICK_ROWS = 5
+BRICK_COLS = 10
+BRICK_WIDTH = 70
+BRICK_HEIGHT = 25
+BRICK_PADDING = 5
+BRICK_TOP = 80
+
+// Game state
+paddle_x = 0
+ball_x = 0
+ball_y = 0
+ball_vel_x = 0
+ball_vel_y = 0
+ball_attached = true
+score = 0
+lives = 3
+bricks = []
+game_over = false
+game_won = false
+
+// Fonts
+font = none
+small_font = none
+
+// Brick colors by row
+brick_colors = []
+
+function on_start() {
+    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Breakout")
+    font = default_font(36)
+    small_font = default_font(24)
+
+    // Initialize brick colors
+    push(brick_colors, RED)
+    push(brick_colors, ORANGE)
+    push(brick_colors, YELLOW)
+    push(brick_colors, GREEN)
+    push(brick_colors, CYAN)
+
+    reset_game()
+}
+
+function reset_game() {
+    paddle_x = WINDOW_WIDTH / 2 - PADDLE_WIDTH / 2
+    score = 0
+    lives = 3
+    game_over = false
+    game_won = false
+
+    create_bricks()
+    reset_ball()
+}
+
+function create_bricks() {
+    bricks = []
+
+    start_x = (WINDOW_WIDTH - (BRICK_COLS * (BRICK_WIDTH + BRICK_PADDING) - BRICK_PADDING)) / 2
+
+    row = 0
+    while row < BRICK_ROWS {
+        col = 0
+        while col < BRICK_COLS {
+            brick = {}
+            brick.x = start_x + col * (BRICK_WIDTH + BRICK_PADDING)
+            brick.y = BRICK_TOP + row * (BRICK_HEIGHT + BRICK_PADDING)
+            brick.alive = true
+            brick.color = brick_colors[row % len(brick_colors)]
+            push(bricks, brick)
+            col = col + 1
+        }
+        row = row + 1
+    }
+}
+
+function reset_ball() {
+    ball_attached = true
+    ball_x = paddle_x + PADDLE_WIDTH / 2 - BALL_SIZE / 2
+    ball_y = PADDLE_Y - BALL_SIZE
+    ball_vel_x = 0
+    ball_vel_y = 0
+}
+
+function launch_ball() {
+    if ball_attached {
+        ball_attached = false
+        ball_vel_x = random_range(-BALL_SPEED / 2, BALL_SPEED / 2)
+        ball_vel_y = -BALL_SPEED
+    }
+}
+
+function on_update(dt) {
+    if game_over or game_won {
+        if key_pressed(KEY_SPACE) {
+            reset_game()
+        }
+        return
+    }
+
+    // Paddle movement
+    if key_down(KEY_LEFT) or key_down(KEY_A) {
+        paddle_x = paddle_x - PADDLE_SPEED * dt
+    }
+    if key_down(KEY_RIGHT) or key_down(KEY_D) {
+        paddle_x = paddle_x + PADDLE_SPEED * dt
+    }
+
+    // Keep paddle on screen
+    paddle_x = clamp(paddle_x, 0, WINDOW_WIDTH - PADDLE_WIDTH)
+
+    // Launch ball
+    if key_pressed(KEY_SPACE) {
+        launch_ball()
+    }
+
+    if ball_attached {
+        // Ball follows paddle
+        ball_x = paddle_x + PADDLE_WIDTH / 2 - BALL_SIZE / 2
+        ball_y = PADDLE_Y - BALL_SIZE
+        return
+    }
+
+    // Move ball
+    ball_x = ball_x + ball_vel_x * dt
+    ball_y = ball_y + ball_vel_y * dt
+
+    // Ball collision with walls
+    if ball_x <= 0 {
+        ball_x = 0
+        ball_vel_x = -ball_vel_x
+    }
+    if ball_x >= WINDOW_WIDTH - BALL_SIZE {
+        ball_x = WINDOW_WIDTH - BALL_SIZE
+        ball_vel_x = -ball_vel_x
+    }
+    if ball_y <= 0 {
+        ball_y = 0
+        ball_vel_y = -ball_vel_y
+    }
+
+    // Ball falls off bottom
+    if ball_y > WINDOW_HEIGHT {
+        lives = lives - 1
+        if lives <= 0 {
+            game_over = true
+        } else {
+            reset_ball()
+        }
+        return
+    }
+
+    // Ball collision with paddle
+    if ball_y + BALL_SIZE >= PADDLE_Y and ball_y <= PADDLE_Y + PADDLE_HEIGHT {
+        if ball_x + BALL_SIZE >= paddle_x and ball_x <= paddle_x + PADDLE_WIDTH {
+            ball_y = PADDLE_Y - BALL_SIZE
+            ball_vel_y = -abs(ball_vel_y)
+
+            // Change X velocity based on where ball hits paddle
+            hit_pos = (ball_x + BALL_SIZE / 2) - (paddle_x + PADDLE_WIDTH / 2)
+            ball_vel_x = hit_pos * 5
+        }
+    }
+
+    // Ball collision with bricks
+    i = 0
+    while i < len(bricks) {
+        brick = bricks[i]
+        if brick.alive {
+            if ball_x + BALL_SIZE >= brick.x and ball_x <= brick.x + BRICK_WIDTH {
+                if ball_y + BALL_SIZE >= brick.y and ball_y <= brick.y + BRICK_HEIGHT {
+                    brick.alive = false
+                    score = score + 10
+                    ball_vel_y = -ball_vel_y
+
+                    // Check for win
+                    if check_win() {
+                        game_won = true
+                    }
+                }
+            }
+        }
+        i = i + 1
+    }
+}
+
+function check_win() {
+    i = 0
+    while i < len(bricks) {
+        if bricks[i].alive {
+            return false
+        }
+        i = i + 1
+    }
+    return true
+}
+
+function on_draw() {
+    // Clear screen
+    clear(rgb(20, 20, 40))
+
+    // Draw bricks
+    i = 0
+    while i < len(bricks) {
+        brick = bricks[i]
+        if brick.alive {
+            draw_rect(brick.x, brick.y, BRICK_WIDTH, BRICK_HEIGHT, brick.color)
+        }
+        i = i + 1
+    }
+
+    // Draw paddle
+    draw_rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE)
+
+    // Draw ball
+    draw_rect(ball_x, ball_y, BALL_SIZE, BALL_SIZE, WHITE)
+
+    // Draw score
+    score_text = "Score: " + to_string(score)
+    draw_text(score_text, 20, 20, small_font, WHITE)
+
+    // Draw lives
+    lives_text = "Lives: " + to_string(lives)
+    draw_text(lives_text, WINDOW_WIDTH - text_width(lives_text, small_font) - 20, 20, small_font, WHITE)
+
+    // Draw game over message
+    if game_over {
+        msg = "GAME OVER"
+        msg_width = text_width(msg, font)
+        draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 18, font, RED)
+
+        score_msg = "Final Score: " + to_string(score)
+        score_width = text_width(score_msg, small_font)
+        draw_text(score_msg, WINDOW_WIDTH / 2 - score_width / 2, WINDOW_HEIGHT / 2 + 30, small_font, WHITE)
+
+        restart_msg = "Press SPACE to restart"
+        restart_width = text_width(restart_msg, small_font)
+        draw_text(restart_msg, WINDOW_WIDTH / 2 - restart_width / 2, WINDOW_HEIGHT / 2 + 70, small_font, GRAY)
+    }
+
+    // Draw win message
+    if game_won {
+        msg = "YOU WIN!"
+        msg_width = text_width(msg, font)
+        draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 18, font, GREEN)
+
+        score_msg = "Final Score: " + to_string(score)
+        score_width = text_width(score_msg, small_font)
+        draw_text(score_msg, WINDOW_WIDTH / 2 - score_width / 2, WINDOW_HEIGHT / 2 + 30, small_font, WHITE)
+
+        restart_msg = "Press SPACE to play again"
+        restart_width = text_width(restart_msg, small_font)
+        draw_text(restart_msg, WINDOW_WIDTH / 2 - restart_width / 2, WINDOW_HEIGHT / 2 + 70, small_font, GRAY)
+    }
+
+    // Draw instructions if ball is attached
+    if ball_attached and not game_over and not game_won {
+        msg = "Press SPACE to launch"
+        msg_width = text_width(msg, small_font)
+        draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT - 80, small_font, GRAY)
+    }
+}
