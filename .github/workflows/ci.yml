@@ -43,4 +43,49 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      -
+      -run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: cd build && ctest --output-on-failure
+
+      - name: Verify CLI
+        run: ./build/pixel version
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: pixel-linux-x64
+            binary: pixel
+          - os: macos-latest
+            artifact: pixel-macos-x64
+            binary: pixel
+          - os: macos-14
+            artifact: pixel-macos-arm64
+            binary: pixel
+          - os: windows-latest
+            artifact: pixel-windows-x64
+            binary: pixel.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SDL2 (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
+
+      - name: Install SDL2 (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer
+
+      - name: Install SDL2 (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          vcpkg install sdl2:x64-windows
