@@ -39,4 +39,6 @@ pixel run game.pixel
 
 1. [Basics](basics.md) - Variables, types, and operators
 2. [Control Flow](control-flow.md) - Conditionals and loops
-3. [Functions](functions.md) - Definin
+3. [Functions](functions.md) - Definin# Language Guide
+
+This guide covers the Pixel programming language
