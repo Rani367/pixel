@@ -155,4 +155,24 @@ void pal_mock_text_size(PalFont* font, const char* text, int* width, int* height
 
 // -----------------------------------------------------------------------------
 // Call recording
-// -------------------------------------
+// -------------------------------------   }
+}
+
+void pal_mock_set_mouse_position(int x, int y) {
+    mock_mouse_x = x;
+    mock_mouse_y = y;
+}
+
+void pal_mock_set_quit(bool quit) {
+    mock_quit_requested = quit;
+}
+
+// -----------------------------------------------------------------------------
+// Fonts and Text
+// -----------------------------------------------------------------------------
+
+PalFont* pal_mock_font_load(const char* path, int size) {
+    record_call("pal_font_load");
+
+    PalFont* font = malloc(sizeof(PalFont));
+    if (!font) return NULL;
