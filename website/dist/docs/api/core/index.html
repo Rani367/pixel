@@ -27,4 +27,90 @@ is_alive = true
 items = []
 </code></pre>
 <h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Data Types</h2>
-<div class="overflow-x-auto 
+<div class="overflow-x-auto  font-mono">true</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">not</code></td><td class="py-2 px-3">Logical NOT</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">not true</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">false</code></td></tr></tbody></table></div></h3>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Control Flow</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">If Statements</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>if x &gt; 10 {
+    print("big")
+} else if x &gt; 5 {
+    print("medium")
+} else {
+    print("small")
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">While Loops</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>i = 0
+while i &lt; 10 {
+    print(i)
+    i = i + 1
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Break and Continue</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>i = 0
+while true {
+    i = i + 1
+    if i == 5 {
+        continue  // Skip to next iteration
+    }
+    if i &gt;= 10 {
+        break     // Exit loop
+    }
+    print(i)
+}
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Functions</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Defining Functions</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function greet(name) {
+    return "Hello, " + name + "!"
+}
+<p class="mb-4 leading-relaxed">message = greet("World")
+print(message)
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Anonymous Functions</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>add = function(a, b) {
+    return a + b
+}
+<p class="mb-4 leading-relaxed">result = add(3, 4)  // 7
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Closures</h3>
+<p class="mb-4 leading-relaxed">Functions can capture variables from their enclosing scope:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function make_counter() {
+    count = 0
+    return function() {
+        count = count + 1
+        return count
+    }
+}
+<p class="mb-4 leading-relaxed">counter = make_counter()
+print(counter())  // 1
+print(counter())  // 2
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Lists</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Creating Lists</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>empty = []
+numbers = [1, 2, 3, 4, 5]
+mixed = [42, "hello", true, [1, 2]]
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">List Functions</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Function</th><th class="text-left py-2 px-3 font-semibold">Description</th><th class="text-left py-2 px-3 font-semibold">Example</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">len(list)</code></td><td class="py-2 px-3">Get length</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">len([1,2,3])</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">3</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">push(list, item)</code></td><td class="py-2 px-3">Add to end</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">push(items, "new")</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">pop(list)</code></td><td class="py-2 px-3">Remove from end</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">last = pop(items)</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">insert(list, i, item)</code></td><td class="py-2 px-3">Insert at index</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">insert(items, 0, "first")</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">remove(list, i)</code></td><td class="py-2 px-3">Remove at index</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">remove(items, 2)</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">contains(list, item)</code></td><td class="py-2 px-3">Check membership</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">contains([1,2], 2)</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">true</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">index_of(list, item)</code></td><td class="py-2 px-3">Find index</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">index_of([a,b,c], b)</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">1</code></td></tr></tbody></table></div>
+<h3 class="text-lg font-semibold mt-6 mb-2">Accessing Elements</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>items = ["a", "b", "c"]
+first = items[0]      // "a"
+items[1] = "B"        // Modify element
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Structs</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Creating Structs</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>player = {}
+player.x = 100
+player.y = 200
+player.name = "Hero"
+<p class="mb-4 leading-relaxed">// Or inline
+enemy = {x: 300, y: 200, health: 50}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Accessing Properties</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>print(player.name)    // "Hero"
+player.health = 100   // Add new property
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Strings</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">String Functions</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Function</th><th class="text-left py-2 px-3 font-semibold">Description</th><th class="text-left py-2 px-3 font-semibold">Example</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">len(str)</code></td><td class="py-2 px-3">Get length</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">len("hello")</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">5</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">substring(str, start, len)</code></td><td class="py-2 px-3">Extract substring</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">substring("hello", 1, 3)</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">ell</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">split(str, sep)</code></td><td class="py-2 px-3">Split by separator</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">split("a,b,c", ",")</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">["a","b","c"]</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">join(list, sep)</code></td><td class="py-2 px-3">Join with separator</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">join(["a","b"], "-")</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">"a-b"</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">upper(str)</code></td><td class="py-2 px-3">Uppercase</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">upper("hi")</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">"HI"</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">lower(str)</code></td><td class="py-2 px-3">Lowercase</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">lower("HI")</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">"hi"</code></td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">to_string(val)</code></td><td class="py-2 px-3">Convert to string</td><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">to_string(42)</code> = <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">"42"</code></td></tr><tr class="border-b border-zinc-2
