@@ -534,4 +534,140 @@ void ast_print_expr(Expr* expr, int indent) {
             for (int i = 0; i < e->param_count; i++) {
                 if (i > 0) printf(", ");
                 printf("%.*s", e->params[i].length, e->params[i].start);
-            }
+            }a* arena, TokenType op, Expr* operand, Span span) {
+    ExprUnary* expr = arena_alloc(arena, sizeof(ExprUnary));
+    expr->base.type = EXPR_UNARY;
+    expr->base.span = span;
+    expr->operator = op;
+    expr->operand = operand;
+    return (Expr*)expr;
+}
+
+Expr* expr_binary(Arena* arena, Expr* left, TokenType op, Expr* right) {
+    ExprBinary* expr = arena_alloc(arena, sizeof(ExprBinary));
+    expr->base.type = EXPR_BINARY;
+    expr->base.span = span_merge(left->span, right->span);
+    expr->left = left;
+    expr->operator = op;
+    expr->right = right;
+    return (Expr*)expr;
+}
+
+Expr* expr_call(Arena* arena, Expr* callee, Expr** args, int arg_count, Span span) {
+    ExprCall* expr = arena_alloc(arena, sizeof(ExprCall));
+    expr->base.type = EXPR_CALL;
+    expr->base.span = span;
+    expr->callee = callee;
+    expr->arguments = args;
+    expr->arg_count = arg_count;
+    return (Expr*)expr;
+}
+
+Expr* expr_get(Arena* arena, Expr* object, Token name) {
+    ExprGet* expr = arena_alloc(arena, sizeof(ExprGet));
+    expr->base.type = EXPR_GET;
+    expr->base.span = span_merge(object->span, span_from_token(name));
+    expr->object = object;
+    expr->name = name;
+    return (Expr*)expr;
+}
+
+Expr* expr_set(Arena* arena, Expr* object, Token name, Expr* value) {
+    ExprSet* expr = arena_alloc(arena, sizeof(ExprSet));
+    expr->base.type = EXPR_SET;
+    expr->base.span = span_merge(object->span, value->span);
+    expr->object = object;
+    expr->name = name;
+    expr->value = value;
+    return (Expr*)expr;
+}
+
+Expr* expr_index(Arena* arena, Expr* object, Expr* index, Span span) {
+    ExprIndex* expr = arena_alloc(arena, sizeof(ExprIndex));
+    expr->base.type = EXPR_INDEX;
+    expr->base.span = span;
+    expr->object = object;
+    expr->index = index;
+    return (Expr*)expr;
+}
+
+Expr* expr_index_set(Arena* arena, Expr* object, Expr* index, Expr* value) {
+    ExprIndexSet* expr = arena_alloc(arena, sizeof(ExprIndexSet));
+    expr->base.type = EXPR_INDEX_SET;
+    expr->base.span = span_merge(object->span, value->span);
+    expr->object = object;
+    expr->index = index;
+    expr->value = value;
+    return (Expr*)expr;
+}
+
+Expr* expr_list(Arena* arena, Expr** elements, int count, Span span) {
+    ExprList* expr = arena_alloc(arena, sizeof(ExprList));
+    expr->base.type = EXPR_LIST;
+    expr->base.span = span;
+    expr->elements = elements;
+    expr->count = count;
+    return (Expr*)expr;
+}
+
+Expr* expr_function(Arena* arena, Token* params, int param_count, Stmt* body, Span span) {
+    ExprFunction* expr = arena_alloc(arena, sizeof(ExprFunction));
+    expr->base.type = EXPR_FUNCTION;
+    expr->base.span = span;
+    expr->params = params;
+    expr->param_count = param_count;
+    expr->body = body;
+    return (Expr*)expr;
+}
+
+Expr* expr_vec2(Arena* arena, Expr* x, Expr* y, Span span) {
+    ExprVec2* expr = arena_alloc(arena, sizeof(ExprVec2));
+    expr->base.type = EXPR_VEC2;
+    expr->base.span = span;
+    expr->x = x;
+    expr->y = y;
+    return (Expr*)expr;
+}
+
+Expr* expr_postfix(Arena* arena, Expr* operand, Token op) {
+    ExprPostfix* expr = arena_alloc(arena, sizeof(ExprPostfix));
+    expr->base.type = EXPR_POSTFIX;
+    expr->base.span = operand->span;
+    expr->operand = operand;
+    expr->op = op;
+    return (Expr*)expr;
+}
+
+// ============================================================================
+// Statement Constructors
+// ============================================================================
+
+Stmt* stmt_expression(Arena* arena, Expr* expression) {
+    StmtExpression* stmt = arena_alloc(arena, sizeof(StmtExpression));
+    stmt->base.type = STMT_EXPRESSION;
+    stmt->base.span = expression->span;
+    stmt->expression = expression;
+    return (Stmt*)stmt;
+}
+
+Stmt* stmt_assignment(Arena* arena, Expr* target, Expr* value) {
+    StmtAssignment* stmt = arena_alloc(arena, sizeof(StmtAssignment));
+    stmt->base.type = STMT_ASSIGNMENT;
+    stmt->base.span = span_merge(target->span, value->span);
+    stmt->target = target;
+    stmt->value = value;
+    return (Stmt*)stmt;
+}
+
+Stmt* stmt_block(Arena* arena, Stmt** statements, int count, Span span) {
+    StmtBlock* stmt = arena_alloc(arena, sizeof(StmtBlock));
+    stmt->base.type = STMT_BLOCK;
+    stmt->base.span = span;
+    stmt->statements = statements;
+    stmt->count = count;
+    return (Stmt*)stmt;
+}
+
+Stmt* stmt_if(Arena* arena, Expr* condition, Stmt* then_branch, Stmt* else_branch, Span span) {
+    StmtIf* stmt = arena_alloc(arena, sizeof(StmtIf));
+ 
