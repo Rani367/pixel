@@ -181,4 +181,96 @@ static int cmd_run(const char* filename) {
     Engine* engine = engine_new(&vm);
     engine_set(engine);
 
-    // 
+    // Use SDL2 if available, fall back to mock
+#ifdef PAL_USE_SDL2
+    if (!engine_init(engine, PAL_BACKEND_SDL2)) {
+        fprintf(stderr, "Warning: Failed to initialize SDL2, using mock backend\n");
+        engine_init(engine, PAL_BACKEND_MOCK);
+    }
+#else
+    engine_init(engine, PAL_BACKEND_MOCK);
+#endif
+
+    engine_natives_init(&vm);
+
+    // 7. Run top-level code
+    InterpretResult result = vm_interpret(&vm, function);
+
+    // 8. If successful and has game callbacks, run game loop
+    if (result == INTERPRET_OK) {
+        engine_detect_callbacks(engine);
+        if (engine_has_callbacks(engine)) {
+            engine_run(engine);
+        }
+    }
+
+    // 9. Cleanup
+    engine_shutdown(engine);
+    engine_free(engine);
+    vm_free(&vm);
+    arena_free(arena);
+    free(source);
+
+    return result == INTERPRET_OK ? 0 : 1;
+}
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+static void print_usage(const char* program) {
+    fprintf(stderr, "Usage: %s <command> [options] [file]\n\n", program);
+    fprintf(stderr, "Commands:\n");
+    fprintf(stderr, "  run <file>      Run a Pixel script\n");
+    fprintf(stderr, "  compile <file>  Compile to bytecode\n");
+    fprintf(stderr, "  disasm <file>   Disassemble bytecode\n");
+    fprintf(stderr, "  version         Print version\n");
+    fprintf(stderr, "  help            Show this message\n");
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        print_usage(argv[0]);
+        return 1;
+    }
+
+    if (strcmp(argv[1], "version") == 0) {
+        printf("Pixel %s\n", VERSION);
+        return 0;
+    }
+
+    if (strcmp(argv[1], "help") == 0) {
+        print_usage(argv[0]);
+        return 0;
+    }
+
+    if (strcmp(argv[1], "run") == 0) {
+        if (argc < 3) {
+            fprintf(stderr, "Error: 'run' requires a file argument\n");
+            return 1;
+        }
+        return cmd_run(argv[2]);
+    }
+
+    if (strcmp(argv[1], "compile") == 0) {
+        if (argc < 3) {
+            fprintf(stderr, "Error: 'compile' requires a file argument\n");
+            return 1;
+        }
+        printf("Compiling: %s (not yet implemented)\n", argv[2]);
+        return 0;
+    }
+
+    if (strcmp(argv[1], "disasm") == 0) {
+        if (argc < 3) {
+            fprintf(stderr, "Error: 'disasm' requires a file argument\n");
+            return 1;
+        }
+        printf("Disassembling: %s (not yet implemented)\n", argv[2]);
+        return 0;
+    }
+
+    fprintf(stderr, "Unknown command: %s\n", argv[1]);
+    print_usage(argv[0]);
+    return 1;
+}
