@@ -17,3 +17,14 @@ function on_draw() {
     draw_rect(10, 10, 120, 30, rgba(0, 0, 0, 128))
 
     if game_over {
+        // Game over overlay
+        draw_rect(200, 200, 400, 200, rgba(0, 0, 0, 200))
+        draw_rect(202, 202, 396, 196, rgb(50, 50, 80))
+
+        // Draw "GAME OVER" text (using rectangles since we don't have font rendering)
+        draw_rect(300, 250, 200, 40, rgb(255, 100, 100))
+
+        // Draw "Press SPACE" hint
+        draw_rect(320, 320, 160, 30, rgb(100, 100, 150))
+    }
+}
