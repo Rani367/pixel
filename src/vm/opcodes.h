@@ -43,4 +43,9 @@ typedef enum {
 
     // Arithmetic
     OP_ADD,             // a + b
-    OP_SUBTRACT,        // a
+    OP_SUBTRACT,        // a/ Unconditional jump (16-bit offset)
+    OP_JUMP_IF_FALSE,   // Jump if top is falsey (16-bit offset)
+    OP_JUMP_IF_TRUE,    // Jump if top is truthy (16-bit offset)
+    OP_LOOP,            // Loop backward (16-bit offset)
+
+    // F
