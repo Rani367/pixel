@@ -167,4 +167,41 @@ static const char* find_source_line(const char* source, int line_num, int* out_l
 
     // Print location: --> file:line:column
     fprintf(out, "  --> %s:%d:%d\n",
-            err->location
+            err->locationngth) {
+    if (source == NULL || line_num <= 0) {
+        *out_length = 0;
+        return NULL;
+    }
+
+    const char* p = source;
+    int current_line = 1;
+
+    // Find the start of the requested line
+    while (*p != '\0' && current_line < line_num) {
+        if (*p == '\n') {
+            current_line++;
+        }
+        p++;
+    }
+
+    if (current_line != line_num) {
+        *out_length = 0;
+        return NULL;
+    }
+
+    // Find the end of this line
+    const char* line_start = p;
+    while (*p != '\0' && *p != '\n') {
+        p++;
+    }
+
+    *out_length = (int)(p - line_start);
+    return line_start;
+}
+
+void error_print_pretty(Error* err, const char* source, FILE* out) {
+    if (err == NULL) {
+        return;
+    }
+
+    // Fall back to simple print if no 
