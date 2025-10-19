@@ -74,4 +74,31 @@ typedef struct {
     bool had_error;
     bool panic_mode;
 
-    // Source info for error 
+    // Source info for error #ifndef PH_CODEGEN_H
+#define PH_CODEGEN_H
+
+#include "core/common.h"
+#include "core/error.h"
+#include "compiler/ast.h"
+#include "vm/chunk.h"
+#include "vm/object.h"
+
+// Maximum number of local variables per function
+#define UINT8_COUNT 256
+
+// Maximum number of upvalues per closure
+#define MAX_UPVALUES 256
+
+// Maximum number of errors before stopping compilation
+#define CODEGEN_MAX_ERRORS 32
+
+// Local variable in the current scope
+typedef struct {
+    const char* name;       // Pointer into source (not owned)
+    int length;             // Name length
+    int depth;              // Scope depth where declared
+    bool is_captured;       // Captured by a closure?
+} Local;
+
+// Upvalue tracking
+typedef struct {
