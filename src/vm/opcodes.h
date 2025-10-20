@@ -48,4 +48,22 @@ typedef enum {
     OP_JUMP_IF_TRUE,    // Jump if top is truthy (16-bit offset)
     OP_LOOP,            // Loop backward (16-bit offset)
 
-    // F
+    // F - b
+    OP_MULTIPLY,        // a * b
+    OP_DIVIDE,          // a / b
+    OP_MODULO,          // a % b
+    OP_NEGATE,          // -a
+
+    // Comparison
+    OP_EQUAL,           // a == b
+    OP_NOT_EQUAL,       // a != b
+    OP_GREATER,         // a > b
+    OP_GREATER_EQUAL,   // a >= b
+    OP_LESS,            // a < b
+    OP_LESS_EQUAL,      // a <= b
+
+    // Logic
+    OP_NOT,             // !a
+
+    // Control flow
+    OP_JUMP,            /
