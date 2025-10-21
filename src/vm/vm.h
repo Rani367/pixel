@@ -48,3 +48,65 @@ __attribute__((format(printf, 2, 3)))
 void vm_runtime_error(VM* vm, const char* format, ...);
 
 #endif // PH_VM_H
+#ifndef PH_VM_H
+#define PH_VM_H
+
+#include "core/common.h"
+#include "core/table.h"
+#include "vm/value.h"
+#include "vm/chunk.h"
+#include "vm/object.h"
+
+// Stack and frame limits
+#define STACK_MAX 256
+#define FRAMES_MAX 64
+
+// Interpretation result
+typedef enum {
+    INTERPRET_OK,
+    INTERPRET_COMPILE_ERROR,
+    INTERPRET_RUNTIME_ERROR,
+} InterpretResult;
+
+// Call frame for function execution
+typedef struct {
+    ObjClosure* closure;
+    uint8_t* ip;            // Instruction pointer within the function's chunk
+    Value* slots;           // First slot in the stack for this call frame
+} CallFrame;
+
+// Virtual machine state
+typedef struct VM {
+    // Call stack
+    CallFrame frames[FRAMES_MAX];
+    int frame_count;
+
+    // Value stack
+    Value stack[STACK_MAX];
+    Value* stack_top;
+
+    // Global variables
+    Table globals;
+
+    // String interning (shared with object.c)
+    // Note: strings_init/strings_free manage this
+
+    // Open upvalues (linked list, sorted by stack slot)
+    ObjUpvalue* open_upvalues;
+
+    // Object tracking for GC
+    Object* objects;
+
+    // GC state
+    size_t bytes_allocated;
+    size_t next_gc;
+
+    // Gray stack for tri-color marking
+    Object** gray_stack;
+    int gray_count;
+    int gray_capacity;
+} VM;
+
+// ============================================================================
+// VM Lifecycle
+// ==========================================================
