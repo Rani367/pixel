@@ -52,4 +52,5 @@ typedef struct {
     // Source file name for error messages
     const char* source_file;
 
-    // Source code
+    // Source code for pretty error printing
+    const char* 
