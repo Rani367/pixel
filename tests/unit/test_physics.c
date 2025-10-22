@@ -381,3 +381,30 @@ TEST(physics_update_acceleration) {
 
     TEST_SUMMARY();
 }
+ble_get_cstr(&test_vm.globals, "get_gravity", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "collides", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "collides_rect", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "collides_point", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "collides_circle", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "distance", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "apply_force", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "move_toward", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "look_at", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "lerp", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "lerp_angle", &val));
+
+    teardown_test_env();
+}
+
+// ============================================================================
+// Main
+// ============================================================================
+
+int main(void) {
+    TEST_SUITE("Math Helpers");
+    RUN_TEST(lerp_basic);
+    RUN_TEST(lerp_clamps);
+    RUN_TEST(lerp_negative);
+    RUN_TEST(normalize_angle);
+    RUN_TEST(lerp_angle_basic);
+    RUN_TEST(lerp_angle_wr
