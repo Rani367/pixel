@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode (Tailwind v4) */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-accent: #00d4ff;
+  --color-accent-dark: #00b8e6;
+  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+}
+
+/* System-matched dark mode */
