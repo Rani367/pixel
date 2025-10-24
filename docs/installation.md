@@ -63,4 +63,28 @@ Pixel games can be compiled to run in web browsers using Emscripten.
 ### Install Emscripten
 
 ```bash
-git clone h
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+```
+
+### Build for Web
+
+```bash
+./scripts/build-web.sh
+```
+
+### Test in Browser
+
+```bash
+cd build-web
+python3 -m http.server 8000
+# Open http://localhost:8000/pixel.html
+```
+
+## Next Steps
+
+- [Getting Started](/pixel/docs/getting-started) - Create your first game
+- [Language Guide](/pixel/docs/language/basics) - Learn Pixel syntax
