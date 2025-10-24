@@ -50,4 +50,8 @@ he end of the array
 #define ph_array_pop(arr) \
     ((arr)->data[--(arr)->count])
 
-// Get the last element without re
+// Get the last element without removing it
+#define ph_array_last(arr) \
+    ((arr)->data[(arr)->count - 1])
+
+// Check if array is emp
