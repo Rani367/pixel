@@ -1,0 +1,127 @@
+zontal control
+    if key_down(KEY_LEFT) or key_down(KEY_A) {
+        ball.velocity_x = ball.velocity_x - 500 * dt
+    }
+    if key_down(KEY_RIGHT) or key_down(KEY_D) {
+        ball.velocity_x = ball.velocity_x + 500 * dt
+    }
+
+    // Clamp horizontal velocity
+    if ball.velocity_x > 300 { ball.velocity_x = 300 }
+    if ball.velocity_x < -300 { ball.velocity_x = -300 }
+
+    // Check floor collision
+    if ball.y + ball.height > floor_y {
+        ball.y = floor_y - ball.height
+        if ball.velocity_y > 50 {
+            ball.velocity_y = -ball.velocity_y * 0.7
+            bounce_count = bounce_count + 1
+        } else {
+            ball.velocity_y = 0
+            ball.grounded = true
+        }
+    }
+
+    // Check platform 1 collision (simple AABB)
+    if collides_rect(ball, platform1_x, platform1_y, platform1_w, platform1_h) {
+        // Only bounce if coming from above
+        if ball.velocity_y > 0 and ball.y + ball.height < platform1_y + 20 {
+            ball.y = platform1_y - ball.height
+            ball.velocity_y = -ball.velocity_y * 0.7
+            ball.grounded = true
+            bounce_count = bounce_count + 1
+        }
+    }
+
+    // Check platform 2 collision
+    if collides_rect(ball, platform2_x, platform2_y, platform2_w, platform2_h) {
+        // Only bounce if coming from above
+        if ball.velocity_y > 0 and ball.y + ball.height < platform2_y + 20 {
+            ball.y = platform2_y - ball.height
+            ball.velocity_y = -ball.velocity_y * 0.7
+            ball.grounded = true
+            bounce_count = bounce_count + 1
+        }
+    }
+
+    // Wall bouncing
+    if ball.x < 0 {
+        ball.x = 0
+        ball.velocity_x = -ball.velocity_x * 0.8
+    }
+    if ball.x + ball.width > 800 {
+        ball.x = 800 - ball.width
+        ball.velocity_x = -ball.velocity_x * 0.8
+    }
+
+    // Update target position based on mouse
+    target_x = mouse_x()
+    target_y = mouse_y()
+
+    // Move target sprite toward mouse
+    move_toward(target_sprite, target_x, target_y, 300)
+
+    // Make target look at ball
+    look_at(target_sprite, ball.x, ball.y)
+
+    // Check collision between ball and target
+    if collides(ball, target_sprite) {
+        ball_color = YELLOW
+    } else {
+        ball_color = CYAN
+    }
+}
+
+function on_draw() {
+    clear(rgb(20, 20, 40))
+
+    // Draw floor
+    draw_rect(0, floor_y, 800, 50, GRAY)
+
+    // Draw platforms
+    draw_rect(platform1_x, platform1_y, platform1_w, platform1_h, GREEN)
+    draw_rect(platform2_x, platform2_y, platform2_w, platform2_h, GREEN)
+
+    // Draw ball
+    draw_rect(ball.x, ball.y, ball.width, ball.height, ball_color)
+
+    // Draw velocity indicator
+    vx = ball.velocity_x / 5
+    vy = ball.velocity_y / 5
+    cx = ball.x + ball.width / 2
+    cy = ball.y + ball.height / 2
+    draw_line(cx, cy, cx + vx, cy + vy, RED)
+
+    // Draw target sprite
+    draw_circle(target_sprite.x, target_sprite.y, 10, MAGENTA)
+
+    // Draw line from target to ball (showing look_at direction)
+    draw_line(target_sprite.x, target_sprite.y, ball.x + ball.width/2, ball.y + ball.height/2, rgba(255, 0, 255, 100))
+
+    // Draw distance between ball and target
+    dist = distance(ball, target_sprite)
+
+    // Draw info panel
+    draw_rect(10, 10, 220, 100, rgba(0, 0, 0, 180))
+    // Instructions in code comments since we may not have font:
+    // - Arrow keys / WASD: Move ball
+    // - Space: Jump (when grounded)
+    // - R: Reset
+    // - Mouse: Move target
+    // - Yellow ball = collision with target
+
+    // Draw grounded indicator
+    if ball.grounded {
+        draw_rect(15, 85, 10, 10, GREEN)
+    } else {
+        draw_rect(15, 85, 10, 10, RED)
+    }
+}
+
+// Demonstrates lerp for smooth color transitions
+function lerp_color(t) {
+    // Lerp between red and blue based on ball position
+    r = lerp(255, 0, t)
+    b = lerp(0, 255, t)
+    return rgb(r, 0, b)
+}
