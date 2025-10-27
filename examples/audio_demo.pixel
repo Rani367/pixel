@@ -46,4 +46,16 @@ function on_key_down(key) {
     // M = restart music
     if key == KEY_M {
         play_music_loop(background_music)
-        p
+        ping(music_vol))
+    }
+}
+
+function on_draw() {
+    clear(rgb(30, 30, 50))
+
+    // Draw volume bars
+    // Master volume bar
+    draw_rect(100, 200, 200, 30, GRAY)
+    draw_rect(100, 200, floor(master_vol * 200), 30, GREEN)
+
+  
