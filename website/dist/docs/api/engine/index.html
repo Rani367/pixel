@@ -19,4 +19,161 @@ Creates the game window. Must be called in <code class="bg-zinc-100 dark:bg-zinc
 Returns the window width in pixels.
 <h3 class="text-lg font-semibold mt-6 mb-2">window_height()</h3>
 Returns the window height in pixels.
-<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Timing</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">delta_time()</h3>
+Returns time since last frame in seconds. Use for smooth movement.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_update(dt) {
+    x = x + speed * dt  // Framerate-independent
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">game_time()</h3>
+Returns total time since game start in seconds.
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Colors</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">rgb(r, g, b)</h3>
+Creates a color from red, green, blue values (0-255).
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>sky_blue = rgb(135, 206, 235)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">rgba(r, g, b, a)</h3>
+Creates a color with alpha transparency (0-255).
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>semi_transparent = rgba(255, 0, 0, 128)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Color Constants</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Constant</th><th class="text-left py-2 px-3 font-semibold">RGB Value</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">WHITE</code></td><td class="py-2 px-3">255, 255, 255</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">BLACK</code></td><td class="py-2 px-3">0, 0, 0</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">RED</code></td><td class="py-2 px-3">255, 0, 0</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">GREEN</code></td><td class="py-2 px-3">0, 255, 0</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">BLUE</code></td><td class="py-2 px-3">0, 0, 255</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">YELLOW</code></td><td class="py-2 px-3">255, 255, 0</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">CYAN</code></td><td class="py-2 px-3">0, 255, 255</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">MAGENTA</code></td><td class="py-2 px-3">255, 0, 255</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">ORANGE</code></td><td class="py-2 px-3">255, 165, 0</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">GRAY</code></td><td class="py-2 px-3">128, 128, 128</td></tr></tbody></table></div>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Drawing Primitives</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">clear(color)</h3>
+Clears the screen with the specified color. Call at the start of <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">on_draw()</code>.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_draw() {
+    clear(rgb(20, 20, 40))
+    // ... draw everything else
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">draw_rect(x, y, width, height, color)</h3>
+Draws a filled rectangle.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>draw_rect(100, 100, 50, 30, RED)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">draw_circle(x, y, radius, color)</h3>
+Draws a filled circle centered at (x, y).
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>draw_circle(400, 300, 25, YELLOW)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">draw_line(x1, y1, x2, y2, color)</h3>
+Draws a line between two points.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>draw_line(0, 0, 800, 600, WHITE)
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Images</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">load_image(path)</h3>
+Loads an image from file. Returns an image object.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>player_image = load_image("assets/player.png")
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">draw_image(image, x, y)</h3>
+Draws an image at the specified position.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>draw_image(player_image, 100, 100)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">draw_image_ex(image, x, y, rotation, scale_x, scale_y)</h3>
+Draws an image with rotation and scaling.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>draw_image_ex(player_image, 100, 100, 45, 2.0, 2.0)
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Sprites</h2>
+<p class="mb-4 leading-relaxed">Sprites are game objects with position, rotation, and other properties.</p>
+<h3 class="text-lg font-semibold mt-6 mb-2">create_sprite(image)</h3>
+Creates a sprite from an image.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>player = create_sprite(load_image("player.png"))
+player.x = 400
+player.y = 300
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">draw_sprite(sprite)</h3>
+Draws a sprite at its current position with all transformations.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function on_draw() {
+    clear(BLACK)
+    draw_sprite(player)
+}
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Sprite Properties</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Property</th><th class="text-left py-2 px-3 font-semibold">Type</th><th class="text-left py-2 px-3 font-semibold">Description</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">x</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">X position</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">y</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Y position</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">width</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Image width (read-only)</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">height</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Image height (read-only)</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">rotation</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Rotation in degrees</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">scale</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Uniform scale factor</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">scale_x</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Horizontal scale</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">scale_y</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Vertical scale</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">origin_x</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">X origin for rotation (0-1)</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">origin_y</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Y origin for rotation (0-1)</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">flip_x</code></td><td class="py-2 px-3">Boolean</td><td class="py-2 px-3">Flip horizontally</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">flip_y</code></td><td class="py-2 px-3">Boolean</td><td class="py-2 px-3">Flip vertically</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">visible</code></td><td class="py-2 px-3">Boolean</td><td class="py-2 px-3">Whether to draw</td></tr></tbody></table></div>
+<h3 class="text-lg font-semibold mt-6 mb-2">Sprite Sheets</h3>
+<p class="mb-4 leading-relaxed">For animated sprites using sprite sheets:
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Property</th><th class="text-left py-2 px-3 font-semibold">Type</th><th class="text-left py-2 px-3 font-semibold">Description</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">frame_x</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">X offset in sheet</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">frame_y</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Y offset in sheet</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">frame_width</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Frame width</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">frame_height</code></td><td class="py-2 px-3">Number</td><td class="py-2 px-3">Frame height</td></tr></tbody></table></div>
+<h3 class="text-lg font-semibold mt-6 mb-2">set_sprite_frame(sprite, x, y, width, height)</h3>
+Sets the sprite sheet region to display.</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>set_sprite_frame(player, 0, 0, 32, 32)    // First frame
+set_sprite_frame(player, 32, 0, 32, 32)   // Second frame
+</code></pre>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Animations</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">create_animation(name, frame_count, frame_duration)</h3>
+Creates a named animation.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>walk_anim = create_animation("walk", 4, 0.15)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">sprite_set_animation(sprite, animation)</h3>
+Assigns an animation to a sprite.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>sprite_set_animation(player, walk_anim)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">sprite_play(sprite)</h3>
+Starts playing the sprite's animation.
+<h3 class="text-lg font-semibold mt-6 mb-2">sprite_stop(sprite)</h3>
+Stops the animation.
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Fonts and Text</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">default_font(size)</h3>
+Gets the built-in font at the specified size.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>title_font = default_font(48)
+ui_font = default_font(24)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">load_font(path, size)</h3>
+Loads a custom TrueType font.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>custom_font = load_font("fonts/arcade.ttf", 32)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">draw_text(text, x, y, font, color)</h3>
+Draws text at the specified position.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>draw_text("Score: 100", 20, 20, ui_font, WHITE)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">text_width(text, font)</h3>
+Returns the pixel width of the text.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>width = text_width("Hello", font)
+centered_x = window_width() / 2 - width / 2
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">text_height(text, font)</h3>
+Returns the pixel height of the text.
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Camera</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">camera_set_position(x, y)</h3>
+Sets the camera position (affects all drawing).
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>camera_set_position(player.x - 400, player.y - 300)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">camera_set_zoom(zoom)</h3>
+Sets the camera zoom level (1.0 = normal).
+<h3 class="text-lg font-semibold mt-6 mb-2">camera_follow(sprite, smoothing)</h3>
+Makes the camera follow a sprite with optional smoothing (0-1).
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>camera_follow(player, 0.1)  // Smooth follow
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">camera_shake(intensity, duration)</h3>
+Adds screen shake effect.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>camera_shake(5, 0.3)  // 5 pixel shake for 0.3 seconds
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">screen_to_world(x, y)</h3>
+Converts screen coordinates to world coordinates.
+<h3 class="text-lg font-semibold mt-6 mb-2">world_to_screen(x, y)</h3>
+Converts world coordinates to screen coordinates.
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Particles</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">create_emitter(x, y)</h3>
+Creates a particle emitter at position.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>emitter = create_emitter(400, 300)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">emitter_emit(emitter, count)</h3>
+Emits particles from the emitter.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>emitter_emit(explosion, 50)
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Emitter Configuration</h3>
+<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse"><thead><tr class="border-b border-zinc-300 dark:border-zinc-700"><th class="text-left py-2 px-3 font-semibold">Function</th><th class="text-left py-2 px-3 font-semibold">Description</th></tr></thead><tbody><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">emitter_set_color(e, color)</code></td><td class="py-2 px-3">Particle color</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">emitter_set_size(e, min, max)</code></td><td class="py-2 px-3">Size range</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">emitter_set_speed(e, min, max)</code></td><td class="py-2 px-3">Speed range</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">emitter_set_lifetime(e, min, max)</code></td><td class="py-2 px-3">Lifetime range</td></tr><tr class="border-b border-zinc-200 dark:border-zinc-800"><td class="py-2 px-3"><code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">emitter_set_direction(e, angle, spread)</code></td><td class="py-2 px-3">Direction and spread</td></tr></tbody></table></div>
+<h3 class="text-lg font-semibold mt-6 mb-2">draw_particles(emitter)</h3>
+Draws all particles from an emitter.
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Scene Management</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">load_scene(name)</h3>
+Loads a new scene. Calls <code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">{name}_on_start()</code> if it exists.
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>load_scene("menu")     // Calls menu_on_start()
+load_scene("level1")   // Calls level1_on_start()
+</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">get_scene()</h3>
+Returns the current scene name.
+<h3 class="text-lg font-semibold mt-6 mb-2">Scene Callbacks</h3>
+<p class="mb-4 leading-relaxed">Define scene-specific callbacks:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function menu_on_start() {
+    // Initialize menu
+}
+<p class="mb-4 leading-relaxed
