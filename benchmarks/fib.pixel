@@ -18,4 +18,13 @@ function on_start() {
 
     // Benchmark fib(30)
     start = clock()
-    result = fib(3
+    result = fib(30)
+    elapsed = clock() - start
+
+    println("fib(30) = " + to_string(result))
+    println("Time: " + to_string(elapsed) + " seconds")
+
+    // Calculate approximate calls
+    // fib(n) makes approximately 2^n calls
+    println("")
+    println("This benchmark tes
