@@ -1,1 +1,40 @@
-T) + " items: " + t
+T) + " items: " + t// List Operations Benchmark
+// Measures list push, pop, and iteration performance
+
+COUNT = 10000
+
+function on_start() {
+    println("List Operations Benchmark")
+    println("=========================")
+    println("")
+
+    // Benchmark push
+    items = []
+    start = clock()
+    i = 0
+    while i < COUNT {
+        push(items, i)
+        i = i + 1
+    }
+    push_time = clock() - start
+    println("Push " + to_string(COUNT) + " items: " + to_string(push_time) + "s")
+
+    // Benchmark iteration
+    start = clock()
+    sum = 0
+    i = 0
+    while i < len(items) {
+        sum = sum + items[i]
+        i = i + 1
+    }
+    iter_time = clock() - start
+    println("Iterate " + to_string(COUNT) + " items: " + to_string(iter_time) + "s")
+    println("  Sum: " + to_string(sum))
+
+    // Benchmark pop
+    start = clock()
+    while len(items) > 0 {
+        pop(items)
+    }
+    pop_time = clock() - start
+    println("Pop " + to_string(COUN
