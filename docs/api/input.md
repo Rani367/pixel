@@ -184,4 +184,41 @@ function on_key_up(key) {
 ```
 
 ### on_mouse_click(button, x, y)
-Calle
+Calle# Input API Reference
+
+## Keyboard Input
+
+### key_down(key)
+Returns `true` while the key is held down.
+
+```pixel
+function on_update(dt) {
+    if key_down(KEY_RIGHT) {
+        player.x = player.x + 200 * dt
+    }
+}
+```
+
+### key_pressed(key)
+Returns `true` only on the frame the key was pressed.
+
+```pixel
+if key_pressed(KEY_SPACE) {
+    jump()  // Only triggers once per press
+}
+```
+
+### key_released(key)
+Returns `true` only on the frame the key was released.
+
+```pixel
+if key_released(KEY_SPACE) {
+    end_charge()
+}
+```
+
+## Key Constants
+
+### Letter Keys
+| Constant | Key |
+|----------|-----
