@@ -215,3 +215,77 @@ int main(void) {
 
     TEST_SUMMARY();
 }
+#include "../test_framework.h"
+#include "compiler/parser.h"
+#include "compiler/analyzer.h"
+#include "core/arena.h"
+
+// Helper to parse and analyze source code
+static bool analyze_source(const char* source, Analyzer* analyzer) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, source, arena);
+
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    if (parser_had_error(&parser)) {
+        arena_free(arena);
+        return false;
+    }
+
+    analyzer_init(analyzer, "test.pixel", source);
+    bool result = analyzer_analyze(analyzer, stmts, count);
+
+    arena_free(arena);
+    return result;
+}
+
+// Helper to check if a specific error message is present
+static bool has_error_containing(Analyzer* analyzer, const char* substring) {
+    for (int i = 0; i < analyzer->error_count; i++) {
+        if (strstr(analyzer->errors[i]->message, substring) != NULL) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// ============================================================================
+// Variable Resolution Tests
+// ============================================================================
+
+TEST(analyze_valid_assignment) {
+    Analyzer analyzer;
+    bool result = analyze_source("x = 42", &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_undefined_variable) {
+    Analyzer analyzer;
+    bool result = analyze_source("y = x + 1", &analyzer);
+    ASSERT(!result);
+    ASSERT_EQ(analyzer.error_count, 1);
+    ASSERT(has_error_containing(&analyzer, "Undefined variable 'x'"));
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_variable_in_expression) {
+    Analyzer analyzer;
+    bool result = analyze_source("x = 1\ny = x + 2", &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_undefined_in_call) {
+    Analyzer analyzer;
+    bool result = analyze_source("print(undefined_var)", &analyzer);
+    ASSERT(!result);
+    ASSERT(has_error_containing(&analyzer, "Undefined variable 'undefined_var'"));
+    analyzer_free(&analyzer);
+}
+
+// ============================================================
