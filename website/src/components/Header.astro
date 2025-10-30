@@ -6,3 +6,43 @@
     </div>
   </nav>
 </header>
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+const navLinks = [
+  { href: '/pixel/docs', label: 'Docs' },
+  { href: '/pixel/playground', label: 'Playground' },
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
+  <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+    <a href="/pixel/" class="flex items-center gap-2 font-semibold text-lg hover:text-[--color-accent] transition-colors">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[--color-accent]">
+        <rect x="4" y="4" width="6" height="6" />
+        <rect x="14" y="4" width="6" height="6" />
+        <rect x="4" y="14" width="6" height="6" />
+        <rect x="14" y="14" width="6" height="6" />
+      </svg>
+      Pixel
+    </a>
+
+    <div class="flex items-center gap-6">
+      {navLinks.map(link => (
+        <a
+          href={link.href}
+          class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+        >
+          {link.label}
+        </a>
+      ))}
+
+      <a
+        href="https://github.com/Rani367/pixel"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+        aria-label="GitHub"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 
