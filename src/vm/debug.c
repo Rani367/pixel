@@ -121,4 +121,16 @@ static int invoke_instruction(const char* name, Chunk* chunk, int offset) {
     return offset + 3;
 }
 
-// Clos
+// Clos#include "vm/debug.h"
+#include "vm/object.h"
+
+void disassemble_chunk(Chunk* chunk, const char* name) {
+    printf("== %s ==\n", name);
+
+    for (int offset = 0; offset < chunk->count;) {
+        offset = disassemble_instruction(chunk, offset);
+    }
+}
+
+// Print a constant value
+static void print_const
