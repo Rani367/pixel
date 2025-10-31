@@ -26,4 +26,20 @@ Arena* arena_new(size_t initial_capacity);
 void* arena_alloc(Arena* arena, size_t size);
 
 // Allocate memory from the arena with alignment
-void* arena_alloc_aligned(Arena* arena, size_t size, s
+void* arena_alloc_aligned(Arena* arena, size_t size, s#ifndef PH_ARENA_H
+#define PH_ARENA_H
+
+#include "common.h"
+
+// Default block size (64 KB)
+#define PH_ARENA_DEFAULT_CAPACITY (64 * 1024)
+
+// Arena block - linked list of memory blocks
+typedef struct ArenaBlock {
+    uint8_t* memory;
+    size_t capacity;
+    size_t used;
+    struct ArenaBlock* next;
+} ArenaBlock;
+
+// Are
