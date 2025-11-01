@@ -58,4 +58,71 @@ function on_draw() {
     draw_rect(100, 200, 200, 30, GRAY)
     draw_rect(100, 200, floor(master_vol * 200), 30, GREEN)
 
-  
+  // Audio System Demo
+// Demonstrates sound effects and music playback
+
+jump_sound = none
+coin_sound = none
+background_music = none
+
+music_vol = 0.5
+master_vol = 1.0
+
+function on_start() {
+    create_window(800, 600, "Audio Demo - Press keys to test audio!")
+
+    // Load sounds (files would need to exist for real playback)
+    // In mock backend, these calls are recorded but no actual audio plays
+    jump_sound = load_sound("assets/jump.wav")
+    coin_sound = load_sound("assets/coin.wav")
+
+    // Load and start background music
+    background_music = load_music("assets/music.ogg")
+    play_music_loop(background_music)
+    set_music_volume(music_vol)
+
+    println("Audio Demo Controls:")
+    println("  SPACE - Play jump sound")
+    println("  C     - Play coin sound (half volume)")
+    println("  P     - Pause/resume music")
+    println("  S     - Stop music")
+    println("  M     - Restart music")
+    println("  UP/DOWN   - Master volume")
+    println("  LEFT/RIGHT - Music volume")
+}
+
+function on_update(dt) {
+    // Adjust master volume with up/down arrows
+    if key_pressed(KEY_UP) {
+        master_vol = master_vol + 0.1
+        if master_vol > 1.0 {
+            master_vol = 1.0
+        }
+        set_master_volume(master_vol)
+        println("Master volume: " + to_string(master_vol))
+    }
+    if key_pressed(KEY_DOWN) {
+        master_vol = master_vol - 0.1
+        if master_vol < 0.0 {
+            master_vol = 0.0
+        }
+        set_master_volume(master_vol)
+        println("Master volume: " + to_string(master_vol))
+    }
+
+    // Adjust music volume with left/right arrows
+    if key_pressed(KEY_LEFT) {
+        music_vol = music_vol - 0.1
+        if music_vol < 0.0 {
+            music_vol = 0.0
+        }
+        set_music_volume(music_vol)
+        println("Music volume: " + to_string(music_vol))
+    }
+    if key_pressed(KEY_RIGHT) {
+        music_vol = music_vol + 0.1
+        if music_vol > 1.0 {
+            music_vol = 1.0
+        }
+        set_music_volume(music_vol)
+        println("Music volume: " + to_str
