@@ -792,3 +792,274 @@ TEST(function_fibonacci) {
     ASSERT_EQ(result, INTERPRET_OK);
 
     Value* val;
+    ASSERT(get_global("x", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 55);
+
+    teardown();
+}
+
+// ============================================================================
+// Closure Tests
+// ============================================================================
+
+TEST(closure_simple) {
+    setup();
+    InterpretResult result = run_source(
+        "function make_counter() {\n"
+        "    count = 0\n"
+        "    function increment() {\n"
+        "        count = count + 1\n"
+        "        return count\n"
+        "    }\n"
+        "    return increment\n"
+        "}\n"
+        "counter = make_counter()\n"
+        "a = counter()\n"
+        "b = counter()\n"
+        "c = counter()"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("a", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 1);
+
+    ASSERT(get_global("b", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 2);
+
+    ASSERT(get_global("c", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 3);
+
+    teardown();
+}
+
+TEST(closure_multiple) {
+    setup();
+    InterpretResult result = run_source(
+        "function make_adder(n) {\n"
+        "    function adder(x) {\n"
+        "        return x + n\n"
+        "    }\n"
+        "    return adder\n"
+        "}\n"
+        "add5 = make_adder(5)\n"
+        "add10 = make_adder(10)\n"
+        "a = add5(3)\n"
+        "b = add10(3)"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("a", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 8);
+
+    ASSERT(get_global("b", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 13);
+
+    teardown();
+}
+
+// ============================================================================
+// List Tests
+// ============================================================================
+
+TEST(list_create) {
+    setup();
+    InterpretResult result = run_source("x = [1, 2, 3]");
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("x", &val));
+    ASSERT(IS_LIST(*val));
+    ObjList* list = AS_LIST(*val);
+    ASSERT_EQ(list->count, 3);
+
+    teardown();
+}
+
+TEST(list_index_get) {
+    setup();
+    InterpretResult result = run_source(
+        "arr = [10, 20, 30]\n"
+        "x = arr[0]\n"
+        "y = arr[1]\n"
+        "z = arr[2]"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("x", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 10);
+
+    ASSERT(get_global("y", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 20);
+
+    ASSERT(get_global("z", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 30);
+
+    teardown();
+}
+
+TEST(list_index_set) {
+    setup();
+    InterpretResult result = run_source(
+        "function set_item(arr, idx, val) {\n"
+        "    arr[idx] = val\n"
+        "}\n"
+        "arr = [1, 2, 3]\n"
+        "set_item(arr, 1, 99)\n"
+        "x = arr[1]"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("x", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 99);
+
+    teardown();
+}
+
+TEST(list_negative_index_get) {
+    setup();
+    InterpretResult result = run_source(
+        "arr = [10, 20, 30]\n"
+        "a = arr[-1]\n"
+        "b = arr[-2]\n"
+        "c = arr[-3]"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("a", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 30);
+
+    ASSERT(get_global("b", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 20);
+
+    ASSERT(get_global("c", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 10);
+
+    teardown();
+}
+
+TEST(list_negative_index_set) {
+    setup();
+    InterpretResult result = run_source(
+        "function set_item(arr, idx, val) {\n"
+        "    arr[idx] = val\n"
+        "}\n"
+        "arr = [1, 2, 3]\n"
+        "set_item(arr, -1, 99)\n"
+        "x = arr[2]"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("x", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 99);
+
+    teardown();
+}
+
+TEST(string_negative_index) {
+    setup();
+    InterpretResult result = run_source(
+        "s = \"hello\"\n"
+        "a = s[-1]\n"
+        "b = s[-2]"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("a", &val));
+    ASSERT(IS_STRING(*val));
+    ASSERT_STR_EQ(AS_CSTRING(*val), "o");
+
+    ASSERT(get_global("b", &val));
+    ASSERT(IS_STRING(*val));
+    ASSERT_STR_EQ(AS_CSTRING(*val), "l");
+
+    teardown();
+}
+
+// ============================================================================
+// Struct Tests
+// ============================================================================
+
+TEST(struct_create) {
+    setup();
+    InterpretResult result = run_source(
+        "struct Point { x, y }\n"
+        "p = Point()"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("p", &val));
+    ASSERT(IS_INSTANCE(*val));
+
+    teardown();
+}
+
+TEST(struct_property_access) {
+    setup();
+    InterpretResult result = run_source(
+        "struct Point { x, y }\n"
+        "p = Point()\n"
+        "function set_point(pt) {\n"
+        "    pt.x = 10\n"
+        "    pt.y = 20\n"
+        "}\n"
+        "set_point(p)\n"
+        "a = p.x\n"
+        "b = p.y"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("a", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 10);
+
+    ASSERT(get_global("b", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 20);
+
+    teardown();
+}
+
+TEST(struct_method_simple) {
+    setup();
+    InterpretResult result = run_source(
+        "struct Counter {\n"
+        "    value,\n"
+        "    function increment() {\n"
+        "        this.value = this.value + 1\n"
+        "    }\n"
+        "}\n"
+        "c = Counter()\n"
+        "c.value = 0\n"
+        "c.increment()\n"
+        "c.increment()\n"
+        "result = c.value"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("result", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val),
