@@ -410,4 +410,22 @@ static void sweep(VM* vm) {
 #endif
 
     Object* previous = NULL;
- 
+ Remove weak references to unmarked strings
+    strings_remove_white();
+
+    // Sweep phase
+    sweep(vm);
+
+    // Adjust next GC threshold
+    vm->next_gc = vm->bytes_allocated * GC_HEAP_GROW_FACTOR;
+    if (vm->next_gc < GC_INITIAL_THRESHOLD) {
+        vm->next_gc = GC_INITIAL_THRESHOLD;
+    }
+
+#ifdef DEBUG_LOG_GC
+    printf("[gc] == gc end ==\n");
+    printf("[gc] collected %zu bytes (from %zu to %zu) next at %zu\n",
+           before - vm->bytes_allocated, before, vm->bytes_allocated,
+           vm->next_gc);
+#endif
+}
