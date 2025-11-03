@@ -204,4 +204,92 @@ void error_print_pretty(Error* err, const char* source, FILE* out) {
         return;
     }
 
-    // Fall back to simple print if no 
+    // Fall back to simple print if no .file,
+            err->location.line,
+            err->location.column);
+
+    // Get the source line
+    int line_length = 0;
+    const char* line_start = find_source_line(source, err->location.line, &line_length);
+
+    if (line_start != NULL && line_length > 0) {
+        // Calculate gutter width (line number + space)
+        int line_num_width = 1;
+        int temp = err->location.line;
+        while (temp >= 10) {
+            line_num_width++;
+            temp /= 10;
+        }
+
+        // Print empty gutter line
+        fprintf(out, "%*s |\n", line_num_width, "");
+
+        // Print the source line
+        fprintf(out, "%d | ", err->location.line);
+
+        // Print the line, converting tabs to spaces for consistent display
+        for (int i = 0; i < line_length; i++) {
+            if (line_start[i] == '\t') {
+                fprintf(out, "    ");  // 4 spaces for tab
+            } else {
+                fputc(line_start[i], out);
+            }
+        }
+        fprintf(out, "\n");
+
+        // Print the underline
+        fprintf(out, "%*s | ", line_num_width, "");
+
+        // Calculate offset to the error column (handling tabs before the error)
+        int column = err->location.column;
+        int spaces_before = 0;
+        for (int i = 0; i < column - 1 && i < line_length; i++) {
+            if (line_start[i] == '\t') {
+                spaces_before += 4;
+            } else {
+                spaces_before++;
+            }
+        }
+
+        // Print spaces to reach the error position
+        for (int i = 0; i < spaces_before; i++) {
+            fputc(' ', out);
+        }
+
+        // Print the underline carets
+        int underline_len = err->location.length;
+        if (underline_len <= 0) {
+            underline_len = 1;  // At least one caret
+        }
+
+        // Limit underline to line length
+        if (column - 1 + underline_len > line_length) {
+            underline_len = line_length - (column - 1);
+            if (underline_len < 1) underline_len = 1;
+        }
+
+        for (int i = 0; i < underline_len; i++) {
+            fputc('^', out);
+        }
+        fprintf(out, "\n");
+
+        // Print empty gutter line
+        fprintf(out, "%*s |\n", line_num_width, "");
+    }
+
+    // Print cause chain (simplified)
+    Error* cause = err->cause;
+    while (cause != NULL) {
+        fprintf(out, "  = caused by: %s\n", cause->message);
+        cause = cause->cause;
+    }
+}
+
+void error_free(Error* err) {
+    while (err != NULL) {
+        Error* cause = err->cause;
+        PH_FREE(err->message);
+        PH_FREE(err);
+        err = cause;
+    }
+}
