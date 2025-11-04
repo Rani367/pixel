@@ -28,3 +28,51 @@ function on_draw() {
         draw_rect(320, 320, 160, 30, rgb(100, 100, 150))
     }
 }
+2
+
+    // Keep paddle in bounds
+    if paddle_x < 0 {
+        paddle_x = 0
+    }
+    if paddle_x > 800 - paddle_width {
+        paddle_x = 800 - paddle_width
+    }
+
+    // Move ball
+    ball_x = ball_x + ball_vx * dt
+    ball_y = ball_y + ball_vy * dt
+
+    // Bounce off walls
+    if ball_x < ball_radius {
+        ball_x = ball_radius
+        ball_vx = -ball_vx
+    }
+    if ball_x > 800 - ball_radius {
+        ball_x = 800 - ball_radius
+        ball_vx = -ball_vx
+    }
+    if ball_y < ball_radius {
+        ball_y = ball_radius
+        ball_vy = -ball_vy
+    }
+
+    // Check paddle collision
+    if ball_y + ball_radius > paddle_y {
+        if ball_x > paddle_x and ball_x < paddle_x + paddle_width {
+            ball_y = paddle_y - ball_radius
+            ball_vy = -ball_vy
+
+            // Add some angle based on where ball hit paddle
+            hit_pos = (ball_x - paddle_x) / paddle_width
+            ball_vx = ball_vx + (hit_pos - 0.5) * 100
+
+            // Speed up slightly
+            ball_vx = ball_vx * 1.02
+            ball_vy = ball_vy * 1.02
+
+            score = score + 10
+        }
+    }
+
+    // Check if ball fell off screen
+  
