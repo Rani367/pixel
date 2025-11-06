@@ -4,3 +4,11 @@ id stdlib_init(VM* vm);
 void define_native(VM* vm, const char* name, NativeFn function, int arity);
 
 #endif // PH_STDLIB_H
+#ifndef PH_STDLIB_H
+#define PH_STDLIB_H
+
+#include "vm/vm.h"
+#include "vm/object.h"
+
+// Initialize the standard library by registering all native functions
+vo
