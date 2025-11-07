@@ -49,3 +49,48 @@ bool physics_collides_circle(ObjSprite* a, ObjSprite* b)p_angle(double a, double
 double physics_normalize_angle(double angle);
 
 #endif // PH_PHYSICS_H
+;
+
+// ============================================================================
+// Distance & Movement Helpers
+// ============================================================================
+
+// Get the distance between two sprites' centers
+double physics_distance(ObjSprite* a, ObjSprite* b);
+
+// Get the effective width of a sprite (accounting for scale)
+double physics_sprite_width(ObjSprite* sprite);
+
+// Get the effective height of a sprite (accounting for scale)
+double physics_sprite_height(ObjSprite* sprite);
+
+// Get the center X of a sprite
+double physics_sprite_center_x(ObjSprite* sprite);
+
+// Get the center Y of a sprite
+double physics_sprite_center_y(ObjSprite* sprite);
+
+// ============================================================================
+// Movement Helpers
+// ============================================================================
+
+// Move sprite toward a point at a given speed
+// Returns true if the sprite reached the destination
+bool physics_move_toward(ObjSprite* sprite, double target_x, double target_y,
+                         double speed, double dt);
+
+// Rotate sprite to face a point
+void physics_look_at(ObjSprite* sprite, double target_x, double target_y);
+
+// Apply a force to a sprite (adds to acceleration)
+void physics_apply_force(ObjSprite* sprite, double fx, double fy);
+
+// ============================================================================
+// Math Helpers
+// ============================================================================
+
+// Linear interpolation between two values
+double physics_lerp(double a, double b, double t);
+
+// Angle interpolation (handles wraparound correctly)
+double physics_ler
