@@ -41,4 +41,9 @@ pixel run game.pixel
 2. [Control Flow](control-flow.md) - Conditionals and loops
 3. [Functions](functions.md) - Definin# Language Guide
 
-This guide covers the Pixel programming language
+This guide covers the Pixel programming languageg and using functions
+4. [Data Structures](data-structures.md) - Lists and structs
+
+## Overview
+
+Pixel is a dynamically-typed language with a simple, readable syntax. There are no semicolons, no explicit type declarations, 
