@@ -66,4 +66,32 @@ typedef enum {
     OP_NOT,             // !a
 
     // Control flow
-    OP_JUMP,            /
+    OP_JUMP,            / element count)
+    OP_INDEX_GET,       // Get element at index (list[i])
+    OP_INDEX_SET,       // Set element at index (list[i] = v)
+
+    // Special
+    OP_PRINT,           // Built-in print
+
+    // Sentinel
+    OP_COUNT            // Number of opcodes
+} OpCode;
+
+// Opcode metadata for disassembly
+typedef enum {
+    OP_MODE_SIMPLE,     // No operands
+    OP_MODE_BYTE,       // 1-byte operand
+    OP_MODE_SHORT,      // 2-byte operand (jump offsets)
+    OP_MODE_CONSTANT,   // 1-byte constant index
+    OP_MODE_LONG,       // 3-byte operand (24-bit constant index)
+    OP_MODE_INVOKE,     // 2-byte operand (name index + arg count)
+    OP_MODE_CLOSURE,    // Variable length (constant + upvalue info)
+} OpMode;
+
+// Get opcode name for disassembly
+const char* opcode_name(OpCode op);
+
+// Get opcode mode for disassembly
+OpMode opcode_mode(OpCode op);
+
+#endif // PH_OPCODES_H
