@@ -35,4 +35,13 @@ void engine_natives_init(VM* vm);
 #define COLOR_YELLOW    0xFFFF00FFu
 #define COLOR_CYAN      0x00FFFFFFu
 #define COLOR_MAGENTA   0xFF00FFFFu
-#defin
+#defin======================
+// Color Utility Functions
+// ============================================================================
+
+// Pack RGBA components into a 32-bit color value
+static inline uint32_t pack_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    return ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | a;
+}
+
+// Unp
