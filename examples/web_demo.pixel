@@ -75,4 +75,33 @@ function on_draw() {
     }
 
     // Check if ball fell off screen
-  
+  _over = false
+
+function on_start() {
+    create_window("Web Demo - Bounce", 800, 600)
+}
+
+function on_update(dt) {
+    if game_over {
+        if key_pressed(KEY_SPACE) {
+            // Restart game
+            ball_x = 400
+            ball_y = 300
+            ball_vx = 200
+            ball_vy = 150
+            score = 0
+            game_over = false
+        }
+        return
+    }
+
+    // Move paddle with keyboard or mouse
+    if key_down(KEY_LEFT) {
+        paddle_x = paddle_x - 400 * dt
+    }
+    if key_down(KEY_RIGHT) {
+        paddle_x = paddle_x + 400 * dt
+    }
+
+    // Also follow mouse
+    paddle_x = mouse_x() - paddle_width / 
