@@ -215,4 +215,34 @@ TEST(gc_traces_instances) {
 
     // Instance should still exist
     ObjInstance* retrieved = AS_INSTANCE(vm_peek(&vm, 0));
-    ASSERT(retrieved->st
+    ASSERT(retrieved->st should have increased
+    ASSERT(vm.bytes_allocated > initial);
+
+    teardown();
+}
+
+// ============================================================================
+// Main
+// ============================================================================
+
+int main(void) {
+    TEST_SUITE("GC - Basic");
+    RUN_TEST(gc_initial_state);
+    RUN_TEST(gc_object_tracking);
+    RUN_TEST(gc_bytes_allocated_tracking);
+
+    TEST_SUITE("GC - Reachability");
+    RUN_TEST(gc_preserves_stack_values);
+    RUN_TEST(gc_collects_unreachable);
+    RUN_TEST(gc_preserves_globals);
+
+    TEST_SUITE("GC - Object Tracing");
+    RUN_TEST(gc_traces_closures);
+    RUN_TEST(gc_traces_lists);
+    RUN_TEST(gc_traces_instances);
+
+    TEST_SUITE("GC - Stress");
+    RUN_TEST(gc_stress_test);
+
+    TEST_SUMMARY();
+}
