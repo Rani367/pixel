@@ -71,3 +71,56 @@ Arena* arena_new(size_t initial_capacity) {
 
     Arena* arena = PH_ALLOC(sizeof(Arena));
     if (
+    }
+
+    void* ptr = block->memory + block->used + padding;
+    block->used += total_size;
+
+    // Zero the memory
+    memset(ptr, 0, size);
+
+    return ptr;
+}
+
+void arena_reset(Arena* arena) {
+    PH_ASSERT(arena != NULL);
+
+    // Reset all blocks to unused
+    ArenaBlock* block = arena->first;
+    while (block != NULL) {
+        block->used = 0;
+        block = block->next;
+    }
+
+    arena->current = arena->first;
+}
+
+void arena_free(Arena* arena) {
+    if (arena == NULL) {
+        return;
+    }
+
+    // Free all blocks
+    ArenaBlock* block = arena->first;
+    while (block != NULL) {
+        ArenaBlock* next = block->next;
+        arena_block_free(block);
+        block = next;
+    }
+
+    PH_FREE(arena);
+}
+
+size_t arena_total_allocated(Arena* arena) {
+    PH_ASSERT(arena != NULL);
+
+    size_t total = 0;
+    ArenaBlock* block = arena->first;
+    while (block != NULL) {
+        total += block->capacity;
+        block = block->next;
+    }
+    return total;
+}
+
+size_t arena_to
