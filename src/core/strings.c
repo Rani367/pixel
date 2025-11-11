@@ -67,4 +67,48 @@ void sb_append_sv(StringBuilder* sb, StringView sv) {
 }
 
 void sb_append_n(StringBuilder* sb, const char* str, size_t n) {
-    i
+    ipacity = 0;
+    return result;
+}
+
+StringView sb_view(StringBuilder* sb) {
+    return sv_from_parts(sb->data, sb->length);
+}
+
+void sb_clear(StringBuilder* sb) {
+    sb->length = 0;
+    if (sb->data != NULL) {
+        sb->data[0] = '\0';
+    }
+}
+
+void sb_free(StringBuilder* sb) {
+    PH_FREE(sb->data);
+    sb_init(sb);
+}
+
+char* ph_strdup(const char* str) {
+    if (str == NULL) {
+        return NULL;
+    }
+    size_t len = strlen(str);
+    char* result = PH_ALLOC(len + 1);
+    memcpy(result, str, len + 1);
+    return result;
+}
+
+char* ph_strndup(const char* str, size_t n) {
+    if (str == NULL) {
+        return NULL;
+    }
+    char* result = PH_ALLOC(n + 1);
+    memcpy(result, str, n);
+    result[n] = '\0';
+    return result;
+}
+
+uint32_t ph_hash_string(const char* str, size_t length) {
+    // FNV-1a hash
+    uint32_t hash = 2166136261u;
+    for (size_t i = 0; i < length; i++) {
+        hash ^= (uint8_t
