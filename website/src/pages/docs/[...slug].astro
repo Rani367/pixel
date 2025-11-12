@@ -53,4 +53,6 @@ function parseMarkdown(md: string): string {
     headers.forEach((h: string) => {
       table += `<th class="text-left py-2 px-3 font-semibold">${h}</th>`;
     });
-    table += '</tr
+    table += '</tr></thead><tbody>';
+    rows.forEach((row: string[]) => {
+      table += '<tr class="
