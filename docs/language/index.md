@@ -46,4 +46,13 @@ This guide covers the Pixel programming languageg and using functions
 
 ## Overview
 
-Pixel is a dynamically-typed language with a simple, readable syntax. There are no semicolons, no explicit type declarations, 
+Pixel is a dynamically-typed language with a simple, readable syntax. There are no semicolons, no explicit type declarations, and minimal boilerplate.
+
+```pixel
+// Variables
+name = "Player"
+health = 100
+is_alive = true
+
+// Functions
+function greet(who) {
