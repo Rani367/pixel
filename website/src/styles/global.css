@@ -10,3 +10,35 @@
 }
 
 /* System-matched dark mode */
+:root {
+  color-scheme: light dark;
+}
+
+/* Code blocks */
+pre {
+  @apply rounded-lg p-4 overflow-x-auto text-sm;
+}
+
+code {
+  font-family: var(--font-mono);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
