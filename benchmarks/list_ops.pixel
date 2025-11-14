@@ -37,4 +37,21 @@ function on_start() {
         pop(items)
     }
     pop_time = clock() - start
-    println("Pop " + to_string(COUN
+    println("Pop " + to_string(COUNo_string(pop_time) + "s")
+
+    // Benchmark insert at beginning (slow operation)
+    items = []
+    start = clock()
+    i = 0
+    limit = COUNT / 10  // Only 1000 to avoid too slow
+    while i < limit {
+        insert(items, 0, i)
+        i = i + 1
+    }
+    insert_time = clock() - start
+    println("Insert at front " + to_string(limit) + " items: " + to_string(insert_time) + "s")
+
+    // Summary
+    println("")
+    println("Total operations: " + to_string(COUNT * 3 + limit))
+}
