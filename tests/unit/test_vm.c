@@ -1062,4 +1062,67 @@ TEST(struct_method_simple) {
     Value* val;
     ASSERT(get_global("result", &val));
     ASSERT(IS_NUMBER(*val));
-    ASSERT_EQ(AS_NUMBER(*val),
+    ASSERT_EQ(AS_NUMBER(*val), 2);
+
+    teardown();
+}
+
+TEST(struct_method_with_params) {
+    setup();
+    InterpretResult result = run_source(
+        "struct Player {\n"
+        "    health,\n"
+        "    function take_damage(amount) {\n"
+        "        this.health = this.health - amount\n"
+        "    }\n"
+        "    function heal(amount) {\n"
+        "        this.health = this.health + amount\n"
+        "    }\n"
+        "}\n"
+        "p = Player()\n"
+        "p.health = 100\n"
+        "p.take_damage(30)\n"
+        "p.heal(10)\n"
+        "result = p.health"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("result", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 80);
+
+    teardown();
+}
+
+TEST(struct_method_return_value) {
+    setup();
+    InterpretResult result = run_source(
+        "struct Point {\n"
+        "    x, y,\n"
+        "    function distance_squared() {\n"
+        "        return this.x * this.x + this.y * this.y\n"
+        "    }\n"
+        "}\n"
+        "p = Point()\n"
+        "p.x = 3\n"
+        "p.y = 4\n"
+        "result = p.distance_squared()"
+    );
+    ASSERT_EQ(result, INTERPRET_OK);
+
+    Value* val;
+    ASSERT(get_global("result", &val));
+    ASSERT(IS_NUMBER(*val));
+    ASSERT_EQ(AS_NUMBER(*val), 25);
+
+    teardown();
+}
+
+TEST(struct_positional_constructor) {
+    setup();
+    InterpretResult result = run_source(
+        "struct Point { x, y }\n"
+        "p = Point(10, 20)\n"
+        "result_x = p.x\n"
+ 
