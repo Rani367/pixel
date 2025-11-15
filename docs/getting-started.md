@@ -70,4 +70,32 @@ Pixel games use three main callback functions:
 ### Input
 ```pixel
 key_down(KEY_SPACE)      // Key is held
-key_pressed(KEY_SPACE)   
+key_pressed(KEY_SPACE)   // Key just pressed this frame
+mouse_x(), mouse_y()     // Mouse position
+mouse_down(MOUSE_LEFT)   // Mouse button held
+```
+
+### Drawing
+```pixel
+clear(color)
+draw_rect(x, y, w, h, color)
+draw_circle(x, y, radius, color)
+draw_line(x1, y1, x2, y2, color)
+draw_text(text, x, y, font, color)
+```
+
+### Colors
+```pixel
+rgb(255, 0, 0)           // Red
+rgba(0, 255, 0, 128)     // Semi-transparent green
+WHITE, BLACK, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, ORANGE, GRAY
+```
+
+### Math
+```pixel
+random()                 // 0.0 to 1.0
+random_range(10, 20)     // 10.0 to 20.0
+sin(angle), cos(angle)   // Angle in radians
+sqrt(n), pow(n, exp)
+min(a, b), max(a, b), clamp(val, lo, hi)
+```
