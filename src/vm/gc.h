@@ -21,4 +21,29 @@ struct Object;
 
 // Debug flags (uncomment to enable)
 // #define DEBUG_LOG_GC
-// #define DE
+// #define DEBUG_STRESS_GC
+
+// ============================================================================
+// GC State Management
+// ============================================================================
+
+// Set the current VM for object allocation
+// Call this before any object allocation that should be tracked by the VM
+void gc_set_vm(struct VM* vm);
+
+// Get the current VM (may be NULL during compilation)
+struct VM* gc_get_vm(void);
+
+// ============================================================================
+// Object Allocation
+// ============================================================================
+
+// Allocate an object and track it for GC
+// If a VM is set, adds to the VM's object list and may trigger GC
+// Otherwise, adds to a global list (for compilation)
+struct Object* gc_allocate_object(size_t size, int type);
+
+// Track bytes allocated (internal use)
+void gc_track_allocation(size_t size);
+
+//
