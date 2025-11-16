@@ -44,4 +44,9 @@ static inline uint32_t pack_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return ((uint32_t)r << 24) | ((uint32_t)g << 16) | ((uint32_t)b << 8) | a;
 }
 
-// Unp
+// Unpe COLOR_ORANGE    0xFF8800FFu
+#define COLOR_PURPLE    0x8800FFFFu
+#define COLOR_GRAY      0x808080FFu
+#define COLOR_GREY      0x808080FFu  // British spelling alias
+
+// ======================================================
