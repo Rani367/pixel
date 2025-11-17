@@ -544,3 +544,1190 @@ static Value native_mouse_released(int arg_count, Value* args) {
     define_constant(vm, "MOUSE_MIDDLE", NUMBER_VAL((double)PAL_MOUSE_MIDDLE));
     define_constant(vm, "MOUSE_RIGHT", NUMBER_VAL((double)PAL_MOUSE_RIGHT));
 }
+ouse_released() requires a button number");
+    }
+
+    int button = (int)AS_NUMBER(args[0]);
+    return BOOL_VAL(pal_mouse_released((PalMouseButton)button));
+}
+
+// ============================================================================
+// Image and Sprite Functions
+// ============================================================================
+
+// load_image(path) -> image
+static Value native_load_image(int arg_count, Value* args) {
+    (void)arg_count;
+
+    Engine* engine = engine_get();
+    if (!engine || !engine->window) {
+        return native_error("No window created. Call create_window() first");
+    }
+
+    if (!IS_STRING(args[0])) {
+        return native_error("load_image() requires a string path");
+    }
+
+    const char* path = AS_CSTRING(args[0]);
+    PalTexture* texture = pal_texture_load(engine->window, path);
+    if (!texture) {
+        return native_error("Failed to load image");
+    }
+
+    int width = 0, height = 0;
+    pal_texture_get_size(texture, &width, &height);
+
+    ObjString* path_str = string_copy(path, (int)strlen(path));
+    ObjImage* image = image_new(texture, width, height, path_str);
+    return OBJECT_VAL(image);
+}
+
+// image_width(image) -> number
+static Value native_image_width(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_IMAGE(args[0])) {
+        return native_error("image_width() requires an image");
+    }
+
+    ObjImage* image = AS_IMAGE(args[0]);
+    return NUMBER_VAL((double)image->width);
+}
+
+// image_height(image) -> number
+static Value native_image_height(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_IMAGE(args[0])) {
+        return native_error("image_height() requires an image");
+    }
+
+    ObjImage* image = AS_IMAGE(args[0]);
+    return NUMBER_VAL((double)image->height);
+}
+
+// draw_image(image, x, y) -> nil
+static Value native_draw_image(int arg_count, Value* args) {
+    (void)arg_count;
+
+    Engine* engine = engine_get();
+    if (!engine || !engine->window) {
+        return NONE_VAL;
+    }
+
+    if (!IS_IMAGE(args[0])) {
+        return native_error("draw_image() requires an image as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("draw_image() requires x and y as numbers");
+    }
+
+    ObjImage* image = AS_IMAGE(args[0]);
+    double world_x = AS_NUMBER(args[1]);
+    double world_y = AS_NUMBER(args[2]);
+
+    // Apply camera transform
+    int screen_x, screen_y;
+    apply_camera_transform(world_x, world_y, &screen_x, &screen_y);
+    int width = apply_camera_zoom(image->width);
+    int height = apply_camera_zoom(image->height);
+
+    if (image->texture) {
+        pal_draw_texture(engine->window, image->texture, screen_x, screen_y,
+                         width, height);
+    }
+
+    return NONE_VAL;
+}
+
+// draw_image_ex(image, x, y, width, height, rotation, flip_x, flip_y) -> nil
+static Value native_draw_image_ex(int arg_count, Value* args) {
+    (void)arg_count;
+
+    Engine* engine = engine_get();
+    if (!engine || !engine->window) {
+        return NONE_VAL;
+    }
+
+    if (!IS_IMAGE(args[0])) {
+        return native_error("draw_image_ex() requires an image as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2]) ||
+        !IS_NUMBER(args[3]) || !IS_NUMBER(args[4]) ||
+        !IS_NUMBER(args[5])) {
+        return native_error("draw_image_ex() requires x, y, width, height, rotation as numbers");
+    }
+
+    ObjImage* image = AS_IMAGE(args[0]);
+    double world_x = AS_NUMBER(args[1]);
+    double world_y = AS_NUMBER(args[2]);
+    int width = (int)AS_NUMBER(args[3]);
+    int height = (int)AS_NUMBER(args[4]);
+    double rotation = AS_NUMBER(args[5]);
+    bool flip_x = IS_BOOL(args[6]) ? AS_BOOL(args[6]) : false;
+    bool flip_y = IS_BOOL(args[7]) ? AS_BOOL(args[7]) : false;
+
+    // Apply camera transform
+    int screen_x, screen_y;
+    apply_camera_transform(world_x, world_y, &screen_x, &screen_y);
+    width = apply_camera_zoom(width);
+    height = apply_camera_zoom(height);
+
+    if (image->texture) {
+        // Origin at top-left for this function
+        pal_draw_texture_ex(engine->window, image->texture, screen_x, screen_y, width, height,
+                            rotation, 0, 0, flip_x, flip_y);
+    }
+
+    return NONE_VAL;
+}
+
+// create_sprite(image) -> sprite
+static Value native_create_sprite(int arg_count, Value* args) {
+    (void)arg_count;
+
+    ObjImage* image = NULL;
+    if (arg_count >= 1 && IS_IMAGE(args[0])) {
+        image = AS_IMAGE(args[0]);
+    } else if (arg_count >= 1 && !IS_NONE(args[0])) {
+        return native_error("create_sprite() requires an image or none");
+    }
+
+    ObjSprite* sprite = sprite_new(image);
+    return OBJECT_VAL(sprite);
+}
+
+// draw_sprite(sprite) -> nil
+static Value native_draw_sprite(int arg_count, Value* args) {
+    (void)arg_count;
+
+    Engine* engine = engine_get();
+    if (!engine || !engine->window) {
+        return NONE_VAL;
+    }
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("draw_sprite() requires a sprite");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+
+    // Don't draw if not visible or no image
+    if (!sprite->visible || !sprite->image || !sprite->image->texture) {
+        return NONE_VAL;
+    }
+
+    ObjImage* image = sprite->image;
+
+    // Calculate final dimensions
+    double width = sprite->width > 0 ? sprite->width : image->width;
+    double height = sprite->height > 0 ? sprite->height : image->height;
+    width *= sprite->scale_x;
+    height *= sprite->scale_y;
+
+    // Apply camera zoom to dimensions
+    double cam_zoom = 1.0;
+    if (engine->camera) {
+        cam_zoom = engine->camera->zoom;
+    }
+    double scaled_width = width * cam_zoom;
+    double scaled_height = height * cam_zoom;
+
+    // Calculate origin in pixels (scaled)
+    int origin_x = (int)(sprite->origin_x * scaled_width);
+    int origin_y = (int)(sprite->origin_y * scaled_height);
+
+    // Transform sprite world position to screen position
+    int screen_x, screen_y;
+    apply_camera_transform(sprite->x, sprite->y, &screen_x, &screen_y);
+
+    // Calculate position (adjust for origin)
+    int draw_x = screen_x - origin_x;
+    int draw_y = screen_y - origin_y;
+
+    // Check if using sprite sheet frames
+    if (sprite->frame_width > 0 && sprite->frame_height > 0) {
+        // Draw sprite sheet frame
+        pal_draw_texture_region(engine->window, image->texture,
+                                sprite->frame_x, sprite->frame_y,
+                                sprite->frame_width, sprite->frame_height,
+                                draw_x, draw_y, (int)scaled_width, (int)scaled_height);
+    } else if (sprite->rotation != 0 || sprite->flip_x || sprite->flip_y) {
+        // Draw with rotation/flip
+        pal_draw_texture_ex(engine->window, image->texture,
+                            screen_x, screen_y, (int)scaled_width, (int)scaled_height,
+                            sprite->rotation, origin_x, origin_y,
+                            sprite->flip_x, sprite->flip_y);
+    } else {
+        // Simple draw
+        pal_draw_texture(engine->window, image->texture, draw_x, draw_y,
+                         (int)scaled_width, (int)scaled_height);
+    }
+
+    return NONE_VAL;
+}
+
+// set_sprite_frame(sprite, frame_index) -> nil
+// Calculates frame_x and frame_y based on frame_width, frame_height, and image dimensions
+static Value native_set_sprite_frame(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("set_sprite_frame() requires a sprite as first argument");
+    }
+    if (!IS_NUMBER(args[1])) {
+        return native_error("set_sprite_frame() requires frame index as number");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+    int frame_index = (int)AS_NUMBER(args[1]);
+
+    // Must have frame dimensions set
+    if (sprite->frame_width <= 0 || sprite->frame_height <= 0) {
+        return native_error("Sprite must have frame_width and frame_height set");
+    }
+
+    // Must have an image
+    if (!sprite->image) {
+        return native_error("Sprite must have an image set");
+    }
+
+    // Calculate frames per row
+    int frames_per_row = sprite->image->width / sprite->frame_width;
+    if (frames_per_row <= 0) frames_per_row = 1;
+
+    // Calculate frame position
+    int frame_row = frame_index / frames_per_row;
+    int frame_col = frame_index % frames_per_row;
+
+    sprite->frame_x = frame_col * sprite->frame_width;
+    sprite->frame_y = frame_row * sprite->frame_height;
+
+    return NONE_VAL;
+}
+
+// ============================================================================
+// Font and Text Functions
+// ============================================================================
+
+// load_font(path, size) -> font
+static Value native_load_font(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_STRING(args[0])) {
+        return native_error("load_font() requires a string path as first argument");
+    }
+    if (!IS_NUMBER(args[1])) {
+        return native_error("load_font() requires a number size as second argument");
+    }
+
+    const char* path = AS_CSTRING(args[0]);
+    int size = (int)AS_NUMBER(args[1]);
+
+    PalFont* pal_font = pal_font_load(path, size);
+    if (!pal_font) {
+        return native_error("Failed to load font");
+    }
+
+    ObjFont* font = font_new(pal_font, size, false);
+    return OBJECT_VAL(font);
+}
+
+// default_font(size) -> font
+static Value native_default_font(int arg_count, Value* args) {
+    (void)arg_count;
+
+    int size = 16;  // Default size
+    if (arg_count >= 1 && IS_NUMBER(args[0])) {
+        size = (int)AS_NUMBER(args[0]);
+    }
+
+    PalFont* pal_font = pal_font_default(size);
+    if (!pal_font) {
+        return native_error("Failed to create default font");
+    }
+
+    ObjFont* font = font_new(pal_font, size, true);
+    return OBJECT_VAL(font);
+}
+
+// draw_text(text, x, y, font, color) -> nil
+static Value native_draw_text(int arg_count, Value* args) {
+    (void)arg_count;
+
+    Engine* engine = engine_get();
+    if (!engine || !engine->window) {
+        return NONE_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        return native_error("draw_text() requires text as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("draw_text() requires x and y as numbers");
+    }
+    if (!IS_FONT(args[3])) {
+        return native_error("draw_text() requires a font as fourth argument");
+    }
+    if (!IS_NUMBER(args[4])) {
+        return native_error("draw_text() requires a color as fifth argument");
+    }
+
+    const char* text = AS_CSTRING(args[0]);
+    int x = (int)AS_NUMBER(args[1]);
+    int y = (int)AS_NUMBER(args[2]);
+    ObjFont* font = AS_FONT(args[3]);
+    uint32_t color = (uint32_t)AS_NUMBER(args[4]);
+
+    uint8_t r, g, b, a;
+    unpack_color(color, &r, &g, &b, &a);
+
+    if (font->font) {
+        pal_draw_text(engine->window, font->font, text, x, y, r, g, b, a);
+    }
+
+    return NONE_VAL;
+}
+
+// text_width(text, font) -> number
+static Value native_text_width(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_STRING(args[0])) {
+        return native_error("text_width() requires text as first argument");
+    }
+    if (!IS_FONT(args[1])) {
+        return native_error("text_width() requires a font as second argument");
+    }
+
+    const char* text = AS_CSTRING(args[0]);
+    ObjFont* font = AS_FONT(args[1]);
+
+    int width = 0, height = 0;
+    if (font->font) {
+        pal_text_size(font->font, text, &width, &height);
+    }
+
+    return NUMBER_VAL((double)width);
+}
+
+// text_height(text, font) -> number
+static Value native_text_height(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_STRING(args[0])) {
+        return native_error("text_height() requires text as first argument");
+    }
+    if (!IS_FONT(args[1])) {
+        return native_error("text_height() requires a font as second argument");
+    }
+
+    const char* text = AS_CSTRING(args[0]);
+    ObjFont* font = AS_FONT(args[1]);
+
+    int width = 0, height = 0;
+    if (font->font) {
+        pal_text_size(font->font, text, &width, &height);
+    }
+
+    return NUMBER_VAL((double)height);
+}
+
+// ============================================================================
+// Audio Functions
+// ============================================================================
+
+// load_sound(path) -> sound
+static Value native_load_sound(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_STRING(args[0])) {
+        return native_error("load_sound() requires a string path");
+    }
+
+    const char* path = AS_CSTRING(args[0]);
+    PalSound* pal_sound = pal_sound_load(path);
+    if (!pal_sound) {
+        return native_error("Failed to load sound");
+    }
+
+    ObjString* path_str = string_copy(path, (int)strlen(path));
+    ObjSound* sound = sound_new(pal_sound, path_str);
+    return OBJECT_VAL(sound);
+}
+
+// play_sound(sound) -> nil
+static Value native_play_sound(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SOUND(args[0])) {
+        return native_error("play_sound() requires a sound");
+    }
+
+    ObjSound* sound = AS_SOUND(args[0]);
+    if (sound->sound) {
+        pal_sound_play(sound->sound);
+    }
+
+    return NONE_VAL;
+}
+
+// play_sound_volume(sound, volume) -> nil
+static Value native_play_sound_volume(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SOUND(args[0])) {
+        return native_error("play_sound_volume() requires a sound as first argument");
+    }
+    if (!IS_NUMBER(args[1])) {
+        return native_error("play_sound_volume() requires a volume as second argument");
+    }
+
+    ObjSound* sound = AS_SOUND(args[0]);
+    float volume = (float)AS_NUMBER(args[1]);
+
+    // Clamp volume to 0.0-1.0
+    if (volume < 0.0f) volume = 0.0f;
+    if (volume > 1.0f) volume = 1.0f;
+
+    if (sound->sound) {
+        pal_sound_play_volume(sound->sound, volume);
+    }
+
+    return NONE_VAL;
+}
+
+// load_music(path) -> music
+static Value native_load_music(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_STRING(args[0])) {
+        return native_error("load_music() requires a string path");
+    }
+
+    const char* path = AS_CSTRING(args[0]);
+    PalMusic* pal_music = pal_music_load(path);
+    if (!pal_music) {
+        return native_error("Failed to load music");
+    }
+
+    ObjString* path_str = string_copy(path, (int)strlen(path));
+    ObjMusic* music = music_new(pal_music, path_str);
+    return OBJECT_VAL(music);
+}
+
+// play_music(music) -> nil
+static Value native_play_music(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_MUSIC(args[0])) {
+        return native_error("play_music() requires a music object");
+    }
+
+    ObjMusic* music = AS_MUSIC(args[0]);
+    if (music->music) {
+        pal_music_play(music->music, false);  // Play once
+    }
+
+    return NONE_VAL;
+}
+
+// play_music_loop(music) -> nil
+static Value native_play_music_loop(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_MUSIC(args[0])) {
+        return native_error("play_music_loop() requires a music object");
+    }
+
+    ObjMusic* music = AS_MUSIC(args[0]);
+    if (music->music) {
+        pal_music_play(music->music, true);  // Play looping
+    }
+
+    return NONE_VAL;
+}
+
+// pause_music() -> nil
+static Value native_pause_music(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    pal_music_pause();
+    return NONE_VAL;
+}
+
+// resume_music() -> nil
+static Value native_resume_music(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    pal_music_resume();
+    return NONE_VAL;
+}
+
+// stop_music() -> nil
+static Value native_stop_music(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    pal_music_stop();
+    return NONE_VAL;
+}
+
+// set_music_volume(volume) -> nil
+static Value native_set_music_volume(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0])) {
+        return native_error("set_music_volume() requires a number");
+    }
+
+    float volume = (float)AS_NUMBER(args[0]);
+
+    // Clamp volume to 0.0-1.0
+    if (volume < 0.0f) volume = 0.0f;
+    if (volume > 1.0f) volume = 1.0f;
+
+    pal_music_set_volume(volume);
+    return NONE_VAL;
+}
+
+// set_master_volume(volume) -> nil
+static Value native_set_master_volume(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0])) {
+        return native_error("set_master_volume() requires a number");
+    }
+
+    float volume = (float)AS_NUMBER(args[0]);
+
+    // Clamp volume to 0.0-1.0
+    if (volume < 0.0f) volume = 0.0f;
+    if (volume > 1.0f) volume = 1.0f;
+
+    pal_set_master_volume(volume);
+    return NONE_VAL;
+}
+
+// music_playing() -> bool
+static Value native_music_playing(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    return BOOL_VAL(pal_music_is_playing());
+}
+
+// ============================================================================
+// Timing Functions
+// ============================================================================
+
+// delta_time() -> number
+static Value native_delta_time(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    Engine* engine = engine_get();
+    if (!engine) {
+        return NUMBER_VAL(0);
+    }
+
+    return NUMBER_VAL(engine->delta_time);
+}
+
+// game_time() -> number
+static Value native_game_time(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    Engine* engine = engine_get();
+    if (!engine) {
+        return NUMBER_VAL(0);
+    }
+
+    return NUMBER_VAL(engine->time);
+}
+
+// ============================================================================
+// Physics & Collision Functions
+// ============================================================================
+
+// set_gravity(strength) -> nil
+static Value native_set_gravity(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0])) {
+        return native_error("set_gravity() requires a number");
+    }
+
+    double gravity = AS_NUMBER(args[0]);
+    physics_set_gravity(gravity);
+    return NONE_VAL;
+}
+
+// get_gravity() -> number
+static Value native_get_gravity(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    return NUMBER_VAL(physics_get_gravity());
+}
+
+// collides(sprite1, sprite2) -> bool
+static Value native_collides(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0]) || !IS_SPRITE(args[1])) {
+        return native_error("collides() requires two sprites");
+    }
+
+    ObjSprite* a = AS_SPRITE(args[0]);
+    ObjSprite* b = AS_SPRITE(args[1]);
+    return BOOL_VAL(physics_collides(a, b));
+}
+
+// collides_rect(sprite, x, y, w, h) -> bool
+static Value native_collides_rect(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("collides_rect() requires a sprite as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2]) ||
+        !IS_NUMBER(args[3]) || !IS_NUMBER(args[4])) {
+        return native_error("collides_rect() requires x, y, w, h as numbers");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+    double x = AS_NUMBER(args[1]);
+    double y = AS_NUMBER(args[2]);
+    double w = AS_NUMBER(args[3]);
+    double h = AS_NUMBER(args[4]);
+    return BOOL_VAL(physics_collides_rect(sprite, x, y, w, h));
+}
+
+// collides_point(sprite, x, y) -> bool
+static Value native_collides_point(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("collides_point() requires a sprite as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("collides_point() requires x, y as numbers");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+    double x = AS_NUMBER(args[1]);
+    double y = AS_NUMBER(args[2]);
+    return BOOL_VAL(physics_collides_point(sprite, x, y));
+}
+
+// collides_circle(sprite1, sprite2) -> bool
+static Value native_collides_circle(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0]) || !IS_SPRITE(args[1])) {
+        return native_error("collides_circle() requires two sprites");
+    }
+
+    ObjSprite* a = AS_SPRITE(args[0]);
+    ObjSprite* b = AS_SPRITE(args[1]);
+    return BOOL_VAL(physics_collides_circle(a, b));
+}
+
+// distance(sprite1, sprite2) -> number
+static Value native_distance(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0]) || !IS_SPRITE(args[1])) {
+        return native_error("distance() requires two sprites");
+    }
+
+    ObjSprite* a = AS_SPRITE(args[0]);
+    ObjSprite* b = AS_SPRITE(args[1]);
+    return NUMBER_VAL(physics_distance(a, b));
+}
+
+// apply_force(sprite, fx, fy) -> nil
+static Value native_apply_force(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("apply_force() requires a sprite as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("apply_force() requires fx, fy as numbers");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+    double fx = AS_NUMBER(args[1]);
+    double fy = AS_NUMBER(args[2]);
+    physics_apply_force(sprite, fx, fy);
+    return NONE_VAL;
+}
+
+// move_toward(sprite, x, y, speed) -> bool
+static Value native_move_toward(int arg_count, Value* args) {
+    (void)arg_count;
+
+    Engine* engine = engine_get();
+    if (!engine) {
+        return native_error("No engine initialized");
+    }
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("move_toward() requires a sprite as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2]) || !IS_NUMBER(args[3])) {
+        return native_error("move_toward() requires x, y, speed as numbers");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+    double x = AS_NUMBER(args[1]);
+    double y = AS_NUMBER(args[2]);
+    double speed = AS_NUMBER(args[3]);
+
+    bool reached = physics_move_toward(sprite, x, y, speed, engine->delta_time);
+    return BOOL_VAL(reached);
+}
+
+// look_at(sprite, x, y) -> nil
+static Value native_look_at(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("look_at() requires a sprite as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("look_at() requires x, y as numbers");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+    double x = AS_NUMBER(args[1]);
+    double y = AS_NUMBER(args[2]);
+    physics_look_at(sprite, x, y);
+    return NONE_VAL;
+}
+
+// lerp(a, b, t) -> number
+static Value native_lerp(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("lerp() requires three numbers");
+    }
+
+    double a = AS_NUMBER(args[0]);
+    double b = AS_NUMBER(args[1]);
+    double t = AS_NUMBER(args[2]);
+    return NUMBER_VAL(physics_lerp(a, b, t));
+}
+
+// lerp_angle(a, b, t) -> number
+static Value native_lerp_angle(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("lerp_angle() requires three numbers");
+    }
+
+    double a = AS_NUMBER(args[0]);
+    double b = AS_NUMBER(args[1]);
+    double t = AS_NUMBER(args[2]);
+    return NUMBER_VAL(physics_lerp_angle(a, b, t));
+}
+
+// ============================================================================
+// Camera Functions
+// ============================================================================
+
+// Helper to get or create the engine camera
+static ObjCamera* get_or_create_camera(void) {
+    Engine* engine = engine_get();
+    if (!engine) return NULL;
+
+    if (!engine->camera) {
+        engine->camera = camera_new();
+    }
+    return engine->camera;
+}
+
+// camera() -> camera object (creates if not exists)
+static Value native_camera(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    ObjCamera* camera = get_or_create_camera();
+    if (!camera) {
+        return native_error("No engine initialized");
+    }
+    return OBJECT_VAL(camera);
+}
+
+// camera_x() -> number
+static Value native_camera_x(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    ObjCamera* camera = get_or_create_camera();
+    if (!camera) return NUMBER_VAL(0);
+    return NUMBER_VAL(camera->x + camera->shake_offset_x);
+}
+
+// camera_y() -> number
+static Value native_camera_y(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    ObjCamera* camera = get_or_create_camera();
+    if (!camera) return NUMBER_VAL(0);
+    return NUMBER_VAL(camera->y + camera->shake_offset_y);
+}
+
+// camera_zoom() -> number
+static Value native_camera_zoom(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    ObjCamera* camera = get_or_create_camera();
+    if (!camera) return NUMBER_VAL(1);
+    return NUMBER_VAL(camera->zoom);
+}
+
+// camera_set_position(x, y) -> nil
+static Value native_camera_set_position(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
+        return native_error("camera_set_position() requires x and y as numbers");
+    }
+
+    ObjCamera* camera = get_or_create_camera();
+    if (!camera) return NONE_VAL;
+
+    camera->x = AS_NUMBER(args[0]);
+    camera->y = AS_NUMBER(args[1]);
+    camera->target = NULL;  // Stop following
+    return NONE_VAL;
+}
+
+// camera_set_zoom(zoom) -> nil
+static Value native_camera_set_zoom(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0])) {
+        return native_error("camera_set_zoom() requires a number");
+    }
+
+    ObjCamera* camera = get_or_create_camera();
+    if (!camera) return NONE_VAL;
+
+    double zoom = AS_NUMBER(args[0]);
+    if (zoom <= 0) zoom = 0.01;  // Prevent invalid zoom
+    camera->zoom = zoom;
+    return NONE_VAL;
+}
+
+// camera_follow(sprite, lerp?) -> nil
+static Value native_camera_follow(int arg_count, Value* args) {
+    if (!IS_SPRITE(args[0]) && !IS_NONE(args[0])) {
+        return native_error("camera_follow() requires a sprite or none");
+    }
+
+    ObjCamera* camera = get_or_create_camera();
+    if (!camera) return NONE_VAL;
+
+    if (IS_NONE(args[0])) {
+        camera->target = NULL;
+    } else {
+        camera->target = AS_SPRITE(args[0]);
+
+        // Optional lerp factor
+        if (arg_count >= 2 && IS_NUMBER(args[1])) {
+            double lerp = AS_NUMBER(args[1]);
+            if (lerp < 0) lerp = 0;
+            if (lerp > 1) lerp = 1;
+            camera->follow_lerp = lerp;
+        }
+    }
+    return NONE_VAL;
+}
+
+// camera_shake(intensity, duration) -> nil
+static Value native_camera_shake(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
+        return native_error("camera_shake() requires intensity and duration as numbers");
+    }
+
+    ObjCamera* camera = get_or_create_camera();
+    if (!camera) return NONE_VAL;
+
+    camera->shake_intensity = AS_NUMBER(args[0]);
+    camera->shake_duration = AS_NUMBER(args[1]);
+    camera->shake_time = 0;
+    return NONE_VAL;
+}
+
+// screen_to_world_x(x) -> number
+static Value native_screen_to_world_x(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0])) {
+        return native_error("screen_to_world_x() requires a number");
+    }
+
+    Engine* engine = engine_get();
+    if (!engine) return args[0];
+
+    double screen_x = AS_NUMBER(args[0]);
+    double world_x = screen_x;
+
+    if (engine->camera) {
+        ObjCamera* cam = engine->camera;
+        int width = engine_get_width(engine);
+        // Convert from screen space to world space
+        world_x = (screen_x - width / 2.0) / cam->zoom + cam->x + cam->shake_offset_x;
+    }
+
+    return NUMBER_VAL(world_x);
+}
+
+// screen_to_world_y(y) -> number
+static Value native_screen_to_world_y(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0])) {
+        return native_error("screen_to_world_y() requires a number");
+    }
+
+    Engine* engine = engine_get();
+    if (!engine) return args[0];
+
+    double screen_y = AS_NUMBER(args[0]);
+    double world_y = screen_y;
+
+    if (engine->camera) {
+        ObjCamera* cam = engine->camera;
+        int height = engine_get_height(engine);
+        // Convert from screen space to world space
+        world_y = (screen_y - height / 2.0) / cam->zoom + cam->y + cam->shake_offset_y;
+    }
+
+    return NUMBER_VAL(world_y);
+}
+
+// world_to_screen_x(x) -> number
+static Value native_world_to_screen_x(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0])) {
+        return native_error("world_to_screen_x() requires a number");
+    }
+
+    Engine* engine = engine_get();
+    if (!engine) return args[0];
+
+    double world_x = AS_NUMBER(args[0]);
+    double screen_x = world_x;
+
+    if (engine->camera) {
+        ObjCamera* cam = engine->camera;
+        int width = engine_get_width(engine);
+        // Convert from world space to screen space
+        screen_x = (world_x - cam->x - cam->shake_offset_x) * cam->zoom + width / 2.0;
+    }
+
+    return NUMBER_VAL(screen_x);
+}
+
+// world_to_screen_y(y) -> number
+static Value native_world_to_screen_y(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0])) {
+        return native_error("world_to_screen_y() requires a number");
+    }
+
+    Engine* engine = engine_get();
+    if (!engine) return args[0];
+
+    double world_y = AS_NUMBER(args[0]);
+    double screen_y = world_y;
+
+    if (engine->camera) {
+        ObjCamera* cam = engine->camera;
+        int height = engine_get_height(engine);
+        // Convert from world space to screen space
+        screen_y = (world_y - cam->y - cam->shake_offset_y) * cam->zoom + height / 2.0;
+    }
+
+    return NUMBER_VAL(screen_y);
+}
+
+// ============================================================================
+// Animation Functions
+// ============================================================================
+
+// create_animation(image, frame_width, frame_height, frames, frame_time) -> animation
+static Value native_create_animation(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_IMAGE(args[0])) {
+        return native_error("create_animation() requires an image as first argument");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("create_animation() requires frame_width and frame_height as numbers");
+    }
+    if (!IS_LIST(args[3])) {
+        return native_error("create_animation() requires a list of frame indices");
+    }
+    if (!IS_NUMBER(args[4])) {
+        return native_error("create_animation() requires frame_time as a number");
+    }
+
+    ObjImage* image = AS_IMAGE(args[0]);
+    int frame_width = (int)AS_NUMBER(args[1]);
+    int frame_height = (int)AS_NUMBER(args[2]);
+    ObjList* frame_list = AS_LIST(args[3]);
+    double frame_time = AS_NUMBER(args[4]);
+
+    ObjAnimation* anim = animation_new(image, frame_width, frame_height);
+
+    // Convert list to frame array
+    if (frame_list->count > 0) {
+        int* frames = PH_ALLOC(sizeof(int) * frame_list->count);
+        for (int i = 0; i < frame_list->count; i++) {
+            if (IS_NUMBER(frame_list->items[i])) {
+                frames[i] = (int)AS_NUMBER(frame_list->items[i]);
+            } else {
+                frames[i] = 0;
+            }
+        }
+        animation_set_frames(anim, frames, frame_list->count, frame_time);
+        PH_FREE(frames);
+    }
+
+    return OBJECT_VAL(anim);
+}
+
+// animation_play(animation) -> nil
+static Value native_animation_play(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_ANIMATION(args[0])) {
+        return native_error("animation_play() requires an animation");
+    }
+
+    ObjAnimation* anim = AS_ANIMATION(args[0]);
+    anim->playing = true;
+    return NONE_VAL;
+}
+
+// animation_stop(animation) -> nil
+static Value native_animation_stop(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_ANIMATION(args[0])) {
+        return native_error("animation_stop() requires an animation");
+    }
+
+    ObjAnimation* anim = AS_ANIMATION(args[0]);
+    anim->playing = false;
+    return NONE_VAL;
+}
+
+// animation_reset(animation) -> nil
+static Value native_animation_reset(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_ANIMATION(args[0])) {
+        return native_error("animation_reset() requires an animation");
+    }
+
+    ObjAnimation* anim = AS_ANIMATION(args[0]);
+    anim->current_frame = 0;
+    anim->current_time = 0;
+    return NONE_VAL;
+}
+
+// animation_set_looping(animation, loop) -> nil
+static Value native_animation_set_looping(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_ANIMATION(args[0])) {
+        return native_error("animation_set_looping() requires an animation");
+    }
+    if (!IS_BOOL(args[1])) {
+        return native_error("animation_set_looping() requires a boolean");
+    }
+
+    ObjAnimation* anim = AS_ANIMATION(args[0]);
+    anim->looping = AS_BOOL(args[1]);
+    return NONE_VAL;
+}
+
+// sprite_set_animation(sprite, animation) -> nil
+static Value native_sprite_set_animation(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("sprite_set_animation() requires a sprite");
+    }
+    if (!IS_ANIMATION(args[1]) && !IS_NONE(args[1])) {
+        return native_error("sprite_set_animation() requires an animation or none");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+
+    if (IS_NONE(args[1])) {
+        sprite->animation = NULL;
+    } else {
+        ObjAnimation* anim = AS_ANIMATION(args[1]);
+        sprite->animation = anim;
+        // Copy animation settings to sprite
+        sprite->frame_width = anim->frame_width;
+        sprite->frame_height = anim->frame_height;
+        // Use the animation's image if sprite doesn't have one
+        if (!sprite->image && anim->image) {
+            sprite->image = anim->image;
+        }
+    }
+    return NONE_VAL;
+}
+
+// sprite_play(sprite) -> nil
+static Value native_sprite_play(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("sprite_play() requires a sprite");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+    if (sprite->animation) {
+        sprite->animation->playing = true;
+    }
+    return NONE_VAL;
+}
+
+// sprite_stop(sprite) -> nil
+static Value native_sprite_stop(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_SPRITE(args[0])) {
+        return native_error("sprite_stop() requires a sprite");
+    }
+
+    ObjSprite* sprite = AS_SPRITE(args[0]);
+    if (sprite->animation) {
+        sprite->animation->playing = false;
+    }
+    return NONE_VAL;
+}
+
+// animation_frame(animation) -> number
+stat
