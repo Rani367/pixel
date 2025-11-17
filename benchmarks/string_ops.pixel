@@ -1,0 +1,77 @@
+// String Operations Benchmark
+// Measures string concatenation and manipulation
+
+function on_start() {
+    println("String Operations Benchmark")
+    println("===========================")
+    println("")
+
+    // Benchmark string concatenation
+    COUNT = 1000
+    start = clock()
+    result = ""
+    i = 0
+    while i < COUNT {
+        result = result + "x"
+        i = i + 1
+    }
+    concat_time = clock() - start
+    println("Concatenate " + to_string(COUNT) + " chars: " + to_string(concat_time) + "s")
+    println("  Result length: " + to_string(len(result)))
+
+    // Benchmark to_string conversions
+    COUNT = 10000
+    start = clock()
+    i = 0
+    while i < COUNT {
+        s = to_string(i)
+        i = i + 1
+    }
+    to_str_time = clock() - start
+    println("to_string " + to_string(COUNT) + " numbers: " + to_string(to_str_time) + "s")
+
+    // Benchmark string comparison (interned)
+    COUNT = 100000
+    a = "hello_world_test_string"
+    b = "hello_world_test_string"
+    start = clock()
+    i = 0
+    matches = 0
+    while i < COUNT {
+        if a == b {
+            matches = matches + 1
+        }
+        i = i + 1
+    }
+    cmp_time = clock() - start
+    println("Compare " + to_string(COUNT) + " strings: " + to_string(cmp_time) + "s")
+    println("  Matches: " + to_string(matches))
+
+    // Benchmark substring
+    long_str = "The quick brown fox jumps over the lazy dog"
+    COUNT = 10000
+    start = clock()
+    i = 0
+    while i < COUNT {
+        sub = substring(long_str, 10, 10)
+        i = i + 1
+    }
+    sub_time = clock() - start
+    println("Substring " + to_string(COUNT) + " times: " + to_string(sub_time) + "s")
+
+    // Benchmark split/join
+    csv = "a,b,c,d,e,f,g,h,i,j"
+    COUNT = 5000
+    start = clock()
+    i = 0
+    while i < COUNT {
+        parts = split(csv, ",")
+        rejoined = join(parts, ",")
+        i = i + 1
+    }
+    split_time = clock() - start
+    println("Split/join " + to_string(COUNT) + " times: " + to_string(split_time) + "s")
+
+    println("")
+    println("Note: String interning provides O(1) equality comparison.")
+}
