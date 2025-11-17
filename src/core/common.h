@@ -27,3 +27,28 @@
     ((capacity) < 8 ? 8 : (capacity) * 2)
 
 #endif // PH_COMMON_H
+dio.h>
+#include <stdlib.h>
+
+// Assertions (disabled in release builds)
+#ifdef DEBUG
+#define PH_ASSERT(cond) \
+    do { \
+        if (!(cond)) { \
+            fprintf(stderr, "Assertion failed: %s at %s:%d\n", \
+                    #cond, __FILE__, __LINE__); \
+            abort(); \
+        } \
+    } while (0)
+#else
+#define PH_ASSERT(cond) ((void)0)
+#endif
+
+// Unreachable code marker
+#if defined(__GNUC__) || defined(__clang__)
+#define PH_UNREACHABLE() \
+    do { \
+        PH_ASSERT(false && "unreachable"); \
+        __builtin_unreachable(); \
+    } while (0)
+#else
