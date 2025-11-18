@@ -100,4 +100,17 @@ Complete games included in `examples/games/`:
 
 | Game | Description |
 |------|-------------|
-| `pong.
+| `pong.pixel` | Two-player Pong with scoring |
+| `breakout.pixel` | Classic brick-breaking game |
+| `platformer.pixel` | Side-scrolling with coins and enemies |
+| `shooter.pixel` | Top-down wave shooter |
+
+Run an example:
+```bash
+pixel run examples/games/pong.pixel
+```
+
+## Building from Source
+
+```bash
+git clone https://github.com/user/p
