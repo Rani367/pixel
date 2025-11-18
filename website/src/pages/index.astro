@@ -107,4 +107,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-2xl font-bold text-center mb-8">Quick Start</h2>
       <div class="max-w-xl mx-auto">
-        <div class="bg-zinc-900 rounded-lg 
+        <div class="bg-zinc-900 rounded-lg p-6">
+          <div class="space-y-2 font-mono text-sm">
+            <p class="text-zinc-400"># Install Pixel</p>
+            <p class="text-zinc-100">$ <span class="text-green-400">brew install pixel</span></p>
+            <p class="text-zinc-400 mt-4"># Run your first game</p>
+            <p class="text-zinc-100">$ <span class="text-green-400">pixel run game.pixel</span></p>
+          </div>
+        </div>
+        <p class="text-center mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+          Or <a href="/pixel/docs/installation" class="text-[--color-accent] hover:underline">build from source</a> for other platforms.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
