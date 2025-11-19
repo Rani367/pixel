@@ -114,4 +114,45 @@ println(counter())  // 3
       document.documentElement.classList.toggle('dark', theme === 'dark');
     </script><link rel="stylesheet" href="/pixel/_astro/_slug_.CeoB1NFG.css"></head> <body class="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans antialiased" data-astro-cid-37fxchfa> <header class="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm"> <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between"> <a href="/pixel/" class="flex items-center gap-2 font-semibold text-lg hover:text-[--color-accent] transition-colors"> <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[--color-accent]"> <rect x="4" y="4" width="6" height="6"></rect> <rect x="14" y="4" width="6" height="6"></rect> <rect x="4" y="14" width="6" height="6"></rect> <rect x="14" y="14" width="6" height="6"></rect> </svg>
 Pixel
-</a> <div class="flex items-center gap-6"> <a href="/pixel/docs" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"> Docs </a><a href="/pixel/playground" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"> Playground </a> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" aria-label="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="currentCol
+</a> <div class="flex items-center gap-6"> <a href="/pixel/docs" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"> Docs </a><a href="/pixel/playground" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"> Playground </a> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" aria-label="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="currentCol}
+    return n * factorial(n - 1)
+}
+<p class="mb-4 leading-relaxed">println(factorial(5))  // 120
+</code></pre></p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Common Patterns</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Helper Functions</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function distance(x1, y1, x2, y2) {
+    dx = x2 - x1
+    dy = y2 - y1
+    return sqrt(dx <em> dx + dy </em> dy)
+}
+<p class="mb-4 leading-relaxed">function is_in_range(enemy) {
+    d = distance(player.x, player.y, enemy.x, enemy.y)
+    return d &lt; attack_range
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">State Machines</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>state = "idle"
+<p class="mb-4 leading-relaxed">function update_player(dt) {
+    if state == "idle" {
+        update_idle(dt)
+    } else if state == "walking" {
+        update_walking(dt)
+    } else if state == "jumping" {
+        update_jumping(dt)
+    }
+}
+</code></pre></p>
+<h3 class="text-lg font-semibold mt-6 mb-2">Factory Functions</h3>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>function create_bullet(x, y, angle) {
+    bullet = {}
+    bullet.x = x
+    bullet.y = y
+    bullet.vel_x = cos(angle) * BULLET_SPEED
+    bullet.vel_y = sin(angle) * BULLET_SPEED
+    bullet.active = true
+    return bullet
+}
+</code></pre> </article> </div> </div> <script type="module">const t=document.getElementById("sidebar-toggle"),e=document.getElementById("sidebar");t?.addEventListener("click",()=>{e?.classList.toggle("hidden"),e?.classList.toggle("block")});</script>  </main> <footer class="border-t border-zinc-200 dark:border-zinc-800 py-8 mt-16"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-600 dark:text-zinc-400"> <div class="flex items-center gap-4"> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+GitHub
+</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html>
