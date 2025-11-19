@@ -207,3 +207,83 @@ function set_tile(x, y, value) {
     tiles[y * width + x] = value
 }
 ```
+# Data Structures
+
+## Lists
+
+Lists are ordered collections that can hold any type of value.
+
+### Creating Lists
+
+```pixel
+empty = []
+numbers = [1, 2, 3, 4, 5]
+mixed = [42, "hello", true, [1, 2]]
+```
+
+### Accessing Elements
+
+Lists are zero-indexed:
+
+```pixel
+colors = ["red", "green", "blue"]
+first = colors[0]   // "red"
+second = colors[1]  // "green"
+```
+
+### Modifying Elements
+
+```pixel
+scores = [10, 20, 30]
+scores[1] = 25  // [10, 25, 30]
+```
+
+### List Length
+
+```pixel
+items = [1, 2, 3, 4, 5]
+count = len(items)  // 5
+```
+
+### Adding Elements
+
+```pixel
+items = []
+push(items, "sword")   // ["sword"]
+push(items, "shield")  // ["sword", "shield"]
+```
+
+### Removing Elements
+
+```pixel
+items = ["a", "b", "c"]
+last = pop(items)      // Returns "c", items is now ["a", "b"]
+remove(items, 0)       // Remove at index, items is now ["b"]
+```
+
+### Inserting Elements
+
+```pixel
+items = ["a", "c"]
+insert(items, 1, "b")  // ["a", "b", "c"]
+```
+
+### Searching
+
+```pixel
+items = ["apple", "banana", "cherry"]
+
+// Check if item exists
+if contains(items, "banana") {
+    println("Found it!")
+}
+
+// Get index of item
+idx = index_of(items, "cherry")  // 2
+```
+
+### Iterating
+
+```pixel
+enemies = [enemy1, enemy2, enemy3]
+i
