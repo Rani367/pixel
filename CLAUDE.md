@@ -128,4 +128,26 @@ gh run view --log-failed
 The system follows a traditional compiler pipeline with a game engine layer:
 
 ```
-Source (.
+Source (.# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Pixel is a beginner-friendly programming language for making 2D games. It compiles to bytecode and runs on a custom virtual machine with an integrated game engine.
+
+**Version:** 1.0.0
+
+## Build Commands
+
+```bash
+# Build (from project root)
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug  # or Release
+make
+
+# Run the interpreter
+./build/pixel run <file.pixel>
+
+# Run tests
+cd build && ctest --output-on-fa
