@@ -64,4 +64,21 @@ static int current_test_failed = 0;
             printf("FAILED\n"); \
         } \
         printf("    Assertion failed: \"%s\" == \"%s\"\n", (a), (b)); \
-      
+        printf("    at %s:%d\n", __FILE__, __LINE__); \
+        current_test_failed = 1; \
+        return; \
+    } \
+} while (0)
+
+#define ASSERT_NULL(a) ASSERT((a) == NULL)
+#define ASSERT_NOT_NULL(a) ASSERT((a) != NULL)
+
+#define TEST_SUITE(name) \
+    printf("\n%s:\n", name)
+
+#define TEST_SUMMARY() do { \
+    printf("\n%d/%d tests passed\n", tests_passed, tests_run); \
+    return tests_passed == tests_run ? 0 : 1; \
+} while (0)
+
+#endif // PH_TEST_FRAMEWORK_H
