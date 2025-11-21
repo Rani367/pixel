@@ -670,4 +670,23 @@ Stmt* stmt_block(Arena* arena, Stmt** statements, int count, Span span) {
 
 Stmt* stmt_if(Arena* arena, Expr* condition, Stmt* then_branch, Stmt* else_branch, Span span) {
     StmtIf* stmt = arena_alloc(arena, sizeof(StmtIf));
- 
+ #include "compiler/ast.h"
+#include <stdio.h>
+#include <string.h>
+
+// ============================================================================
+// Span Utilities
+// ============================================================================
+
+Span span_from_token(Token token) {
+    return (Span){
+        .start_line = token.line,
+        .start_column = token.column,
+        .end_line = token.line,
+        .end_column = token.column + token.length,
+    };
+}
+
+Span span_merge(Span start, Span end) {
+    return (Span){
+        .start_line =
