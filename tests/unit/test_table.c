@@ -176,4 +176,28 @@ TEST(table_with_length) {
     void* result;
     bool found = table_get(&table, data, 5, &result);
     ASSERT(found);
-    ASSERT_EQ(*(in
+    ASSERT_EQ(*(int*)result, 42);
+
+    // Should not find with different length
+    found = table_get(&table, data, 6, &result);
+    ASSERT(!found);
+
+    table_free(&table);
+}
+
+int main(void) {
+    TEST_SUITE("Table");
+
+    RUN_TEST(table_init_empty);
+    RUN_TEST(table_set_get_single);
+    RUN_TEST(table_set_get_multiple);
+    RUN_TEST(table_get_not_found);
+    RUN_TEST(table_overwrite);
+    RUN_TEST(table_delete);
+    RUN_TEST(table_delete_not_found);
+    RUN_TEST(table_grows_automatically);
+    RUN_TEST(table_find_string);
+    RUN_TEST(table_with_length);
+
+    TEST_SUMMARY();
+}
