@@ -45,4 +45,16 @@ Complete reference for all built-in functions:
 Complete games to learn from:
 - `examples/games/pong.pixel` - Classic two-player Pong
 - `examples/games/breakout.pixel` - Brick-breaking game
-- `examples/games/platformer
+- `examples/games/platformers) - Sample games and code
+
+## What is Pixel?
+
+Pixel is a scripting language with a built-in game engine. You write code in `.pixel` files and run them with the `pixel` command. The language handles window creation, graphics, input, and audio so you can focus on making games.
+
+```pixel
+function on_start() {
+    create_window(800, 600, "Hello Pixel")
+}
+
+function on_draw() {
+    clear(rgb(20, 20, 40)
