@@ -290,4 +290,25 @@ Interpolates between two angles, handling wraparound.
 
 ```pixel
 // Smooth rotation toward target
-current_a
+current_angle = lerp_angle(current_angle, target_angle, 0.1)
+```
+
+### clamp(value, min, max)
+Constrains a value between min and max.
+
+```pixel
+player.x = clamp(player.x, 0, window_width() - player.width)
+health = clamp(health, 0, max_health)
+```
+
+## Common Patterns
+
+### Platformer Physics
+
+```pixel
+GRAVITY = 1200
+JUMP_FORCE = 500
+MOVE_SPEED = 200
+
+function on_update(dt) {
+    // Horizontal
