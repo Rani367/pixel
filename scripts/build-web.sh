@@ -41,3 +41,22 @@ echo "  cd $BUILD_DIR"
 echo "  python3 -m http.server 8000"
 echo ""
 echo "Then open: http://localhost:8000/pixel.html"
+mscripten not found. Please install and activate the Emscripten SDK:"
+    echo "  git clone https://github.com/emscripten-core/emsdk.git"
+    echo "  cd emsdk"
+    echo "  ./emsdk install latest"
+    echo "  ./emsdk activate latest"
+    echo "  source ./emsdk_env.sh"
+    exit 1
+fi
+
+# Get the project root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Create build directory
+BUILD_DIR="$PROJECT_ROOT/build-web"
+mkdir -p "$BUILD_DIR"
+
+echo "Building Pixel for web (${BUILD_TYPE})..."
+echo "Output 
