@@ -288,4 +288,137 @@ TEST(analyze_undefined_in_call) {
     analyzer_free(&analyzer);
 }
 
-// ============================================================
+// ============================================================================
+// Scope Tests
+// ============================================================================
+
+TEST(analyze_scope_shadowing) {
+    Analyzer analyzer;
+    const char* source =
+        "x = 1\n"
+        "if true {\n"
+        "    x = 2\n"  // This shadows the outer x
+        "    y = x\n"  // Uses the inner x
+        "}\n";
+    bool result = analyze_source(source, &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_nested_scopes) {
+    Analyzer analyzer;
+    const char* source =
+        "a = 1\n"
+        "if true {\n"
+        "    b = 2\n"
+        "    if true {\n"
+        "        c = a + b\n"  // Both accessible
+        "    }\n"
+        "}\n";
+    bool result = analyze_source(source, &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_function_scope) {
+    Analyzer analyzer;
+    const char* source =
+        "function foo(x) {\n"
+        "    y = x + 1\n"
+        "    return y\n"
+        "}\n";
+    bool result = analyze_source(source, &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_function_params_accessible) {
+    Analyzer analyzer;
+    const char* source =
+        "function add(a, b) {\n"
+        "    return a + b\n"
+        "}\n";
+    bool result = analyze_source(source, &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+// ============================================================================
+// Control Flow Validation Tests
+// ============================================================================
+
+TEST(analyze_break_in_loop) {
+    Analyzer analyzer;
+    const char* source =
+        "while true {\n"
+        "    break\n"
+        "}\n";
+    bool result = analyze_source(source, &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_break_outside_loop) {
+    Analyzer analyzer;
+    bool result = analyze_source("break", &analyzer);
+    ASSERT(!result);
+    ASSERT_EQ(analyzer.error_count, 1);
+    ASSERT(has_error_containing(&analyzer, "'break' outside of loop"));
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_continue_in_loop) {
+    Analyzer analyzer;
+    const char* source =
+        "while true {\n"
+        "    continue\n"
+        "}\n";
+    bool result = analyze_source(source, &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_continue_outside_loop) {
+    Analyzer analyzer;
+    bool result = analyze_source("continue", &analyzer);
+    ASSERT(!result);
+    ASSERT_EQ(analyzer.error_count, 1);
+    ASSERT(has_error_containing(&analyzer, "'continue' outside of loop"));
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_return_in_function) {
+    Analyzer analyzer;
+    const char* source =
+        "function foo() {\n"
+        "    return 42\n"
+        "}\n";
+    bool result = analyze_source(source, &analyzer);
+    ASSERT(result);
+    ASSERT_EQ(analyzer.error_count, 0);
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_return_outside_function) {
+    Analyzer analyzer;
+    bool result = analyze_source("return 42", &analyzer);
+    ASSERT(!result);
+    ASSERT_EQ(analyzer.error_count, 1);
+    ASSERT(has_error_containing(&analyzer, "'return' outside of function"));
+    analyzer_free(&analyzer);
+}
+
+TEST(analyze_break_in_nested_loop) {
+    Analyzer analyzer;
+    const char* source =
+        "items = [1, 2, 3]\n"
+        "while true {\n"
+        "    for i in items {\n"
+        "        break\n"
+        
