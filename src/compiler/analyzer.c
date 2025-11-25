@@ -444,3 +444,217 @@ void analyzer_declare_global(Analyzer* analyzer, const char* name) {
         sym->is_initialized = true;
     }
 }
+ stmt) {
+    if (stmt == NULL) return;
+
+    switch (stmt->type) {
+        case STMT_EXPRESSION: {
+            StmtExpression* expr_stmt = (StmtExpression*)stmt;
+            analyze_expr(analyzer, expr_stmt->expression);
+            break;
+        }
+
+        case STMT_ASSIGNMENT: {
+            StmtAssignment* assign = (StmtAssignment*)stmt;
+
+            // Analyze the value first
+            analyze_expr(analyzer, assign->value);
+
+            // Handle the target
+            if (assign->target->type == EXPR_IDENTIFIER) {
+                ExprIdentifier* id = (ExprIdentifier*)assign->target;
+                Symbol* symbol = scope_lookup(analyzer->current_scope,
+                                              id->name.start, id->name.length);
+
+                if (symbol == NULL) {
+                    // New variable - always create as global for beginner-friendly semantics
+                    // This allows patterns like: on_start() { player = ... }
+                    // and on_update() { player.x = ... }
+                    scope_add_symbol(&analyzer->global_scope, id->name.start,
+                                     id->name.length, SYMBOL_GLOBAL, -1);
+                }
+                define_variable(analyzer, id->name);
+            } else {
+                // Property or index assignment - analyze the target expression
+                analyze_expr(analyzer, assign->target);
+            }
+            break;
+        }
+
+        case STMT_BLOCK: {
+            StmtBlock* block = (StmtBlock*)stmt;
+            begin_scope(analyzer);
+            for (int i = 0; i < block->count; i++) {
+                analyze_stmt(analyzer, block->statements[i]);
+            }
+            end_scope(analyzer);
+            break;
+        }
+
+        case STMT_IF: {
+            StmtIf* if_stmt = (StmtIf*)stmt;
+            analyze_expr(analyzer, if_stmt->condition);
+            analyze_stmt(analyzer, if_stmt->then_branch);
+            if (if_stmt->else_branch != NULL) {
+                analyze_stmt(analyzer, if_stmt->else_branch);
+            }
+            break;
+        }
+
+        case STMT_WHILE: {
+            StmtWhile* while_stmt = (StmtWhile*)stmt;
+            analyze_expr(analyzer, while_stmt->condition);
+
+            analyzer->loop_depth++;
+            analyze_stmt(analyzer, while_stmt->body);
+            analyzer->loop_depth--;
+            break;
+        }
+
+        case STMT_FOR: {
+            StmtFor* for_stmt = (StmtFor*)stmt;
+
+            // Analyze iterable in current scope
+            analyze_expr(analyzer, for_stmt->iterable);
+
+            // Create scope for loop variable
+            begin_scope(analyzer);
+
+            // Declare loop variable
+            declare_variable(analyzer, for_stmt->name, SYMBOL_LOCAL);
+            define_variable(analyzer, for_stmt->name);
+
+            analyzer->loop_depth++;
+            analyze_stmt(analyzer, for_stmt->body);
+            analyzer->loop_depth--;
+
+            end_scope(analyzer);
+            break;
+        }
+
+        case STMT_RETURN: {
+            StmtReturn* ret = (StmtReturn*)stmt;
+
+            if (analyzer->function_depth == 0) {
+                report_error(analyzer, location_from_span(analyzer, stmt->span),
+                             ERR_UNEXPECTED_TOKEN,
+                             "'return' outside of function");
+            }
+
+            if (ret->value != NULL) {
+                analyze_expr(analyzer, ret->value);
+            }
+            break;
+        }
+
+        case STMT_BREAK: {
+            if (analyzer->loop_depth == 0) {
+                report_error(analyzer, location_from_span(analyzer, stmt->span),
+                             ERR_UNEXPECTED_TOKEN,
+                             "'break' outside of loop");
+            }
+            break;
+        }
+
+        case STMT_CONTINUE: {
+            if (analyzer->loop_depth == 0) {
+                report_error(analyzer, location_from_span(analyzer, stmt->span),
+                             ERR_UNEXPECTED_TOKEN,
+                             "'continue' outside of loop");
+            }
+            break;
+        }
+
+        case STMT_FUNCTION: {
+            StmtFunction* fn = (StmtFunction*)stmt;
+
+            // Declare the function name in current scope
+            declare_variable(analyzer, fn->name, SYMBOL_FUNCTION);
+            define_variable(analyzer, fn->name);
+
+            // Save state - functions reset loop depth (break/continue not allowed)
+            int saved_local_count = analyzer->local_count;
+            int saved_loop_depth = analyzer->loop_depth;
+            analyzer->local_count = 0;
+            analyzer->loop_depth = 0;
+            analyzer->function_depth++;
+
+            begin_scope(analyzer);
+
+            // Declare parameters
+            for (int i = 0; i < fn->param_count; i++) {
+                declare_variable(analyzer, fn->params[i], SYMBOL_PARAMETER);
+                define_variable(analyzer, fn->params[i]);
+            }
+
+            // Analyze body
+            if (fn->body != NULL && fn->body->type == STMT_BLOCK) {
+                StmtBlock* block = (StmtBlock*)fn->body;
+                for (int i = 0; i < block->count; i++) {
+                    analyze_stmt(analyzer, block->statements[i]);
+                }
+            } else {
+                analyze_stmt(analyzer, fn->body);
+            }
+
+            end_scope(analyzer);
+
+            // Restore state
+            analyzer->function_depth--;
+            analyzer->loop_depth = saved_loop_depth;
+            analyzer->local_count = saved_local_count;
+            break;
+        }
+
+        case STMT_STRUCT: {
+            StmtStruct* st = (StmtStruct*)stmt;
+
+            // Declare struct name
+            declare_variable(analyzer, st->name, SYMBOL_STRUCT);
+            define_variable(analyzer, st->name);
+
+            // Check for duplicate field names
+            for (int i = 0; i < st->field_count; i++) {
+                for (int j = i + 1; j < st->field_count; j++) {
+                    if (names_equal(st->fields[i].start, st->fields[i].length,
+                                    st->fields[j].start, st->fields[j].length)) {
+                        report_error(analyzer,
+                                     location_from_token(analyzer, st->fields[j]),
+                                     ERR_REDEFINED_VARIABLE,
+                                     "Duplicate field '%.*s' in struct '%.*s'",
+                                     st->fields[j].length, st->fields[j].start,
+                                     st->name.length, st->name.start);
+                    }
+                }
+            }
+            break;
+        }
+
+        case STMT_COUNT:
+            PH_UNREACHABLE();
+    }
+}
+
+// ============================================================================
+// Public API
+// ============================================================================
+
+void analyzer_init(Analyzer* analyzer, const char* source_file, const char* source) {
+    scope_init(&analyzer->global_scope, 0, NULL);
+    analyzer->current_scope = &analyzer->global_scope;
+    analyzer->loop_depth = 0;
+    analyzer->function_depth = 0;
+    analyzer->in_struct = false;
+    analyzer->error_count = 0;
+    analyzer->local_count = 0;
+    analyzer->source_file = source_file;
+    analyzer->source = source;
+
+    for (int i = 0; i < ANALYZER_MAX_ERRORS; i++) {
+        analyzer->errors[i] = NULL;
+    }
+}
+
+void analyzer_free(Analyzer* analyzer) {
+    // Free any remaining non-global scopes
+    while (analyzer->current_
