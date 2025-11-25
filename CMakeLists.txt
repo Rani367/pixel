@@ -126,4 +126,40 @@ target_link_libraries(pixel
 )
 
 # Define PAL_USE_SDL2 for main executable when using SDL2
-if(EMSCRIPTEN OR (SDL2_FOUND AND SDL2_image_FOUND AND SDL2_mixer_F
+if(EMSCRIPTEN OR (SDL2_FOUND AND SDL2_image_FOUND AND SDL2_mixer_FOUND))
+    target_compile_definitions(pixel PRIVATE PAL_USE_SDL2)
+endif()
+
+# Emscripten-specific executable configuration
+if(EMSCRIPTEN)
+    # Use custom HTML shell template if available
+    if(EXISTS "${CMAKE_SOURCE_DIR}/web/shell.html")
+        set(EMSCRIPTEN_SHELL "--shell-file=${CMAKE_SOURCE_DIR}/web/shell.html")
+    else()
+        set(EMSCRIPTEN_SHELL "")
+    endif()
+
+    # Emscripten linker flags
+    set_target_properties(pixel PROPERTIES
+        SUFFIX ".html"
+        LINK_FLAGS "\
+            -sUSE_SDL=2 \
+            -sUSE_SDL_IMAGE=2 \
+            -sUSE_SDL_MIXER=2 \
+            -sSDL2_IMAGE_FORMATS=[\"png\",\"jpg\"] \
+            -sALLOW_MEMORY_GROWTH=1 \
+            -sFORCE_FILESYSTEM=1 \
+            -sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"callMain\",\"FS\"] \
+            -sASYNCIFY=1 \
+            -sASYNCIFY_STACK_SIZE=65536 \
+            ${EMSCRIPTEN_SHELL} \
+        "
+    )
+    message(STATUS "Emscripten build configured - output will be pixel.html")
+endif()
+
+# Tests (skip for Emscripten builds)
+if(NOT EMSCRIPTEN)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
