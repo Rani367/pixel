@@ -99,3 +99,139 @@ sin(angle), cos(angle)   // Angle in radians
 sqrt(n), pow(n, exp)
 min(a, b), max(a, b), clamp(val, lo, hi)
 ```
+# Getting Started with Pixel
+
+Pixel is a beginner-friendly programming language for making 2D games. This guide will help you get up and running in minutes.
+
+## Installation
+
+### Download Binary (Recommended)
+
+Download the latest release for your platform:
+- **macOS (Intel)**: `pixel-macos-x64`
+- **macOS (Apple Silicon)**: `pixel-macos-arm64`
+- **Linux**: `pixel-linux-x64`
+- **Windows**: `pixel-windows-x64.exe`
+
+Make the binary executable (macOS/Linux):
+```bash
+chmod +x pixel
+./pixel --version
+```
+
+### Build from Source
+
+Requirements: C compiler (gcc or clang), CMake 3.16+, SDL2
+
+```bash
+git clone https://github.com/Rani367/pixel.git
+cd pixel
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+```
+
+## Your First Program
+
+Create a file called `hello.pixel`:
+
+```pixel
+function on_start() {
+    print("Hello, Pixel!")
+}
+```
+
+Run it:
+```bash
+./pixel run hello.pixel
+```
+
+## Creating a Game Window
+
+Let's create an actual game window:
+
+```pixel
+function on_start() {
+    create_window(800, 600, "My First Game")
+}
+
+function on_draw() {
+    clear(rgb(20, 20, 40))
+    draw_text("Hello, Pixel!", 300, 280, default_font(32), WHITE)
+}
+```
+
+This creates an 800x600 window with a dark background and centered text.
+
+## Adding Movement
+
+Let's make something move with keyboard input:
+
+```pixel
+x = 400
+y = 300
+speed = 200
+
+function on_start() {
+    create_window(800, 600, "Moving Square")
+}
+
+function on_update(dt) {
+    if key_down(KEY_LEFT) {
+        x = x - speed * dt
+    }
+    if key_down(KEY_RIGHT) {
+        x = x + speed * dt
+    }
+    if key_down(KEY_UP) {
+        y = y - speed * dt
+    }
+    if key_down(KEY_DOWN) {
+        y = y + speed * dt
+    }
+}
+
+function on_draw() {
+    clear(rgb(20, 20, 40))
+    draw_rect(x - 25, y - 25, 50, 50, CYAN)
+}
+```
+
+Key concepts:
+- `on_update(dt)` is called every frame with `dt` (delta time) in seconds
+- `key_down(KEY)` returns true while a key is held
+- Multiply by `dt` for smooth, framerate-independent movement
+
+## Working with Sprites
+
+For more complex graphics, use sprites:
+
+```pixel
+player = none
+
+function on_start() {
+    create_window(800, 600, "Sprite Demo")
+    player = create_sprite(load_image("player.png"))
+    player.x = 400
+    player.y = 300
+}
+
+function on_update(dt) {
+    if key_down(KEY_RIGHT) {
+        player.x = player.x + 200 * dt
+    }
+    if key_down(KEY_LEFT) {
+        player.x = player.x - 200 * dt
+    }
+}
+
+function on_draw() {
+    clear(rgb(100, 150, 200))
+    draw_sprite(player)
+}
+```
+
+Sprites have properties you can modify:
+- `x`, `y` - position
+- `rotation` - angle in degrees
+- `scal
