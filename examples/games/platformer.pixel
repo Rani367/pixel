@@ -280,4 +280,80 @@ function on_draw() {
     // Draw coins
     i = 0
     while i < len(coins) {
-      
+        coin = coins[i]
+        if not coin.collected {
+            draw_x = coin.x - camera_x
+            if draw_x + COIN_SIZE > 0 and draw_x < WINDOW_WIDTH {
+                draw_circle(draw_x + COIN_SIZE / 2, coin.y + COIN_SIZE / 2, COIN_SIZE / 2, YELLOW)
+            }
+        }
+        i = i + 1
+    }
+
+    // Draw enemies
+    i = 0
+    while i < len(enemies) {
+        enemy = enemies[i]
+        draw_x = enemy.x - camera_x
+        if draw_x + ENEMY_WIDTH > 0 and draw_x < WINDOW_WIDTH {
+            draw_rect(draw_x, enemy.y, ENEMY_WIDTH, ENEMY_HEIGHT, RED)
+            // Eyes
+            eye_offset = 5
+            if enemy.vel_x < 0 {
+                eye_offset = -5
+            }
+            draw_circle(draw_x + ENEMY_WIDTH / 2 - 5 + eye_offset, enemy.y + 10, 4, WHITE)
+            draw_circle(draw_x + ENEMY_WIDTH / 2 + 5 + eye_offset, enemy.y + 10, 4, WHITE)
+        }
+        i = i + 1
+    }
+
+    // Draw flag
+    draw_x = flag_x - camera_x
+    if draw_x + 30 > 0 and draw_x < WINDOW_WIDTH {
+        // Flag pole
+        draw_rect(draw_x + 10, flag_y - 80, 5, 130, rgb(139, 69, 19))
+        // Flag
+        draw_rect(draw_x + 15, flag_y - 80, 40, 30, GREEN)
+    }
+
+    // Draw player
+    player_draw_x = player_x - camera_x
+    draw_rect(player_draw_x, player_y, PLAYER_WIDTH, PLAYER_HEIGHT, BLUE)
+    // Eyes
+    eye_x = player_draw_x + 8
+    if player_facing_right {
+        eye_x = player_draw_x + PLAYER_WIDTH - 12
+    }
+    draw_circle(eye_x, player_y + 12, 4, WHITE)
+
+    // Draw score
+    score_text = "Score: " + to_string(score)
+    draw_text(score_text, 20, 20, small_font, WHITE)
+
+    // Draw game over
+    if game_over {
+        msg = "GAME OVER"
+        msg_width = text_width(msg, font)
+        draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 18, font, RED)
+
+        restart_msg = "Press SPACE to restart"
+        restart_width = text_width(restart_msg, small_font)
+        draw_text(restart_msg, WINDOW_WIDTH / 2 - restart_width / 2, WINDOW_HEIGHT / 2 + 30, small_font, WHITE)
+    }
+
+    // Draw win message
+    if game_won {
+        msg = "YOU WIN!"
+        msg_width = text_width(msg, font)
+        draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 18, font, GREEN)
+
+        score_msg = "Final Score: " + to_string(score)
+        score_width = text_width(score_msg, small_font)
+        draw_text(score_msg, WINDOW_WIDTH / 2 - score_width / 2, WINDOW_HEIGHT / 2 + 30, small_font, WHITE)
+
+        restart_msg = "Press SPACE to play again"
+        restart_width = text_width(restart_msg, small_font)
+        draw_text(restart_msg, WINDOW_WIDTH / 2 - restart_width / 2, WINDOW_HEIGHT / 2 + 70, small_font, GRAY)
+    }
+}
