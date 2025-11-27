@@ -104,4 +104,21 @@ function on_update(dt) {
     }
 
     // Also follow mouse
-    paddle_x = mouse_x() - paddle_width / 
+    paddle_x = mouse_x() - paddle_width / // Web Demo - A simple game demonstrating web export
+// Build with: ./scripts/build-web.sh
+// This example works in both native and web builds
+
+// Game state
+ball_x = 400
+ball_y = 300
+ball_vx = 200
+ball_vy = 150
+ball_radius = 20
+
+paddle_x = 350
+paddle_y = 550
+paddle_width = 100
+paddle_height = 15
+
+score = 0
+game
