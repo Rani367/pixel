@@ -111,4 +111,30 @@ uint32_t ph_hash_string(const char* str, size_t length) {
     // FNV-1a hash
     uint32_t hash = 2166136261u;
     for (size_t i = 0; i < length; i++) {
-        hash ^= (uint8_t
+        hash ^= (uint8_t#include "strings.h"
+#include <string.h>
+#include <stdarg.h>
+#include <ctype.h>
+
+StringView sv_from_cstr(const char* cstr) {
+    StringView sv;
+    sv.data = cstr;
+    sv.length = cstr ? strlen(cstr) : 0;
+    return sv;
+}
+
+StringView sv_from_parts(const char* data, size_t length) {
+    StringView sv;
+    sv.data = data;
+    sv.length = length;
+    return sv;
+}
+
+bool sv_equal(StringView a, StringView b) {
+    if (a.length != b.length) {
+        return false;
+    }
+    return memcmp(a.data, b.data, a.length) == 0;
+}
+
+bool sv_starts_with(StringView 
