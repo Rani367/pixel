@@ -202,4 +202,265 @@ bool engine_init(Engine* engine, PalBackend backend) {
 void engine_shutdown(Engine* engine) {
     if (!engine) return;
 
-    if (engine->w
+    if (engine->window) {
+        pal_window_destroy(engine->window);
+        engine->window = NULL;
+    }
+
+    pal_quit();
+}
+
+// ============================================================================
+// Window Management
+// ============================================================================
+
+bool engine_create_window(Engine* engine, const char* title, int width, int height) {
+    if (!engine) return false;
+
+    // Destroy existing window if any
+    if (engine->window) {
+        pal_window_destroy(engine->window);
+    }
+
+    engine->window = pal_window_create(title, width, height);
+    engine->window_created = (engine->window != NULL);
+    return engine->window_created;
+}
+
+void engine_set_title(Engine* engine, const char* title) {
+    if (!engine || !engine->window) return;
+    pal_window_set_title(engine->window, title);
+}
+
+int engine_get_width(Engine* engine) {
+    if (!engine || !engine->window) return 0;
+    int width = 0, height = 0;
+    pal_window_get_size(engine->window, &width, &height);
+    return width;
+}
+
+int engine_get_height(Engine* engine) {
+    if (!engine || !engine->window) return 0;
+    int width = 0, height = 0;
+    pal_window_get_size(engine->window, &width, &height);
+    return height;
+}
+
+// ============================================================================
+// Callback Detection
+// ============================================================================
+
+// Helper to look up a global and check if it's a closure
+static ObjClosure* lookup_callback(VM* vm, const char* name) {
+    void* val_ptr;
+    if (table_get_cstr(&vm->globals, name, &val_ptr)) {
+        Value val = *(Value*)val_ptr;
+        if (IS_CLOSURE(val)) {
+            return AS_CLOSURE(val);
+        }
+    }
+    return NULL;
+}
+
+// Helper to look up a scene-prefixed callback (e.g., "menu_on_start")
+static ObjClosure* lookup_scene_callback(VM* vm, const char* scene, const char* callback) {
+    if (scene[0] == '\0') {
+        // Default scene: use standard callback names
+        return lookup_callback(vm, callback);
+    }
+
+    // Build scene-prefixed name: "scene_callback"
+    char name[128];
+    snprintf(name, sizeof(name), "%s_%s", scene, callback);
+    return lookup_callback(vm, name);
+}
+
+static void engine_detect_scene_callbacks(Engine* engine, const char* scene) {
+    if (!engine || !engine->vm) return;
+
+    engine->on_start = lookup_scene_callback(engine->vm, scene, "on_start");
+    engine->on_update = lookup_scene_callback(engine->vm, scene, "on_update");
+    engine->on_draw = lookup_scene_callback(engine->vm, scene, "on_draw");
+
+    // Input callbacks
+    engine->on_key_down = lookup_scene_callback(engine->vm, scene, "on_key_down");
+    engine->on_key_up = lookup_scene_callback(engine->vm, scene, "on_key_up");
+    engine->on_mouse_click = lookup_scene_callback(engine->vm, scene, "on_mouse_click");
+    engine->on_mouse_move = lookup_scene_callback(engine->vm, scene, "on_mouse_move");
+}
+
+void engine_detect_callbacks(Engine* engine) {
+    engine_detect_scene_callbacks(engine, engine->current_scene);
+}
+
+bool engine_has_callbacks(Engine* engine) {
+    if (!engine) return false;
+    return engine->on_start != NULL ||
+           engine->on_update != NULL ||
+           engine->on_draw != NULL ||
+           engine->on_key_down != NULL ||
+           engine->on_key_up != NULL ||
+           engine->on_mouse_click != NULL ||
+           engine->on_mouse_move != NULL;
+}
+
+// ============================================================================
+// Scene Management
+// ============================================================================
+
+void engine_load_scene(Engine* engine, const char* scene_name) {
+    if (!engine) return;
+
+    // Copy scene name to next_scene buffer
+    if (scene_name) {
+        strncpy(engine->next_scene, scene_name, ENGINE_MAX_SCENE_NAME - 1);
+        engine->next_scene[ENGINE_MAX_SCENE_NAME - 1] = '\0';
+    } else {
+        engine->next_scene[0] = '\0';
+    }
+    engine->scene_changed = true;
+}
+
+const char* engine_get_scene(Engine* engine) {
+    if (!engine) return "";
+    return engine->current_scene;
+}
+
+// Handle scene transition at the start of a frame
+static void engine_handle_scene_transition(Engine* engine) {
+    if (!engine->scene_changed) return;
+
+    // Copy next scene to current
+    strncpy(engine->current_scene, engine->next_scene, ENGINE_MAX_SCENE_NAME);
+    engine->scene_changed = false;
+
+    // Detect callbacks for the new scene
+    engine_detect_scene_callbacks(engine, engine->current_scene);
+
+    // Call the new scene's on_start
+    if (engine->on_start) {
+        vm_call_closure(engine->vm, engine->on_start, 0, NULL);
+    }
+}
+
+// ============================================================================
+// Physics Update
+// ============================================================================
+
+#ifndef __EMSCRIPTEN__
+// Calculate frame position from frame index
+static void calculate_frame_position(ObjAnimation* anim, int frame_index, int* frame_x, int* frame_y) {
+    if (!anim || !anim->image || anim->frame_width <= 0) {
+        *frame_x = 0;
+        *frame_y = 0;
+        return;
+    }
+
+    int frames_per_row = anim->image->width / anim->frame_width;
+    if (frames_per_row <= 0) frames_per_row = 1;
+
+    int row = frame_index / frames_per_row;
+    int col = frame_index % frames_per_row;
+
+    *frame_x = col * anim->frame_width;
+    *frame_y = row * anim->frame_height;
+}
+
+// Update animations for all sprites
+static void engine_update_animations(Engine* engine, double dt) {
+    if (!engine || !engine->vm) return;
+
+    Object* object = engine->vm->objects;
+    while (object != NULL) {
+        if (object->type == OBJ_SPRITE) {
+            ObjSprite* sprite = (ObjSprite*)object;
+            if (sprite->animation && sprite->animation->playing) {
+                ObjAnimation* anim = sprite->animation;
+                bool completed = animation_update(anim, dt);
+
+                // Apply current frame to sprite
+                if (anim->frame_count > 0 && anim->current_frame < anim->frame_count) {
+                    int frame_index = anim->frames[anim->current_frame];
+                    calculate_frame_position(anim, frame_index,
+                                           &sprite->frame_x, &sprite->frame_y);
+                }
+
+                // Call on_complete callback if animation finished
+                if (completed && anim->on_complete) {
+                    vm_call_closure(engine->vm, anim->on_complete, 0, NULL);
+                }
+            }
+        }
+        object = object->next;
+    }
+}
+
+// Update physics for all sprites in the VM
+static void engine_update_physics(Engine* engine, double dt) {
+    if (!engine || !engine->vm) return;
+
+    // Iterate through all objects and update sprite physics
+    Object* object = engine->vm->objects;
+    while (object != NULL) {
+        if (object->type == OBJ_SPRITE) {
+            ObjSprite* sprite = (ObjSprite*)object;
+            physics_update_sprite(sprite, dt);
+        }
+        object = object->next;
+    }
+}
+
+// Update all particle emitters
+static void engine_update_particles(Engine* engine, double dt) {
+    if (!engine || !engine->vm) return;
+
+    Object* object = engine->vm->objects;
+    while (object != NULL) {
+        if (object->type == OBJ_PARTICLE_EMITTER) {
+            ObjParticleEmitter* emitter = (ObjParticleEmitter*)object;
+            particle_emitter_update(emitter, dt);
+        }
+        object = object->next;
+    }
+}
+#endif
+
+// ============================================================================
+// Game Loop
+// ============================================================================
+
+void engine_stop(Engine* engine) {
+    if (engine) {
+        engine->running = false;
+    }
+}
+
+#ifndef __EMSCRIPTEN__
+// Helper to fire input callbacks after polling events
+static void engine_fire_input_callbacks(Engine* engine) {
+    // Fire keyboard callbacks
+    if (engine->on_key_down || engine->on_key_up) {
+        for (int key = 0; key < PAL_KEY_COUNT; key++) {
+            if (engine->on_key_down && pal_key_pressed((PalKey)key)) {
+                Value args[1] = { NUMBER_VAL((double)key) };
+                vm_call_closure(engine->vm, engine->on_key_down, 1, args);
+            }
+            if (engine->on_key_up && pal_key_released((PalKey)key)) {
+                Value args[1] = { NUMBER_VAL((double)key) };
+                vm_call_closure(engine->vm, engine->on_key_up, 1, args);
+            }
+        }
+    }
+
+    // Get current mouse position
+    int mouse_x = 0, mouse_y = 0;
+    pal_mouse_position(&mouse_x, &mouse_y);
+
+    // Fire mouse click callback
+    if (engine->on_mouse_click) {
+        for (int button = PAL_MOUSE_LEFT; button <= PAL_MOUSE_RIGHT; button++) {
+            if (pal_mouse_pressed((PalMouseButton)button)) {
+                Value args[3] = {
+                    NUMBER_VAL((double)mouse_x),
+                    NUMBER_VAL((double)mouse_y),
+                    NUMBER_VAL((double)bu
