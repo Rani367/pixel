@@ -234,4 +234,149 @@ TEST(function_definition) {
     ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_RETURN);
     ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IDENTIFIER);  // dt
     ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_STAR);
-    ASSERT
+    ASSERTchar_tokens) {
+    Lexer lexer;
+    lexer_init(&lexer, "== != <= >= += -= *= /= ->");
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EQUAL_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_BANG_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_LESS_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_GREATER_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_PLUS_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_MINUS_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_STAR_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_SLASH_EQUAL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_ARROW);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(keywords) {
+    Lexer lexer;
+    lexer_init(&lexer, "and else false for function if in not null or return struct this true while break continue");
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_AND);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_ELSE);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_FALSE);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_FOR);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_FUNCTION);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IF);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_IN);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_NOT);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_NULL);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_OR);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_RETURN);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_STRUCT);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_THIS);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_TRUE);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_WHILE);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_BREAK);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_CONTINUE);
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(identifiers) {
+    Lexer lexer;
+    lexer_init(&lexer, "foo bar _private camelCase PascalCase with123numbers");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.length, 3);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.length, 3);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.length, 8);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.length, 9);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.length, 10);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+    ASSERT_EQ(tok.length, 14);
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(keyword_prefixes) {
+    Lexer lexer;
+    lexer_init(&lexer, "iffy format whilever");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_IDENTIFIER);
+}
+
+TEST(numbers) {
+    Lexer lexer;
+    lexer_init(&lexer, "42 0 123 3.14 0.5 123.456");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_NUMBER);
+    ASSERT_EQ(tok.length, 2);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_NUMBER);
+    ASSERT_EQ(tok.length, 1);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_NUMBER);
+    ASSERT_EQ(tok.length, 3);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_NUMBER);
+    ASSERT_EQ(tok.length, 4);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_NUMBER);
+    ASSERT_EQ(tok.length, 3);
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_NUMBER);
+    ASSERT_EQ(tok.length, 7);
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(strings) {
+    Lexer lexer;
+    lexer_init(&lexer, "\"hello\" \"world\" \"with spaces\"");
+
+    Token tok;
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_STRING);
+    ASSERT_EQ(tok.length, 7);  // "hello" = 7
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_STRING);
+    ASSERT_EQ(tok.length, 7);  // "world" = 7
+
+    tok = lexer_scan_token(&lexer);
+    ASSERT_EQ(tok.type, TOKEN_STRING);
+    ASSERT_EQ(tok.length, 13);  // "with spaces" = 13
+
+    ASSERT_EQ(lexer_scan_token(&lexer).type, TOKEN_EOF);
+}
+
+TEST(string_escapes) {
+    Lexer lexer;
+    lexer_init(&lexer, "\"hello\\nworld\" \"tab\\there\" \"quote\\\"inside\"");
