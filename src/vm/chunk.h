@@ -39,4 +39,25 @@ void chunk_write_constant(Chunk* chunk, Value val#ifndef PH_CHUNK_H
 
 #include "core/common.h"
 #include "vm/value.h"
-#include "vm/op
+#include "vm/opmber for a bytecode offset
+int chunk_get_line(Chunk* chunk, int offset);
+
+// ============================================================================
+// Bytecode Serialization
+// ============================================================================
+
+// Magic number for bytecode files
+#define CHUNK_MAGIC 0x504C4243  // "PLBC"
+
+// Bytecode format version
+#define CHUNK_VERSION 1
+
+// Write chunk to file
+// Returns true on success, false on failure
+bool chunk_write_file(Chunk* chunk, const char* path);
+
+// Read chunk from file
+// Returns NULL on failure
+Chunk* chunk_read_file(const char* path);
+
+#endif // PH_CHUNK_H
