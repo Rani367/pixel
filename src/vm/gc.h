@@ -46,4 +46,23 @@ struct Object* gc_allocate_object(size_t size, int type);
 // Track bytes allocated (internal use)
 void gc_track_allocation(size_t size);
 
-//
+// ============================================================================
+// Garbage Collection
+// ============================================================================
+
+// Run a full garbage collection cycle
+void gc_collect(struct VM* vm);
+
+// ============================================================================
+// Marking API (for external roots)
+// ============================================================================
+
+// Mark a single value as reachable
+void gc_mark_value(struct VM* vm, Value value);
+
+// Mark an object as reachable
+void gc_mark_object(struct VM* vm, struct Object* object);
+
+// ============================================================================
+// Lifecycle
+// =======================================================
