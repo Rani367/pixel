@@ -61,3 +61,6 @@ bool chunk_write_file(Chunk* chunk, const char* path);
 Chunk* chunk_read_file(const char* path);
 
 #endif // PH_CHUNK_H
+ue, int line);
+
+// Get the line nu
