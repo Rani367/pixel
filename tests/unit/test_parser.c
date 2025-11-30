@@ -718,4 +718,109 @@ TEST(parse_for_statement) {
 TEST(parse_return_with_value) {
     Arena* arena = arena_new(0);
     Parser parser;
-    parser_in
+    parser_init(&parser, "return 42", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 1);
+    ASSERT_EQ(stmts[0]->type, STMT_RETURN);
+    StmtReturn* ret = (StmtReturn*)stmts[0];
+    ASSERT_NOT_NULL(ret->value);
+
+    arena_free(arena);
+}
+
+TEST(parse_return_bare) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "function foo() { return }", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 1);
+    ASSERT_EQ(stmts[0]->type, STMT_FUNCTION);
+    StmtFunction* fn = (StmtFunction*)stmts[0];
+    StmtBlock* block = (StmtBlock*)fn->body;
+    ASSERT_EQ(block->count, 1);
+    StmtReturn* ret = (StmtReturn*)block->statements[0];
+    ASSERT_NULL(ret->value);
+
+    arena_free(arena);
+}
+
+TEST(parse_break_continue) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "break\ncontinue", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 2);
+    ASSERT_EQ(stmts[0]->type, STMT_BREAK);
+    ASSERT_EQ(stmts[1]->type, STMT_CONTINUE);
+
+    arena_free(arena);
+}
+
+// ============================================================================
+// Declaration Tests
+// ============================================================================
+
+TEST(parse_function_decl) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "function add(a, b) { return a + b }", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 1);
+    ASSERT_EQ(stmts[0]->type, STMT_FUNCTION);
+    StmtFunction* fn = (StmtFunction*)stmts[0];
+    ASSERT_EQ(fn->param_count, 2);
+    ASSERT_NOT_NULL(fn->body);
+
+    arena_free(arena);
+}
+
+TEST(parse_function_no_params) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "function greet() { print(\"hello\") }", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 1);
+    ASSERT_EQ(stmts[0]->type, STMT_FUNCTION);
+    StmtFunction* fn = (StmtFunction*)stmts[0];
+    ASSERT_EQ(fn->param_count, 0);
+
+    arena_free(arena);
+}
+
+TEST(parse_struct_decl) {
+    Arena* arena = arena_new(0);
+    Parser parser;
+    parser_init(&parser, "struct Point { x, y }", arena);
+    int count;
+    Stmt** stmts = parser_parse(&parser, &count);
+
+    ASSERT(!parser_had_error(&parser));
+    ASSERT_EQ(count, 1);
+    ASSERT_EQ(stmts[0]->type, STMT_STRUCT);
+    StmtStruct* st = (StmtStruct*)stmts[0];
+    ASSERT_EQ(st->field_count, 2);
+
+    arena_free(arena);
+}
+
+// ============================================================================
+// Error Handling Tests
+// ============================================================================
+
+TEST(parse_error_missing_paren) {
+    Arena* are
