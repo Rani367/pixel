@@ -1730,4 +1730,374 @@ static Value native_sprite_stop(int arg_count, Value* args) {
 }
 
 // animation_frame(animation) -> number
-stat
+static Value native_animation_frame(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_ANIMATION(args[0])) {
+        return native_error("animation_frame() requires an animation");
+    }
+
+    ObjAnimation* anim = AS_ANIMATION(args[0]);
+    return NUMBER_VAL((double)anim->current_frame);
+}
+
+// animation_playing(animation) -> bool
+static Value native_animation_playing(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_ANIMATION(args[0])) {
+        return native_error("animation_playing() requires an animation");
+    }
+
+    ObjAnimation* anim = AS_ANIMATION(args[0]);
+    return BOOL_VAL(anim->playing);
+}
+
+// ============================================================================
+// Scene Functions
+// ============================================================================
+
+// load_scene(name) -> nil
+static Value native_load_scene(int arg_count, Value* args) {
+    (void)arg_count;
+
+    Engine* engine = engine_get();
+    if (!engine) {
+        return native_error("No engine initialized");
+    }
+
+    if (!IS_STRING(args[0])) {
+        return native_error("load_scene() requires a scene name string");
+    }
+
+    const char* name = AS_CSTRING(args[0]);
+    engine_load_scene(engine, name);
+    return NONE_VAL;
+}
+
+// get_scene() -> string
+static Value native_get_scene(int arg_count, Value* args) {
+    (void)arg_count;
+    (void)args;
+
+    Engine* engine = engine_get();
+    if (!engine) {
+        return native_error("No engine initialized");
+    }
+
+    const char* scene = engine_get_scene(engine);
+    ObjString* str = string_copy(scene, (int)strlen(scene));
+    return OBJECT_VAL(str);
+}
+
+// ============================================================================
+// Particle Functions
+// ============================================================================
+
+// create_emitter(x, y) -> emitter
+static Value native_create_emitter(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
+        return native_error("create_emitter() requires x and y as numbers");
+    }
+
+    double x = AS_NUMBER(args[0]);
+    double y = AS_NUMBER(args[1]);
+
+    ObjParticleEmitter* emitter = particle_emitter_new(x, y);
+    return OBJECT_VAL(emitter);
+}
+
+// emitter_emit(emitter, count) -> nil
+static Value native_emitter_emit(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_emit() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1])) {
+        return native_error("emitter_emit() requires a count as number");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    int count = (int)AS_NUMBER(args[1]);
+    particle_emitter_emit(emitter, count);
+    return NONE_VAL;
+}
+
+// emitter_set_color(emitter, color) -> nil
+static Value native_emitter_set_color(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_color() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1])) {
+        return native_error("emitter_set_color() requires a color");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->color = (uint32_t)AS_NUMBER(args[1]);
+    return NONE_VAL;
+}
+
+// emitter_set_speed(emitter, min, max) -> nil
+static Value native_emitter_set_speed(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_speed() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("emitter_set_speed() requires min and max as numbers");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->speed_min = AS_NUMBER(args[1]);
+    emitter->speed_max = AS_NUMBER(args[2]);
+    return NONE_VAL;
+}
+
+// emitter_set_angle(emitter, min, max) -> nil
+static Value native_emitter_set_angle(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_angle() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("emitter_set_angle() requires min and max as numbers");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->angle_min = AS_NUMBER(args[1]);
+    emitter->angle_max = AS_NUMBER(args[2]);
+    return NONE_VAL;
+}
+
+// emitter_set_lifetime(emitter, min, max) -> nil
+static Value native_emitter_set_lifetime(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_lifetime() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("emitter_set_lifetime() requires min and max as numbers");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->life_min = AS_NUMBER(args[1]);
+    emitter->life_max = AS_NUMBER(args[2]);
+    return NONE_VAL;
+}
+
+// emitter_set_size(emitter, min, max) -> nil
+static Value native_emitter_set_size(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_size() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("emitter_set_size() requires min and max as numbers");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->size_min = AS_NUMBER(args[1]);
+    emitter->size_max = AS_NUMBER(args[2]);
+    return NONE_VAL;
+}
+
+// emitter_set_gravity(emitter, gravity) -> nil
+static Value native_emitter_set_gravity(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_gravity() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1])) {
+        return native_error("emitter_set_gravity() requires gravity as number");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->gravity = AS_NUMBER(args[1]);
+    return NONE_VAL;
+}
+
+// emitter_set_rate(emitter, rate) -> nil
+static Value native_emitter_set_rate(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_rate() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1])) {
+        return native_error("emitter_set_rate() requires rate as number");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->rate = AS_NUMBER(args[1]);
+    return NONE_VAL;
+}
+
+// emitter_set_position(emitter, x, y) -> nil
+static Value native_emitter_set_position(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_position() requires a particle emitter");
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        return native_error("emitter_set_position() requires x and y as numbers");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->x = AS_NUMBER(args[1]);
+    emitter->y = AS_NUMBER(args[2]);
+    return NONE_VAL;
+}
+
+// emitter_set_active(emitter, active) -> nil
+static Value native_emitter_set_active(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_set_active() requires a particle emitter");
+    }
+    if (!IS_BOOL(args[1])) {
+        return native_error("emitter_set_active() requires a boolean");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    emitter->active = AS_BOOL(args[1]);
+    return NONE_VAL;
+}
+
+// draw_particles(emitter) -> nil
+static Value native_draw_particles(int arg_count, Value* args) {
+    (void)arg_count;
+
+    Engine* engine = engine_get();
+    if (!engine || !engine->window) {
+        return NONE_VAL;
+    }
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("draw_particles() requires a particle emitter");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+
+    for (int i = 0; i < emitter->particle_count; i++) {
+        Particle* p = &emitter->particles[i];
+
+        // Apply camera transform
+        int screen_x, screen_y;
+        apply_camera_transform(p->x, p->y, &screen_x, &screen_y);
+        int size = apply_camera_zoom((int)p->size);
+        if (size < 1) size = 1;
+
+        // Unpack color
+        uint8_t a = (p->color >> 24) & 0xFF;
+        uint8_t r = (p->color >> 16) & 0xFF;
+        uint8_t g = (p->color >> 8) & 0xFF;
+        uint8_t b = p->color & 0xFF;
+
+        // Draw as filled circle (or rectangle for simplicity)
+        pal_draw_rect(engine->window, screen_x - size/2, screen_y - size/2, size, size, r, g, b, a);
+    }
+
+    return NONE_VAL;
+}
+
+// emitter_count(emitter) -> number
+static Value native_emitter_count(int arg_count, Value* args) {
+    (void)arg_count;
+
+    if (!IS_PARTICLE_EMITTER(args[0])) {
+        return native_error("emitter_count() requires a particle emitter");
+    }
+
+    ObjParticleEmitter* emitter = AS_PARTICLE_EMITTER(args[0]);
+    return NUMBER_VAL((double)emitter->particle_count);
+}
+
+// ============================================================================
+// Registration
+// ============================================================================
+
+void engine_natives_init(VM* vm) {
+    // Color functions
+    define_native(vm, "rgb", native_rgb, 3);
+    define_native(vm, "rgba", native_rgba, 4);
+
+    // Window functions
+    define_native(vm, "create_window", native_create_window, -1);  // variadic
+    define_native(vm, "set_title", native_set_title, 1);
+    define_native(vm, "window_width", native_window_width, 0);
+    define_native(vm, "window_height", native_window_height, 0);
+
+    // Drawing functions
+    define_native(vm, "clear", native_clear, 1);
+    define_native(vm, "draw_rect", native_draw_rect, 5);
+    define_native(vm, "draw_circle", native_draw_circle, 4);
+    define_native(vm, "draw_line", native_draw_line, 5);
+
+    // Input functions
+    define_native(vm, "key_down", native_key_down, 1);
+    define_native(vm, "key_pressed", native_key_pressed, 1);
+    define_native(vm, "key_released", native_key_released, 1);
+    define_native(vm, "mouse_x", native_mouse_x, 0);
+    define_native(vm, "mouse_y", native_mouse_y, 0);
+    define_native(vm, "mouse_down", native_mouse_down, 1);
+    define_native(vm, "mouse_pressed", native_mouse_pressed, 1);
+    define_native(vm, "mouse_released", native_mouse_released, 1);
+
+    // Timing functions
+    define_native(vm, "delta_time", native_delta_time, 0);
+    define_native(vm, "game_time", native_game_time, 0);
+
+    // Image and sprite functions
+    define_native(vm, "load_image", native_load_image, 1);
+    define_native(vm, "image_width", native_image_width, 1);
+    define_native(vm, "image_height", native_image_height, 1);
+    define_native(vm, "draw_image", native_draw_image, 3);
+    define_native(vm, "draw_image_ex", native_draw_image_ex, 8);
+    define_native(vm, "create_sprite", native_create_sprite, -1);  // variadic (0-1 args)
+    define_native(vm, "draw_sprite", native_draw_sprite, 1);
+    define_native(vm, "set_sprite_frame", native_set_sprite_frame, 2);
+
+    // Font and text functions
+    define_native(vm, "load_font", native_load_font, 2);
+    define_native(vm, "default_font", native_default_font, -1);  // variadic (0-1 args)
+    define_native(vm, "draw_text", native_draw_text, 5);
+    define_native(vm, "text_width", native_text_width, 2);
+    define_native(vm, "text_height", native_text_height, 2);
+
+    // Audio functions
+    define_native(vm, "load_sound", native_load_sound, 1);
+    define_native(vm, "play_sound", native_play_sound, 1);
+    define_native(vm, "play_sound_volume", native_play_sound_volume, 2);
+    define_native(vm, "load_music", native_load_music, 1);
+    define_native(vm, "play_music", native_play_music, 1);
+    define_native(vm, "play_music_loop", native_play_music_loop, 1);
+    define_native(vm, "pause_music", native_pause_music, 0);
+    define_native(vm, "resume_music", native_resume_music, 0);
+    define_native(vm, "stop_music", native_stop_music, 0);
+    define_native(vm, "set_music_volume", native_set_music_volume, 1);
+    define_native(vm, "set_master_volume", native_set_master_volume, 1);
+    define_native(vm, "music_playing", native_music_playing, 0);
+
+    // Physics and collision functions
+    define_native(vm, "set_gravity", native_set_gravity, 1);
+    define_native(vm, "get_gravity", native_get_gravity, 0);
+    define_native(vm, "collides", native_collides, 2);
+    define_native(vm, "collides_rect", native_collides_rect, 5);
+    define_native(vm, "collides_point", native_collides_point, 3);
+    define_native(vm, "collides_circle", native_collides_circle, 2);
+    define_native(vm, "distance", native_distance, 2);
+    define_native(vm, "apply_force", native_apply_force, 3);
+    define_native(vm, "move_toward", native_move_toward, 4);
+    define_native(vm, "look_at", native_look_at,
