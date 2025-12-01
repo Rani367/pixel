@@ -34,4 +34,11 @@ void log_write(LogLevel level, const char* file, int line, const char* fmt, ...)
     time_t now = time(NULL);
     struct tm* tm_info = localtime(&now);
     char time_buf[20];
-    strftime(time_buf, sizeof(time_buf), "
+    strftime(time_buf, sizeof(time_buf), "s, fmt);
+    vfprintf(out, fmt, args);
+    va_end(args);
+
+    fprintf(out, "\n");
+    fflush(out);
+}
+#pragma GCC diagnostic pop
