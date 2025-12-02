@@ -379,4 +379,15 @@ TEST(strings) {
 
 TEST(string_escapes) {
     Lexer lexer;
-    lexer_init(&lexer, "\"hello\\nworld\" \"tab\\there\" \"quote\\\"inside\"");
+    lexer_init(&lexer, "\"hello\\nworld\" \"tab\\there\" \"quote\\\"inside\""););
+
+    TEST_SUITE("Lexer - Edge Cases");
+    RUN_TEST(empty_source);
+    RUN_TEST(whitespace_only);
+
+    TEST_SUITE("Lexer - Integration");
+    RUN_TEST(complex_expression);
+    RUN_TEST(function_definition);
+
+    TEST_SUMMARY();
+}
