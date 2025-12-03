@@ -54,4 +54,21 @@ he end of the array
 #define ph_array_last(arr) \
     ((arr)->data[(arr)->count - 1])
 
-// Check if array is emp
+// Check if array is emp#ifndef PH_ARRAY_H
+#define PH_ARRAY_H
+
+#include "common.h"
+
+// Define a dynamic array type for a given element type
+#define PH_ARRAY_DEFINE(name, type) \
+    typedef struct { \
+        type* data; \
+        int count; \
+        int capacity; \
+    } name
+
+// Initialize an array to empty state
+#define ph_array_init(arr) \
+    do { \
+        (arr)->data = NULL; \
+        (arr)->count = 0; 
