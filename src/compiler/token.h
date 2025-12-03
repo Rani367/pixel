@@ -25,4 +25,7 @@ typedef enum {
     TOKEN_BANG,            // !
     TOKEN_BANG_EQUAL,      // !=
     TOKEN_EQUAL,           // =
-    T
+    TTOKEN_PLUS_EQUAL,      // +=
+    TOKEN_MINUS_EQUAL,     // -=
+    TOKEN_STAR_EQUAL,      // *=
+    
