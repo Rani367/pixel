@@ -8,3 +8,5 @@ typedef struct {
     const char* start;     // Start of current token
     const char* current;   // Current character
     int lEXER_H
+ine;
+    int
