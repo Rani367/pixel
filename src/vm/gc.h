@@ -65,4 +65,13 @@ void gc_mark_object(struct VM* vm, struct Object* object);
 
 // ============================================================================
 // Lifecycle
-// =======================================================
+// ============================================================================
+
+// Initialize the global GC state (call once at startup)
+void gc_init(void);
+
+// Transfer compiled objects to the VM
+// Call after compilation and before interpretation
+void gc_transfer_objects(struct VM* vm);
+
+// Free all remaining global objects (
