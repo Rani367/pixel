@@ -278,4 +278,47 @@ function draw_paused() {
         move_y = move_y * 0.707
     }
 
-    pl
+    plse
+    paused = false
+}
+
+function on_update(dt) {
+    if game_over {
+        if key_pressed(KEY_SPACE) {
+            reset_game()
+        }
+        return
+    }
+
+    if key_pressed(KEY_P) or key_pressed(KEY_ESCAPE) {
+        paused = not paused
+    }
+
+    if paused {
+        return
+    }
+
+    update_player(dt)
+    update_bullets(dt)
+    update_enemies(dt)
+    update_particles(dt)
+    update_spawning(dt)
+    check_wave_complete()
+}
+
+function update_player(dt) {
+    // Movement
+    move_x = 0
+    move_y = 0
+
+    if key_down(KEY_W) or key_down(KEY_UP) {
+        move_y = -1
+    }
+    if key_down(KEY_S) or key_down(KEY_DOWN) {
+        move_y = 1
+    }
+    if key_down(KEY_A) or key_down(KEY_LEFT) {
+        move_x = -1
+    }
+    if key_down(KEY_D) or key_down(KEY_RIGHT) {
+      
