@@ -187,4 +187,16 @@ angle = angle_between(player.x, player.y, enemy.x, enemy.y)
 }
 </code></pre>
 <h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">Constants</h2>
-<p cl
+<p class="mb-4 leading-relaxed">Common mathematical constants you may need:</p>
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>PI = 3.14159265359
+TWO_PI = 6.28318530718
+HALF_PI = 1.57079632679
+DEG_TO_RAD = 0.01745329251
+RAD_TO_DEG = 57.2957795131
+</code></pre>
+<p class="mb-4 leading-relaxed">Usage:
+<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>angle_rad = angle_deg * DEG_TO_RAD
+angle_deg = angle_rad * RAD_TO_DEG
+</code></pre></p> </article> </div> </div> <script type="module">const t=document.getElementById("sidebar-toggle"),e=document.getElementById("sidebar");t?.addEventListener("click",()=>{e?.classList.toggle("hidden"),e?.classList.toggle("block")});</script>  </main> <footer class="border-t border-zinc-200 dark:border-zinc-800 py-8 mt-16"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-600 dark:text-zinc-400"> <div class="flex items-center gap-4"> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+GitHub
+</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html>
