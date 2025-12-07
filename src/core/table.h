@@ -39,3 +39,9 @@ bool table_get_cstr(Table* table, const char* key, void** out_value);
 bool table_delete_cstr(Table* table, const char* key);
 
 #endif // PH_TABLE_H
+nst char* key, size_t key_length, void* value);
+
+// Get a value by key (returns true if found, stores value in out_value)
+bool table_get(Table* table, const char* key, size_t key_length, void** out_value);
+
+// Delete a key (ret
