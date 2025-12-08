@@ -31,4 +31,21 @@ typedef enum {
 // Symbol entry in the symbol table
 typedef struct Symbol {
     const char* name;       // Pointer into source (not owned)
-    int length;             // N
+    int length;             // Name length
+    SymbolKind kind;
+    int depth;              // Scope depth (0 = global)
+    int slot;               // Stack slot for locals/parameters
+    bool is_captured;       // Captured by a closure?
+    bool is_initialized;    // Has been assigned a value?
+} Symbol;
+
+// Scope - a linked list of scopes for nested blocks
+typedef struct Scope {
+    Symbol* symbols;        // Dynamic array of symbols
+    int count;
+    int capacity;
+    int depth;              // Nesting depth (0 = global)
+    struct Scope* enclosing;
+} Scope;
+
+// Initialize
