@@ -463,4 +463,49 @@ static void engine_fire_input_callbacks(Engine* engine) {
                 Value args[3] = {
                     NUMBER_VAL((double)mouse_x),
                     NUMBER_VAL((double)mouse_y),
-                    NUMBER_VAL((double)bu
+                    NUMBER_VAL((double)bu   vm_call_closure(engine->vm, engine->on_mouse_click, 3, args);
+            }
+        }
+    }
+
+    // Fire mouse move callback if position changed
+    if (engine->on_mouse_move) {
+        if (mouse_x != engine->last_mouse_x || mouse_y != engine->last_mouse_y) {
+            Value args[2] = {
+                NUMBER_VAL((double)mouse_x),
+                NUMBER_VAL((double)mouse_y)
+            };
+            vm_call_closure(engine->vm, engine->on_mouse_move, 2, args);
+        }
+    }
+
+    // Update last mouse position
+    engine->last_mouse_x = mouse_x;
+    engine->last_mouse_y = mouse_y;
+}
+#endif
+
+// Single frame tick - called every frame by the game loop
+static void engine_frame_tick(Engine* engine) {
+    if (!engine || !engine->running) return;
+
+    // Check for quit
+    if (pal_should_quit()) {
+        engine->running = false;
+#ifdef __EMSCRIPTEN__
+        emscripten_cancel_main_loop();
+#endif
+        return;
+    }
+
+    double frame_start = pal_time();
+#ifndef __EMSCRIPTEN__
+    double target_frame_time = 1.0 / engine->target_fps;
+#endif
+
+    // Calculate delta time
+    engine->delta_time = frame_start - engine->last_time;
+    engine->last_time = frame_start;
+
+    // Cap delta time to avoid huge jumps (especially on first frame)
+    if (e
