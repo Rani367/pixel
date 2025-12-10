@@ -113,4 +113,15 @@ pixel run examples/games/pong.pixel
 ## Building from Source
 
 ```bash
-git clone https://github.com/user/p
+git clone https://github.com/user/pixel.git
+cd pixel
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+```
+
+Requirements: C compiler, CMake 3.16+, SDL2
+
+## License
+
+MIT
