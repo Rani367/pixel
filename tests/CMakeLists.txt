@@ -52,3 +52,4 @@ target_link_libraries(test_codegen pixel_compiler)
 add_test(NAME test_codegen COMMAND test_codegen)
 
 add_executable(test_vm unit/test_vm.c)
+target
