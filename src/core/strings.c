@@ -137,4 +137,57 @@ bool sv_equal(StringView a, StringView b) {
     return memcmp(a.data, b.data, a.length) == 0;
 }
 
-bool sv_starts_with(StringView 
+bool sv_starts_with(StringView f (n == 0) {
+        return;
+    }
+
+    sb_grow(sb, sb->length + n + 1);
+    memcpy(sb->data + sb->length, str, n);
+    sb->length += n;
+    sb->data[sb->length] = '\0';
+}
+
+void sb_append_char(StringBuilder* sb, char c) {
+    sb_grow(sb, sb->length + 2);
+    sb->data[sb->length] = c;
+    sb->length++;
+    sb->data[sb->length] = '\0';
+}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+void sb_appendf(StringBuilder* sb, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    // First, determine the size needed
+    va_list args_copy;
+    va_copy(args_copy, args);
+    int needed = vsnprintf(NULL, 0, fmt, args_copy);
+    va_end(args_copy);
+
+    if (needed < 0) {
+        va_end(args);
+        return;
+    }
+
+    sb_grow(sb, sb->length + (size_t)needed + 1);
+    vsnprintf(sb->data + sb->length, (size_t)needed + 1, fmt, args);
+    sb->length += (size_t)needed;
+
+    va_end(args);
+}
+#pragma GCC diagnostic pop
+
+char* sb_finish(StringBuilder* sb) {
+    if (sb->data == NULL) {
+        // Return empty string
+        char* result = PH_ALLOC(1);
+        result[0] = '\0';
+        return result;
+    }
+
+    char* result = sb->data;
+    sb->data = NULL;
+    sb->length = 0;
+    sb->ca
