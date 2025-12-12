@@ -10,4 +10,26 @@ Build for Windows, macOS, Linux, and the web. One codebase, multiple platforms.
 Or <a href="/pixel/docs/installation" class="text-[--color-accent] hover:underline">build from source</a> for other platforms.
 </p> </div> </div> </section>  </main> <footer class="border-t border-zinc-200 dark:border-zinc-800 py-8 mt-16"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-600 dark:text-zinc-400"> <div class="flex items-center gap-4"> <a href="https://github.com/Rani367/pixel" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
 GitHub
-</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html><script type="module">const t=document.getElementById("theme-toggle");t?.addEventListener("click",()=>{const e
+</a> <span>MIT License</span> <span>v1.0.0</span> </div> <p>Made for game developers</p> </div> </footer> </body></html><script type="module">const t=document.getElementById("theme-toggle");t?.addEventListener("click",()=>{const e=document.documentElement.classList.toggle("dark");localStorage.setItem("theme",e?"dark":"light")});</script> </div> </nav> </header> <main data-astro-cid-37fxchfa>   <section class="py-20 md:py-32"> <div class="max-w-6xl mx-auto px-4 text-center"> <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+Make 2D games with code.
+</h1> <p class="text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto mb-10">
+A beginner-friendly programming language with a built-in game engine.
+        No setup required.
+</p> <div class="flex flex-wrap justify-center gap-4 mb-16"> <a href="/pixel/docs" class="px-6 py-3 bg-[--color-accent] text-zinc-900 font-medium rounded-lg hover:bg-[--color-accent-dark] transition-colors">
+Get Started
+</a> <a href="/pixel/playground" class="px-6 py-3 border border-zinc-300 dark:border-zinc-700 font-medium rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+Try Online
+</a> </div> <!-- Code Example --> <div class="max-w-2xl mx-auto text-left"> <div class="bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"> <div class="flex items-center gap-2 px-4 py-3 bg-zinc-800"> <span class="w-3 h-3 rounded-full bg-red-500"></span> <span class="w-3 h-3 rounded-full bg-yellow-500"></span> <span class="w-3 h-3 rounded-full bg-green-500"></span> <span class="ml-2 text-sm text-zinc-400">game.pixel</span> </div> <pre class="p-6 text-sm leading-relaxed overflow-x-auto"><code class="text-zinc-300"><span class="text-purple-400">function</span> <span class="text-cyan-400">on_start</span>() {
+    <span class="text-cyan-400">create_window</span>(<span class="text-orange-400">800</span>, <span class="text-orange-400">600</span>, <span class="text-green-400">"My Game"</span>)
+    player = <span class="text-cyan-400">create_sprite</span>(<span class="text-cyan-400">load_image</span>(<span class="text-green-400">"hero.png"</span>))
+    player.x = <span class="text-orange-400">400</span>
+}
+
+<span class="text-purple-400">function</span> <span class="text-cyan-400">on_update</span>(dt) {
+    <span class="text-purple-400">if</span> <span class="text-cyan-400">key_down</span>(KEY_RIGHT) {
+        player.x = player.x + <span class="text-orange-400">200</span> * dt
+    }
+}
+
+<span class="text-purple-400">function</span> <span class="text-cyan-400">on_draw</span>() {
+    <span class="text-cyan-400">clear</span>(<span class="t
