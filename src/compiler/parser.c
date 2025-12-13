@@ -659,4 +659,141 @@ typedef enum {
     PREC_COMPARISON,  // < > <= >=
     PREC_TERM,        // + -
     PREC_FACTOR,      // * / %
- 
+ ;
+    rules[TOKEN_MINUS_MINUS]   = (ParseRule){NULL, postfix, PREC_CALL};
+}
+
+static ParseRule* get_rule(TokenType type) {
+    return &rules[type];
+}
+
+// ============================================================================
+// Pratt Parser Core
+// ============================================================================
+
+static Expr* parse_precedence(Parser* parser, Precedence precedence) {
+    advance(parser);
+
+    ParsePrefixFn prefix_rule = get_rule(parser->previous.type)->prefix;
+    if (prefix_rule == NULL) {
+        error(parser, "Expected expression.");
+        return NULL;
+    }
+
+    Expr* left = prefix_rule(parser);
+    if (left == NULL) return NULL;
+
+    while (precedence <= get_rule(parser->current.type)->precedence) {
+        advance(parser);
+        ParseInfixFn infix_rule = get_rule(parser->previous.type)->infix;
+        if (infix_rule == NULL) {
+            error(parser, "Expected infix operator.");
+            return left;
+        }
+        left = infix_rule(parser, left);
+        if (left == NULL) return NULL;
+    }
+
+    return left;
+}
+
+static Expr* expression(Parser* parser) {
+    return parse_precedence(parser, PREC_ASSIGNMENT);
+}
+
+// ============================================================================
+// Statement Parsing
+// ============================================================================
+
+static Stmt* expression_statement(Parser* parser) {
+    Expr* expr = expression(parser);
+    if (expr == NULL) return NULL;
+
+    // Check for assignment
+    if (match(parser, TOKEN_EQUAL)) {
+        Expr* value = expression(parser);
+        if (value == NULL) return NULL;
+
+        // Validate assignment target
+        if (expr->type == EXPR_IDENTIFIER) {
+            return stmt_assignment(parser->arena, expr, value);
+        } else if (expr->type == EXPR_GET) {
+            // obj.field = value becomes ExprSet
+            ExprGet* get = (ExprGet*)expr;
+            Expr* set = expr_set(parser->arena, get->object, get->name, value);
+            return stmt_expression(parser->arena, set);
+        } else if (expr->type == EXPR_INDEX) {
+            // arr[i] = value becomes ExprIndexSet
+            ExprIndex* idx = (ExprIndex*)expr;
+            Expr* set = expr_index_set(parser->arena, idx->object, idx->index, value);
+            return stmt_expression(parser->arena, set);
+        } else {
+            error(parser, "Invalid assignment target.");
+            return NULL;
+        }
+    }
+
+    // Handle compound assignment: += -= *= /=
+    if (match(parser, TOKEN_PLUS_EQUAL) || match(parser, TOKEN_MINUS_EQUAL) ||
+        match(parser, TOKEN_STAR_EQUAL) || match(parser, TOKEN_SLASH_EQUAL)) {
+        TokenType compound_op = parser->previous.type;
+        Expr* rhs = expression(parser);
+        if (rhs == NULL) return NULL;
+
+        // Determine binary operator
+        TokenType binary_op;
+        switch (compound_op) {
+            case TOKEN_PLUS_EQUAL:  binary_op = TOKEN_PLUS;  break;
+            case TOKEN_MINUS_EQUAL: binary_op = TOKEN_MINUS; break;
+            case TOKEN_STAR_EQUAL:  binary_op = TOKEN_STAR;  break;
+            case TOKEN_SLASH_EQUAL: binary_op = TOKEN_SLASH; break;
+            default: binary_op = TOKEN_PLUS; break;  // Unreachable
+        }
+
+        // Desugar: x += y => x = x + y
+        Expr* binary_expr = expr_binary(parser->arena, expr, binary_op, rhs);
+
+        if (expr->type == EXPR_IDENTIFIER) {
+            return stmt_assignment(parser->arena, expr, binary_expr);
+        } else if (expr->type == EXPR_GET) {
+            ExprGet* get = (ExprGet*)expr;
+            Expr* set = expr_set(parser->arena, get->object, get->name, binary_expr);
+            return stmt_expression(parser->arena, set);
+        } else if (expr->type == EXPR_INDEX) {
+            ExprIndex* idx = (ExprIndex*)expr;
+            Expr* set = expr_index_set(parser->arena, idx->object, idx->index, binary_expr);
+            return stmt_expression(parser->arena, set);
+        } else {
+            error(parser, "Invalid compound assignment target.");
+            return NULL;
+        }
+    }
+
+    return stmt_expression(parser->arena, expr);
+}
+
+static Stmt* block(Parser* parser) {
+    Span start_span = span_from_token(parser->previous);
+
+    int capacity = 8;
+    int count = 0;
+    Stmt** statements = arena_alloc(parser->arena, sizeof(Stmt*) * capacity);
+
+    while (!check(parser, TOKEN_RIGHT_BRACE) && !check(parser, TOKEN_EOF)) {
+        Stmt* stmt = declaration(parser);
+        if (stmt != NULL) {
+            if (count >= capacity) {
+                int new_capacity = capacity * 2;
+                Stmt** new_stmts = arena_alloc(parser->arena, sizeof(Stmt*) * new_capacity);
+                memcpy(new_stmts, statements, sizeof(Stmt*) * count);
+                statements = new_stmts;
+                capacity = new_capacity;
+            }
+            statements[count++] = stmt;
+        }
+    }
+
+    Token end = consume(parser, TOKEN_RIGHT_BRACE, "Expected '}' after block.");
+    Span span = span_merge(start_span, span_from_token(end));
+
+    return stmt_block(parser->arena, statements, count, s
