@@ -123,4 +123,30 @@ size_t arena_total_allocated(Arena* arena) {
     return total;
 }
 
-size_t arena_to
+size_t arena_toarena == NULL) {
+        return NULL;
+    }
+
+    arena->first = arena_block_new(initial_capacity);
+    if (arena->first == NULL) {
+        PH_FREE(arena);
+        return NULL;
+    }
+
+    arena->current = arena->first;
+    return arena;
+}
+
+void* arena_alloc(Arena* arena, size_t size) {
+    return arena_alloc_aligned(arena, size, sizeof(void*));
+}
+
+void* arena_alloc_aligned(Arena* arena, size_t size, size_t align) {
+    PH_ASSERT(arena != NULL);
+    PH_ASSERT(size > 0);
+    PH_ASSERT(align > 0 && (align & (align - 1)) == 0); // Power of 2
+
+    ArenaBlock* block = arena->current;
+
+    // Calculate aligned offset
+    u
