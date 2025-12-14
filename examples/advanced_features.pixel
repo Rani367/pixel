@@ -1,0 +1,139 @@
+// Advanced Engine Features Demo (Phase 20)
+// Demonstrates: Camera, Animation, Scene Management, Particles
+
+// Scene: menu
+function menu_on_start() {
+    println("Menu Scene Started")
+    println("Press SPACE to play, ESC to quit")
+}
+
+function menu_on_update(dt) {
+    if key_pressed(KEY_SPACE) {
+        load_scene("game")
+    }
+    if key_pressed(KEY_ESCAPE) {
+        quit()
+    }
+}
+
+function menu_on_draw() {
+    clear(rgb(20, 20, 60))
+    // Note: draw_text requires a font which may not be available
+    draw_rect(350, 280, 100, 40, WHITE)
+    draw_rect(360, 290, 80, 20, rgb(20, 20, 60))
+}
+
+// Scene: game
+player = none
+emitter = none
+game_time = 0
+
+function game_on_start() {
+    println("Game Scene Started")
+    println("WASD to move, SPACE for particles, ESC for menu")
+
+    // Create a simple player (no image, just a colored rect via sprite)
+    player = create_sprite(none)
+    player.x = 400
+    player.y = 300
+    player.width = 32
+    player.height = 32
+
+    // Create particle emitter at player position
+    emitter = create_emitter(player.x, player.y)
+    emitter_set_color(emitter, rgba(255, 200, 50, 255))
+    emitter_set_speed(emitter, 100, 200)
+    emitter_set_angle(emitter, 0, 360)
+    emitter_set_lifetime(emitter, 0.3, 0.8)
+    emitter_set_size(emitter, 4, 8)
+    emitter_set_gravity(emitter, 200)
+
+    // Camera follows player with smooth lerp
+    camera_follow(player, 0.1)
+}
+
+function game_on_update(dt) {
+    // Movement
+    speed = 200
+    if key_down(KEY_W) or key_down(KEY_UP) {
+        player.y = player.y - speed * dt
+    }
+    if key_down(KEY_S) or key_down(KEY_DOWN) {
+        player.y = player.y + speed * dt
+    }
+    if key_down(KEY_A) or key_down(KEY_LEFT) {
+        player.x = player.x - speed * dt
+    }
+    if key_down(KEY_D) or key_down(KEY_RIGHT) {
+        player.x = player.x + speed * dt
+    }
+
+    // Update emitter position to follow player
+    emitter_set_position(emitter, player.x, player.y)
+
+    // Emit particles when space is pressed
+    if key_down(KEY_SPACE) {
+        emitter_emit(emitter, 5)
+    }
+
+    // Camera shake on click
+    if mouse_pressed(0) {
+        camera_shake(10, 0.3)
+    }
+
+    // Zoom with scroll or Q/E
+    if key_pressed(KEY_Q) {
+        camera_set_zoom(camera_zoom() * 0.9)
+    }
+    if key_pressed(KEY_E) {
+        camera_set_zoom(camera_zoom() * 1.1)
+    }
+
+    // Return to menu
+    if key_pressed(KEY_ESCAPE) {
+        load_scene("menu")
+    }
+
+    game_time = game_time + dt
+}
+
+function game_on_draw() {
+    // Background color cycles based on time
+    bg_r = 20 + sin(game_time) * 20
+    bg_g = 20 + sin(game_time * 0.7) * 20
+    bg_b = 40 + sin(game_time * 0.5) * 20
+    clear(rgb(bg_r, bg_g, bg_b))
+
+    // Draw some world objects (affected by camera)
+    // Grid of reference rectangles
+    for i in range(0, 10) {
+        for j in range(0, 8) {
+            x = i * 100 + 50
+            y = j * 100 + 50
+            draw_rect(x, y, 20, 20, rgba(100, 100, 100, 128))
+        }
+    }
+
+    // Draw particles (handled by draw_particles with camera transform)
+    draw_particles(emitter)
+
+    // Draw player (since we don't have an image, draw a rect at player position)
+    draw_rect(player.x - 16, player.y - 16, 32, 32, rgb(100, 200, 100))
+
+    // HUD (drawn in screen space since draw_text doesn't use camera)
+    // Note: Would use draw_text here with a loaded font
+    particle_count = emitter_count(emitter)
+}
+
+// Start in menu scene
+function on_start() {
+    load_scene("menu")
+}
+
+// Default callbacks (used when no scene is active)
+function on_update(dt) {
+}
+
+function on_draw() {
+    clear(BLACK)
+}
