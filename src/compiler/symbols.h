@@ -48,4 +48,9 @@ typedef struct Scope {
     struct Scope* enclosing;
 } Scope;
 
-// Initialize
+// Initialize                 SymbolKind kind, int slot);
+
+// Look up a symbol in a scope (not enclosing scopes)
+Symbol* scope_lookup_local(Scope* scope, const char* name, int length);
+
+// Look up a symbol in this sc
