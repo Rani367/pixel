@@ -41,4 +41,14 @@ static const char* token_names[] = {
 
     [TOKEN_AND] = "AND",
     [TOKEN_ELSE] = "ELSE",
-    [TOKEN_FALSE
+    [TOKEN_FALSE] = "FALSE",
+    [TOKEN_FOR] = "FOR",
+    [TOKEN_FUNCTION] = "FUNCTION",
+    [TOKEN_IF] = "IF",
+    [TOKEN_IN] = "IN",
+    [TOKEN_NOT] = "NOT",
+    [TOKEN_NULL] = "NULL",
+    [TOKEN_OR] = "OR",
+    [TOKEN_RETURN] = "RETURN",
+    [TOKEN_STRUCT] = "STRUCT",
+    [TOKEN_T
