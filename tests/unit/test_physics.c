@@ -407,4 +407,175 @@ int main(void) {
     RUN_TEST(lerp_negative);
     RUN_TEST(normalize_angle);
     RUN_TEST(lerp_angle_basic);
-    RUN_TEST(lerp_angle_wr
+    RUN_TEST(lerp_angle_wrLOAT_EQ(sprite->y, 50.0));
+
+    teardown_test_env();
+}
+
+TEST(physics_update_gravity) {
+    setup_test_env();
+
+    physics_set_gravity(500.0);
+
+    ObjSprite* sprite = sprite_new(NULL);
+    sprite->x = 100;
+    sprite->y = 100;
+    sprite->velocity_x = 0;
+    sprite->velocity_y = 0;
+    sprite->gravity_scale = 1.0;
+    sprite->friction = 1.0;
+
+    physics_update_sprite(sprite, 1.0);
+
+    // After 1 second with 500 gravity: velocity_y = 500, y = 600
+    ASSERT(FLOAT_EQ(sprite->velocity_y, 500.0));
+    ASSERT(FLOAT_EQ(sprite->y, 600.0));
+
+    physics_set_gravity(0.0);
+    teardown_test_env();
+}
+
+TEST(physics_update_gravity_scale) {
+    setup_test_env();
+
+    physics_set_gravity(500.0);
+
+    ObjSprite* sprite = sprite_new(NULL);
+    sprite->x = 0;
+    sprite->y = 0;
+    sprite->velocity_x = 0;
+    sprite->velocity_y = 0;
+    sprite->gravity_scale = 0.5;  // Half gravity
+    sprite->friction = 1.0;
+
+    physics_update_sprite(sprite, 1.0);
+
+    // Half gravity = 250
+    ASSERT(FLOAT_EQ(sprite->velocity_y, 250.0));
+
+    physics_set_gravity(0.0);
+    teardown_test_env();
+}
+
+TEST(physics_update_zero_gravity_scale) {
+    setup_test_env();
+
+    physics_set_gravity(500.0);
+
+    ObjSprite* sprite = sprite_new(NULL);
+    sprite->x = 0;
+    sprite->y = 0;
+    sprite->velocity_x = 0;
+    sprite->velocity_y = 0;
+    sprite->gravity_scale = 0.0;  // No gravity effect
+    sprite->friction = 1.0;
+
+    physics_update_sprite(sprite, 1.0);
+
+    // No gravity effect
+    ASSERT(FLOAT_EQ(sprite->velocity_y, 0.0));
+    ASSERT(FLOAT_EQ(sprite->y, 0.0));
+
+    physics_set_gravity(0.0);
+    teardown_test_env();
+}
+
+// ============================================================================
+// Movement Helper Tests
+// ============================================================================
+
+TEST(apply_force) {
+    setup_test_env();
+
+    ObjSprite* sprite = sprite_new(NULL);
+    sprite->acceleration_x = 0;
+    sprite->acceleration_y = 0;
+
+    physics_apply_force(sprite, 100, 50);
+
+    ASSERT(FLOAT_EQ(sprite->acceleration_x, 100.0));
+    ASSERT(FLOAT_EQ(sprite->acceleration_y, 50.0));
+
+    physics_apply_force(sprite, 20, 30);
+
+    ASSERT(FLOAT_EQ(sprite->acceleration_x, 120.0));
+    ASSERT(FLOAT_EQ(sprite->acceleration_y, 80.0));
+
+    teardown_test_env();
+}
+
+TEST(look_at_right) {
+    setup_test_env();
+
+    ObjSprite* sprite = sprite_new(NULL);
+    sprite->x = 0;
+    sprite->y = 0;
+
+    physics_look_at(sprite, 100, 0);
+
+    // Looking right should be 0 degrees
+    ASSERT(FLOAT_EQ(sprite->rotation, 0.0));
+
+    teardown_test_env();
+}
+
+TEST(look_at_down) {
+    setup_test_env();
+
+    ObjSprite* sprite = sprite_new(NULL);
+    sprite->x = 0;
+    sprite->y = 0;
+
+    physics_look_at(sprite, 0, 100);
+
+    // Looking down should be 90 degrees
+    ASSERT(FLOAT_EQ(sprite->rotation, 90.0));
+
+    teardown_test_env();
+}
+
+TEST(move_toward_not_reached) {
+    setup_test_env();
+
+    ObjSprite* sprite = sprite_new(NULL);
+    sprite->x = 0;
+    sprite->y = 0;
+
+    // Move toward (100, 0) at speed 50 for 1 second
+    bool reached = physics_move_toward(sprite, 100, 0, 50, 1.0);
+
+    ASSERT(!reached);
+    ASSERT(FLOAT_EQ(sprite->x, 50.0));
+    ASSERT(FLOAT_EQ(sprite->y, 0.0));
+
+    teardown_test_env();
+}
+
+TEST(move_toward_reached) {
+    setup_test_env();
+
+    ObjSprite* sprite = sprite_new(NULL);
+    sprite->x = 0;
+    sprite->y = 0;
+
+    // Move toward (30, 40) at speed 100 for 1 second
+    // Distance is 50, speed is 100, so should reach in 0.5 seconds
+    bool reached = physics_move_toward(sprite, 30, 40, 100, 1.0);
+
+    ASSERT(reached);
+    ASSERT(FLOAT_EQ(sprite->x, 30.0));
+    ASSERT(FLOAT_EQ(sprite->y, 40.0));
+
+    teardown_test_env();
+}
+
+// ============================================================================
+// Native Function Registration Tests
+// ============================================================================
+
+TEST(physics_natives_registered) {
+    setup_test_env();
+
+    void* val;
+    ASSERT(table_get_cstr(&test_vm.globals, "set_gravity", &val));
+    ASSERT(ta
