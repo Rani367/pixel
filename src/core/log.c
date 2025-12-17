@@ -42,3 +42,19 @@ void log_write(LogLevel level, const char* file, int line, const char* fmt, ...)
     fflush(out);
 }
 #pragma GCC diagnostic pop
+%Y-%m-%d %H:%M:%S", tm_info);
+
+    // Extract just the filename from the path
+    const char* filename = file;
+    for (const char* p = file; *p; p++) {
+        if (*p == '/' || *p == '\\') {
+            filename = p + 1;
+        }
+    }
+
+    // Print log header
+    fprintf(out, "%s [%s] %s:%d: ", time_buf, level_names[level], filename, line);
+
+    // Print the message
+    va_list args;
+    va_start(arg
