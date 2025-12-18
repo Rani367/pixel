@@ -470,4 +470,72 @@ function spawn_particles(x, y, color, count) {
 
 function update_spawning(dt) {
     if enemies_spawned >= enemies_per_wave {
-     
+     // Top-Down Shooter - Survive waves of enemies!
+// Move with WASD or arrow keys
+// Aim with mouse, click to shoot
+// Survive as long as you can!
+
+// Game constants
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+PLAYER_SIZE = 30
+PLAYER_SPEED = 250
+BULLET_SIZE = 8
+BULLET_SPEED = 600
+ENEMY_SIZE = 25
+ENEMY_BASE_SPEED = 100
+SPAWN_INTERVAL = 2.0
+MAX_ENEMIES = 20
+PARTICLE_LIFETIME = 0.5
+
+// Game state
+player_x = 0
+player_y = 0
+player_angle = 0
+player_health = 100
+player_max_health = 100
+
+bullets = []
+enemies = []
+particles = []
+
+score = 0
+wave = 1
+enemies_killed = 0
+enemies_per_wave = 5
+spawn_timer = 0
+enemies_spawned = 0
+
+game_over = false
+paused = false
+
+// Fonts
+font = none
+small_font = none
+tiny_font = none
+
+function on_start() {
+    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Top-Down Shooter")
+    font = default_font(48)
+    small_font = default_font(24)
+    tiny_font = default_font(16)
+    reset_game()
+}
+
+function reset_game() {
+    player_x = WINDOW_WIDTH / 2
+    player_y = WINDOW_HEIGHT / 2
+    player_health = player_max_health
+
+    bullets = []
+    enemies = []
+    particles = []
+
+    score = 0
+    wave = 1
+    enemies_killed = 0
+    enemies_per_wave = 5
+    spawn_timer = 0
+    enemies_spawned = 0
+
+    game_over = fal
