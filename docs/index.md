@@ -57,4 +57,5 @@ function on_start() {
 }
 
 function on_draw() {
-    clear(rgb(20, 20, 40)
+    clear(rgb(20, 20, 40).pixel` - Side-scrolling platformer
+- `examples/games/shooter.pixel` - Top-down wave shooter
