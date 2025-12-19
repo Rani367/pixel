@@ -178,4 +178,22 @@ function on_update(dt) {
         ball.grounded = false
     }
 
-    // Apply hori
+    // Apply hori// Physics & Collision Demo
+// Demonstrates gravity, collision detection, and physics helpers
+
+// Ball sprite (simulated with rect since we have no image)
+ball = nil
+ball_color = CYAN
+
+// Platform rectangles
+platform1_x = 100
+platform1_y = 450
+platform1_w = 200
+platform1_h = 20
+
+platform2_x = 500
+platform2_y = 350
+platform2_w = 200
+platform2_h = 20
+
+// Floo
