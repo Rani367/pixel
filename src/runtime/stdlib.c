@@ -674,4 +674,19 @@ static Value native_split(int arg_count, Value* args) {
     ObjList* result = list_new();
 
     if (delim->length == 0) {
-        // Sp
+        // Sp#include "runtime/stdlib.h"
+#include "core/common.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#include <ctype.h>
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+void define_native(VM* vm, const char* name, NativeFn function, int arity) {
+    ObjString* name_str = string_copy(name, (int)strlen(name));
+    ObjNa
