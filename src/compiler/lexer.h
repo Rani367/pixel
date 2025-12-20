@@ -9,4 +9,15 @@ typedef struct {
     const char* current;   // Current character
     int lEXER_H
 ine;
-    int
+    int column;
+    int start_column;      // Column where current token started
+    const char* error;     // Pending error message (NULL if none)
+} Lexer;
+
+// Initialize a lexer with source code
+void lexer_init(Lexer* lexer, const char* source);
+
+// Scan and return the next token
+Token lexer_scan_token(Lexer* lexer);
+
+#endif // PH_L
