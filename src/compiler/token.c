@@ -51,4 +51,66 @@ static const char* token_names[] = {
     [TOKEN_OR] = "OR",
     [TOKEN_RETURN] = "RETURN",
     [TOKEN_STRUCT] = "STRUCT",
-    [TOKEN_T
+    [TOKEN_THIS] = "THIS",
+    [TOKEN_TRUE] = "TRUE",
+    [TOKEN_WHILE] = "WHILE",
+    [TOKEN_BREAK] = "BREAK",
+    [TOKEN_CONTINUE] = "CONTINUE",
+
+    [TOKEN_ERROR] = "ERROR",
+    [TOKEN_EOF] = "EOF",
+};
+
+const char* token_type_name(TokenType type) {
+    if (type >= 0 && type < TOKEN_COUNT) {
+        return token_names[type];
+    }
+    return "UNKNOWN";
+}
+
+void token_print(Token token) {
+    printf("%3d:%-3d %-15s '",
+           token.line, token.column, token_type_name(token.type));
+
+    for (int i = 0; i < token.length; i++) {
+        char c = token.start[i];
+        if (c == '\n') {
+            printf("\\n");
+        } else if (c == '\t') {
+            printf("\\t");
+        } else {
+            putchar(c);
+        }
+    }
+    printf("'\n");
+}
+
+Token token_make(TokenType type, const char* start, int length, int line, int column) {
+    Token token;
+    token.type = type;
+    token.start = start;
+    token.length = length;
+    token.line = line;
+    token.column = column;
+    return token;
+}
+
+Token token_error(const char* message, int line, int column) {
+    Token token;
+    token.type = TOKEN_ERROR;
+    token.start = message;
+    token.length = (int)strlen(message);
+    token.line = line;
+    token.column = column;
+    return token;
+}
+
+Token token_eof(int line, int column) {
+    Token token;
+    token.type = TOKEN_EOF;
+    token.start = "";
+    token.length = 0;
+    token.line = line;
+    token.column = column;
+    return token;
+}
