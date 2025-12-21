@@ -49,4 +49,5 @@ static inline uint32_t pack_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 #define COLOR_GRAY      0x808080FFu
 #define COLOR_GREY      0x808080FFu  // British spelling alias
 
-// ======================================================
+// ======================================================// Engine Native Functions
+// Provides native functions for window management, drawing, colors,
