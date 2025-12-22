@@ -78,4 +78,12 @@ const char* token_type_name(TokenType type);
 void token_print(Token token);
 
 // Create a token
-Token token_
+Token token_make(TokenType type, const char* start, int length, int line, int column);
+
+// Create an error token
+Token token_error(const char* message, int line, int column);
+
+// Create an EOF token
+Token token_eof(int line, int column);
+
+#endif // PH_TOKEN_H
