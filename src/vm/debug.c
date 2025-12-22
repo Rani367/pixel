@@ -133,4 +133,51 @@ void disassemble_chunk(Chunk* chunk, const char* name) {
 }
 
 // Print a constant value
-static void print_const
+static void print_consture instruction (variable length)
+static int closure_instruction(Chunk* chunk, int offset) {
+    offset++;
+    uint8_t constant = chunk->code[offset++];
+    printf("%-16s %4d ", "OP_CLOSURE", constant);
+    print_constant(chunk, constant);
+    printf("\n");
+
+    // Get the function to determine upvalue count
+    Value value = chunk->constants.values[constant];
+    if (!IS_FUNCTION(value)) {
+        return offset;
+    }
+
+    ObjFunction* function = AS_FUNCTION(value);
+    for (int i = 0; i < function->upvalue_count; i++) {
+        uint8_t is_local = chunk->code[offset++];
+        uint8_t index = chunk->code[offset++];
+        printf("%04d      |                     %s %d\n",
+               offset - 2, is_local ? "local" : "upvalue", index);
+    }
+
+    return offset;
+}
+
+int disassemble_instruction(Chunk* chunk, int offset) {
+    // Print offset
+    printf("%04d ", offset);
+
+    // Print line number (or '|' if same as previous)
+    int line = chunk_get_line(chunk, offset);
+    if (offset > 0 && line == chunk_get_line(chunk, offset - 1)) {
+        printf("   | ");
+    } else {
+        printf("%4d ", line);
+    }
+
+    uint8_t instruction = chunk->code[offset];
+    const char* name = opcode_name((OpCode)instruction);
+
+    switch ((OpCode)instruction) {
+        // Simple instructions (no operands)
+        case OP_NONE:
+        case OP_TRUE:
+        case OP_FALSE:
+        case OP_POP:
+        case OP_DUP:
+        c
