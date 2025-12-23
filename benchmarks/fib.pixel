@@ -27,4 +27,6 @@ function on_start() {
     // Calculate approximate calls
     // fib(n) makes approximately 2^n calls
     println("")
-    println("This benchmark tes
+    println("This benchmark tests recursive function call overhead.")
+    println("fib(30) requires ~2.7 million function calls.")
+}
