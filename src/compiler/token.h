@@ -87,3 +87,10 @@ Token token_error(const char* message, int line, int column);
 Token token_eof(int line, int column);
 
 #endif // PH_TOKEN_H
+OKEN_EQUAL_EQUAL,     // ==
+    TOKEN_GREATER,         // >
+    TOKEN_GREATER_EQUAL,   // >=
+    TOKEN_LESS,            // <
+    TOKEN_LESS_EQUAL,      // <=
+    TOKEN_ARROW,           // ->
+    
