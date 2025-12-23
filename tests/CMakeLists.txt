@@ -52,4 +52,17 @@ target_link_libraries(test_codegen pixel_compiler)
 add_test(NAME test_codegen COMMAND test_codegen)
 
 add_executable(test_vm unit/test_vm.c)
-target
+targete)
+add_test(NAME test_stdlib COMMAND test_stdlib)
+
+add_executable(test_pal unit/test_pal.c)
+target_link_libraries(test_pal pixel_pal)
+add_test(NAME test_pal COMMAND test_pal)
+
+add_executable(test_engine unit/test_engine.c)
+target_link_libraries(test_engine pixel_engine pixel_compiler)
+add_test(NAME test_engine COMMAND test_engine)
+
+add_executable(test_physics unit/test_physics.c)
+target_link_libraries(test_physics pixel_engine pixel_compiler)
+add_test(NAME test_physics COMMAND test_physics)
