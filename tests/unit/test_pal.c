@@ -305,4 +305,91 @@ TEST(texture_draw) {
 
 // -----------------------------------------------------------------------------
 // Input tests
-// ---------------------
+// --------------------- ASSERT_EQ(y, 300);
+
+    // Mouse button - establish baseline first
+    ASSERT(!pal_mouse_down(PAL_MOUSE_LEFT));
+    pal_poll_events();  // prev = false
+    pal_mock_set_mouse_button(PAL_MOUSE_LEFT, true);  // down = true
+
+    ASSERT(pal_mouse_down(PAL_MOUSE_LEFT));
+    ASSERT(pal_mouse_pressed(PAL_MOUSE_LEFT));
+
+    pal_poll_events();  // prev = true, down = true
+    ASSERT(pal_mouse_down(PAL_MOUSE_LEFT));
+    ASSERT(!pal_mouse_pressed(PAL_MOUSE_LEFT));
+
+    pal_poll_events();  // prev = true
+    pal_mock_set_mouse_button(PAL_MOUSE_LEFT, false);  // down = false
+    ASSERT(!pal_mouse_down(PAL_MOUSE_LEFT));
+    ASSERT(pal_mouse_released(PAL_MOUSE_LEFT));
+
+    pal_quit();
+}
+
+TEST(quit_request) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+
+    ASSERT(!pal_should_quit());
+
+    pal_mock_set_quit(true);
+    ASSERT(pal_should_quit());
+
+    pal_mock_set_quit(false);
+    ASSERT(!pal_should_quit());
+
+    pal_quit();
+}
+
+// -----------------------------------------------------------------------------
+// Audio tests
+// -----------------------------------------------------------------------------
+
+TEST(sound_effects) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+    pal_mock_clear_calls();
+
+    PalSound* sound = pal_sound_load("test.wav");
+    ASSERT_NOT_NULL(sound);
+
+    pal_sound_play(sound);
+    pal_sound_play_volume(sound, 0.5f);
+
+    int count;
+    (void)pal_mock_get_calls(&count);
+    ASSERT(count >= 3);  // load, play, play_volume
+
+    pal_sound_destroy(sound);
+    pal_quit();
+}
+
+TEST(music) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+    pal_mock_clear_calls();
+
+    PalMusic* music = pal_music_load("test.ogg");
+    ASSERT_NOT_NULL(music);
+
+    ASSERT(!pal_music_is_playing());
+
+    pal_music_play(music, true);
+    ASSERT(pal_music_is_playing());
+
+    pal_music_pause();
+    ASSERT(!pal_music_is_playing());
+
+    pal_music_resume();
+    ASSERT(pal_music_is_playing());
+
+    pal_music_set_volume(0.8f);
+
+    pal_music_stop();
+    ASSERT(!pal_music_is_playing());
+
+    pal_music_destroy(music);
+    pal_quit();
+}
+
+// -----------------------------------------------------------------------------
+// Time tests
+// --------------------------------------------------------
