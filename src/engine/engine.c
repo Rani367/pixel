@@ -508,4 +508,6 @@ static void engine_frame_tick(Engine* engine) {
     engine->last_time = frame_start;
 
     // Cap delta time to avoid huge jumps (especially on first frame)
-    if (e
+    if (etton)
+                };
+             
