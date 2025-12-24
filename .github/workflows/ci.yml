@@ -88,4 +88,13 @@ jobs:
       - name: Install SDL2 (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          vcpkg install sdl2:x64-windows
+          vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-ttf:x64-windows sdl2-mixer:x64-windows
+        shell: bash
+
+      - name: Configure (Unix)
+        if: matrix.os != 'windows-latest'
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems
