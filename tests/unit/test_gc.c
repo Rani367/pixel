@@ -246,3 +246,57 @@ int main(void) {
 
     TEST_SUMMARY();
 }
+#include "../test_framework.h"
+#include "vm/vm.h"
+#include "vm/gc.h"
+#include "vm/object.h"
+#include "vm/chunk.h"
+#include <string.h>
+
+// ============================================================================
+// Test Helpers
+// ============================================================================
+
+static VM vm;
+
+static void setup(void) {
+    vm_init(&vm);
+    gc_set_vm(&vm);
+}
+
+static void teardown(void) {
+    vm_free(&vm);
+}
+
+// Count objects in the VM's list
+static int count_objects(void) {
+    int count = 0;
+    Object* obj = vm.objects;
+    while (obj != NULL) {
+        count++;
+        obj = obj->next;
+    }
+    return count;
+}
+
+// ============================================================================
+// Basic GC Tests
+// ============================================================================
+
+TEST(gc_initial_state) {
+    setup();
+
+    ASSERT_EQ(vm.bytes_allocated, 0);
+    ASSERT_EQ(vm.objects, NULL);
+    ASSERT_EQ(vm.gray_stack, NULL);
+    ASSERT_EQ(vm.gray_count, 0);
+
+    teardown();
+}
+
+TEST(gc_object_tracking) {
+    setup();
+
+    // Create some objects
+    ObjString* s1 = string_copy("hello", 5);
+    ObjString* s2 = string_copy("world", 5);
