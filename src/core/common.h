@@ -52,3 +52,7 @@ dio.h>
         __builtin_unreachable(); \
     } while (0)
 #else
+#define PH_UNREACHABLE() \
+    do { \
+        PH_ASSERT(false && "unreachable"); \
+    } whi
