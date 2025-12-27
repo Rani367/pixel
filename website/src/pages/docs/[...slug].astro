@@ -55,4 +55,155 @@ function parseMarkdown(md: string): string {
     });
     table += '</tr></thead><tbody>';
     rows.forEach((row: string[]) => {
-      table += '<tr class="
+      table += '<tr class="border-b border-zinc-200 dark:border-zinc-800">';
+      row.forEach((cell: string) => {
+        table += `<td class="py-2 px-3">${cell}</td>`;
+      });
+      table += '</tr>';
+    });
+    table += '</tbody></table></div>';
+    return table;
+  });
+
+  return result
+    // Code blocks (must be before other replacements)
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+      return `<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+    })
+    // Headers
+    .replace(/^#### (.*$)/gim, '<h4 class="text-base font-semibold mt-5 mb-2">$1</h4>')
+    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-6 mb-2">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mb-6">$1</h1>')
+    // Bold and italic
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[--color-accent] hover:underline">$1</a>')
+    // Unordered lists
+    .replace(/^\- (.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+    // Numbered lists
+    .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal">$1</li>')
+    // Horizontal rule
+    .replace(/^---$/gim, '<hr class="my-8 border-zinc-200 dark:border-zinc-800">')
+    // Paragraphs (simple approach)
+    .split('\n\n')
+    .map(p => {
+      const trimmed = p.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('<')) return trimmed;
+      if (trimmed.startsWith('-') || trimmed.match(/^\d+\./)) return `<ul class="my-4 space-y-1">${trimmed}</ul>`;
+      return `<p class="mb-4 leading-relaxed">${trimmed}</p>`;
+    })
+    .join('\n');
+}
+
+const html = parseMarkdown(content);
+
+const sidebar = [
+  { title: 'Getting Started', href: '/pixel/docs/getting-started' },
+  { title: 'Installation', href: '/pixel/docs/installation' },
+  {
+    title: 'Language',
+    items: [
+      { title: 'Basics', href: '/pixel/docs/language/basics' },
+      { title: 'Control Flow', href: '/pixel/docs/language/control-flow' },
+      { title: 'Functions', href: '/pixel/docs/language/functions' },
+      { title: 'Data Structures', href: '/pixel/docs/language/data-structures' },
+    ]
+  },
+  {
+    title: 'API Reference',
+    items: [
+      { title: 'Core', href: '/pixel/docs/api/core' },
+      { title: 'Math', href: '/pixel/docs/api/math' },
+      { title: 'Engine', href: '/pixel/docs/api/engine' },
+      { title: 'Input', href: '/pixel/docs/api/input' },
+      { title: 'Audio', href: '/pixel/docs/api/audio' },
+      { title: 'Physics', href: '/pixel/docs/api/physics' },
+    ]
+  },
+];
+
+// Determine active page
+const currentPath = `/pixel/docs/${slug}`;
+---
+
+<BaseLayout title={title}>
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <!-- Mobile sidebar toggle -->
+    <button
+      id="sidebar-toggle"
+      class="md:hidden mb-4 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-medium flex items-center gap-2"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+      Menu
+    </button>
+
+    <div class="flex gap-12">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="w-64 shrink-0 hidden md:block">
+        <nav class="sticky top-24 space-y-6">
+          {sidebar.map(section => (
+            <div>
+              {section.items ? (
+                <>
+                  <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mb-2">{section.title}</h4>
+                  <ul class="space-y-1">
+                    {section.items.map(item => (
+                      <li>
+                        <a
+                          href={item.href}
+                          class:list={[
+                            "block text-sm py-1 transition-colors",
+                            currentPath === item.href
+                              ? "text-[--color-accent] font-medium"
+                              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                          ]}
+                        >
+                          {item.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <a
+                  href={section.href}
+                  class:list={[
+                    "block text-sm font-medium transition-colors",
+                    currentPath === section.href
+                      ? "text-[--color-accent]"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                  ]}
+                >
+                  {section.title}
+                </a>
+              )}
+            </div>
+          ))}
+        </nav>
+      </aside>
+
+      <!-- Content -->
+      <article class="flex-1 min-w-0">
+        <Fragment set:html={html} />
+      </article>
+    </div>
+  </div>
+
+  <script>
+    const toggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+
+    toggle?.addEventListener('click', () => {
+      sidebar?.classList.toggle('hidden');
+      sidebar?.classList.toggle('block');
+    });
+  </script>
+</BaseLayout>
