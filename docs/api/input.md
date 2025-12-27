@@ -221,4 +221,18 @@ if key_released(KEY_SPACE) {
 
 ### Letter Keys
 | Constant | Key |
-|----------|-----
+|----------|-----d when a mouse button is clicked.
+
+```pixel
+function on_mouse_click(button, x, y) {
+    if button == MOUSE_LEFT {
+        spawn_effect(x, y)
+    }
+}
+```
+
+### on_mouse_move(x, y)
+Called when the mouse moves.
+
+```pixel
+functio
