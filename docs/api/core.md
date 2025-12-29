@@ -210,4 +210,14 @@ greeting = "Hello, " + name + "!"
 |----------|-------------|---------|
 | `type(val)` | Get type name | `type(42)` = `"number"` |
 | `to_string(val)` | Convert to string | `to_string(true)` = `"true"` |
-| `to_number(str)` | Parse number | `to_number("3.14")` = `3
+| `to_number(str)` | Parse number | `to_number("3.14")` = `3.14` |
+
+## Utility Functions
+
+| Function | Description | Example |
+|----------|-------------|---------|
+| `print(...)` | Print without newline | `print("hi")` |
+| `println(...)` | Print with newline | `println("hi")` |
+| `range(n)` | List 0 to n-1 | `range(3)` = `[0,1,2]` |
+| `time()` | Unix timestamp | `time()` |
+| `clock()` | High-res time in seconds | `clock()` |
