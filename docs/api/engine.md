@@ -243,3 +243,87 @@ function menu_on_draw() {
     // Draw menu
 }
 ```
+{
+    clear(BLACK)
+    draw_sprite(player)
+}
+```
+
+### Sprite Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `x` | Number | X position |
+| `y` | Number | Y position |
+| `width` | Number | Image width (read-only) |
+| `height` | Number | Image height (read-only) |
+| `rotation` | Number | Rotation in degrees |
+| `scale` | Number | Uniform scale factor |
+| `scale_x` | Number | Horizontal scale |
+| `scale_y` | Number | Vertical scale |
+| `origin_x` | Number | X origin for rotation (0-1) |
+| `origin_y` | Number | Y origin for rotation (0-1) |
+| `flip_x` | Boolean | Flip horizontally |
+| `flip_y` | Boolean | Flip vertically |
+| `visible` | Boolean | Whether to draw |
+
+### Sprite Sheets
+
+For animated sprites using sprite sheets:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `frame_x` | Number | X offset in sheet |
+| `frame_y` | Number | Y offset in sheet |
+| `frame_width` | Number | Frame width |
+| `frame_height` | Number | Frame height |
+
+### set_sprite_frame(sprite, x, y, width, height)
+Sets the sprite sheet region to display.
+
+```pixel
+set_sprite_frame(player, 0, 0, 32, 32)    // First frame
+set_sprite_frame(player, 32, 0, 32, 32)   // Second frame
+```
+
+## Animations
+
+### create_animation(name, frame_count, frame_duration)
+Creates a named animation.
+
+```pixel
+walk_anim = create_animation("walk", 4, 0.15)
+```
+
+### sprite_set_animation(sprite, animation)
+Assigns an animation to a sprite.
+
+```pixel
+sprite_set_animation(player, walk_anim)
+```
+
+### sprite_play(sprite)
+Starts playing the sprite's animation.
+
+### sprite_stop(sprite)
+Stops the animation.
+
+## Fonts and Text
+
+### default_font(size)
+Gets the built-in font at the specified size.
+
+```pixel
+title_font = default_font(48)
+ui_font = default_font(24)
+```
+
+### load_font(path, size)
+Loads a custom TrueType font.
+
+```pixel
+custom_font = load_font("fonts/arcade.ttf", 32)
+```
+
+### draw_text(text, x, y, font, color)
+D
