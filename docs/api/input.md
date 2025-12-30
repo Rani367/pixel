@@ -55,7 +55,7 @@ if key_released(KEY_SPACE) {
 | Constant | Key |
 |----------|-----|
 | `KEY_SPACE` | Spacebar |
-| `KEY_ENTER` | Enter/Return |
+| `KEY_RETURN` | Enter/Return |
 | `KEY_TAB` | Tab |
 | `KEY_BACKSPACE` | Backspace |
 | `KEY_ESCAPE` | Escape |
@@ -64,8 +64,14 @@ if key_released(KEY_SPACE) {
 | Constant | Key |
 |----------|-----|
 | `KEY_SHIFT` | Shift (either) |
+| `KEY_LSHIFT` | Left Shift |
+| `KEY_RSHIFT` | Right Shift |
 | `KEY_CTRL` | Control (either) |
+| `KEY_LCTRL` | Left Control |
+| `KEY_RCTRL` | Right Control |
 | `KEY_ALT` | Alt/Option (either) |
+| `KEY_LALT` | Left Alt/Option |
+| `KEY_RALT` | Right Alt/Option |
 
 ### Function Keys
 | Constant | Key |

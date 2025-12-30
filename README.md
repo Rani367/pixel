@@ -96,7 +96,21 @@ pixel run game.pixel
 
 ## Examples
 
-Complete games included in `examples/games/`:
+### Demo Programs
+
+Feature demonstrations in `examples/`:
+
+| Demo | Description |
+|------|-------------|
+| `audio_demo.pixel` | Sound effects and music playback |
+| `input_demo.pixel` | Keyboard and mouse input handling |
+| `physics_demo.pixel` | Gravity, collision, and movement |
+| `advanced_features.pixel` | Closures, structs, and more |
+| `web_demo.pixel` | Web-specific features |
+
+### Complete Games
+
+Full games in `examples/games/`:
 
 | Game | Description |
 |------|-------------|

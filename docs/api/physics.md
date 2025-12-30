@@ -11,40 +11,41 @@ if collides(player, enemy) {
 }
 ```
 
-### collides_rect(x1, y1, w1, h1, x2, y2, w2, h2)
-Returns `true` if two rectangles overlap.
+### collides_rect(sprite, x, y, w, h)
+Returns `true` if a sprite overlaps with a rectangle.
 
 ```pixel
-if collides_rect(player_x, player_y, 30, 40, coin_x, coin_y, 20, 20) {
+if collides_rect(player, coin_x, coin_y, 20, 20) {
     collect_coin()
 }
 ```
 
-### collides_point(x, y, sprite)
-Returns `true` if a point is inside a sprite.
+### collides_point(sprite, x, y)
+Returns `true` if a point is inside a sprite's bounds.
 
 ```pixel
-if collides_point(mouse_x(), mouse_y(), button) {
+if collides_point(button, mouse_x(), mouse_y()) {
     button_hovered = true
 }
 ```
 
-### collides_circle(x1, y1, r1, x2, y2, r2)
-Returns `true` if two circles overlap.
+### collides_circle(sprite1, sprite2)
+Returns `true` if two sprites overlap using circular collision detection.
+Uses the smaller of width/height as the radius for each sprite.
 
 ```pixel
-if collides_circle(ball_x, ball_y, 10, player_x, player_y, 25) {
+if collides_circle(ball, player) {
     bounce_ball()
 }
 ```
 
 ## Distance
 
-### distance(x1, y1, x2, y2)
-Returns the distance between two points.
+### distance(sprite1, sprite2)
+Returns the distance between the centers of two sprites.
 
 ```pixel
-dist = distance(player.x, player.y, enemy.x, enemy.y)
+dist = distance(player, enemy)
 if dist < attack_range {
     can_attack = true
 }
@@ -120,6 +121,9 @@ set_gravity(1500)  // High gravity
 set_gravity(0)     // No gravity
 ```
 
+### get_gravity()
+Returns the current global gravity value.
+
 ## Physics Helpers
 
 ### apply_force(sprite, force_x, force_y)
@@ -132,14 +136,16 @@ if key_pressed(KEY_SPACE) and player.grounded {
 }
 ```
 
-### move_toward(current, target, max_delta)
-Moves a value toward a target by at most max_delta.
+### move_toward(sprite, x, y, speed)
+Moves a sprite toward a target position at the given speed.
+Returns `true` when the sprite reaches the target.
 
 ```pixel
 function on_update(dt) {
-    // Smoothly move toward target
-    player.x = move_toward(player.x, target_x, speed * dt)
-    player.y = move_toward(player.y, target_y, speed * dt)
+    if move_toward(player, target_x, target_y, 200) {
+        // Reached the target
+        target_reached = true
+    }
 }
 ```
 

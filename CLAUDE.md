@@ -98,7 +98,12 @@ docs/
 └── api/               # API reference
 
 examples/
-└── games/      # Complete example games (pong, breakout, platformer, shooter)
+├── audio_demo.pixel      # Audio system demo
+├── input_demo.pixel      # Input handling demo
+├── physics_demo.pixel    # Physics simulation demo
+├── advanced_features.pixel # Advanced language features
+├── web_demo.pixel        # Web-specific features
+└── games/                # Complete example games (pong, breakout, platformer, shooter)
 
 tests/
 └── unit/       # Unit tests for all components
@@ -106,6 +111,8 @@ tests/
 scripts/
 ├── ci-local.sh   # Local CI verification script
 └── build-web.sh  # Emscripten/WASM build script
+
+web/            # Emscripten shell template (shell.html)
 
 website/        # Astro-based documentation site (deployed to GitHub Pages)
 

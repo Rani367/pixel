@@ -11,6 +11,13 @@ function on_start() {
 }
 ```
 
+### set_title(title)
+Changes the window title.
+
+```pixel
+set_title("My Game - Score: " + to_string(score))
+```
+
 ### window_width()
 Returns the window width in pixels.
 
@@ -60,7 +67,9 @@ semi_transparent = rgba(255, 0, 0, 128)
 | `CYAN` | 0, 255, 255 |
 | `MAGENTA` | 255, 0, 255 |
 | `ORANGE` | 255, 165, 0 |
+| `PURPLE` | 128, 0, 128 |
 | `GRAY` | 128, 128, 128 |
+| `GREY` | 128, 128, 128 |
 
 ## Drawing Primitives
 
@@ -111,12 +120,18 @@ Draws an image at the specified position.
 draw_image(player_image, 100, 100)
 ```
 
-### draw_image_ex(image, x, y, rotation, scale_x, scale_y)
-Draws an image with rotation and scaling.
+### draw_image_ex(image, x, y, width, height, rotation, flip_x, flip_y)
+Draws an image with size, rotation, and flip transformations.
 
 ```pixel
-draw_image_ex(player_image, 100, 100, 45, 2.0, 2.0)
+draw_image_ex(player_image, 100, 100, 64, 64, 45, false, false)
 ```
+
+### image_width(image)
+Returns the width of an image in pixels.
+
+### image_height(image)
+Returns the height of an image in pixels.
 
 ## Sprites
 
@@ -147,17 +162,20 @@ function on_draw() {
 |----------|------|-------------|
 | `x` | Number | X position |
 | `y` | Number | Y position |
-| `width` | Number | Image width (read-only) |
-| `height` | Number | Image height (read-only) |
+| `width` | Number | Sprite width (0 = use image size) |
+| `height` | Number | Sprite height (0 = use image size) |
 | `rotation` | Number | Rotation in degrees |
-| `scale` | Number | Uniform scale factor |
-| `scale_x` | Number | Horizontal scale |
-| `scale_y` | Number | Vertical scale |
-| `origin_x` | Number | X origin for rotation (0-1) |
-| `origin_y` | Number | Y origin for rotation (0-1) |
+| `scale_x` | Number | Horizontal scale (1.0 = normal) |
+| `scale_y` | Number | Vertical scale (1.0 = normal) |
+| `origin_x` | Number | X origin for rotation (0-1, 0.5 = center) |
+| `origin_y` | Number | Y origin for rotation (0-1, 0.5 = center) |
 | `flip_x` | Boolean | Flip horizontally |
 | `flip_y` | Boolean | Flip vertically |
 | `visible` | Boolean | Whether to draw |
+
+### Sprite Physics Properties
+
+See [Physics API](physics.md) for physics-related sprite properties like `velocity_x`, `velocity_y`, `friction`, and `gravity_scale`.
 
 ### Sprite Sheets
 
@@ -170,21 +188,27 @@ For animated sprites using sprite sheets:
 | `frame_width` | Number | Frame width |
 | `frame_height` | Number | Frame height |
 
-### set_sprite_frame(sprite, x, y, width, height)
-Sets the sprite sheet region to display.
+### set_sprite_frame(sprite, frame_index)
+Sets the current frame of a sprite sheet by index.
 
 ```pixel
-set_sprite_frame(player, 0, 0, 32, 32)    // First frame
-set_sprite_frame(player, 32, 0, 32, 32)   // Second frame
+set_sprite_frame(player, 0)    // First frame
+set_sprite_frame(player, 1)    // Second frame
 ```
 
 ## Animations
 
-### create_animation(name, frame_count, frame_duration)
-Creates a named animation.
+### create_animation(image, frame_width, frame_height, frames, frame_time)
+Creates an animation from a sprite sheet image.
+
+- `image` - The sprite sheet image
+- `frame_width`, `frame_height` - Size of each frame in pixels
+- `frames` - List of frame indices to play
+- `frame_time` - Duration of each frame in seconds
 
 ```pixel
-walk_anim = create_animation("walk", 4, 0.15)
+sheet = load_image("player_walk.png")
+walk_anim = create_animation(sheet, 32, 32, [0, 1, 2, 3], 0.15)
 ```
 
 ### sprite_set_animation(sprite, animation)
@@ -237,6 +261,15 @@ Returns the pixel height of the text.
 
 ## Camera
 
+### camera_x()
+Returns the current camera X position.
+
+### camera_y()
+Returns the current camera Y position.
+
+### camera_zoom()
+Returns the current camera zoom level.
+
 ### camera_set_position(x, y)
 Sets the camera position (affects all drawing).
 
@@ -261,11 +294,23 @@ Adds screen shake effect.
 camera_shake(5, 0.3)  // 5 pixel shake for 0.3 seconds
 ```
 
-### screen_to_world(x, y)
-Converts screen coordinates to world coordinates.
+### screen_to_world_x(x)
+Converts a screen X coordinate to world X coordinate.
 
-### world_to_screen(x, y)
-Converts world coordinates to screen coordinates.
+### screen_to_world_y(y)
+Converts a screen Y coordinate to world Y coordinate.
+
+```pixel
+// Get world position of mouse click
+world_x = screen_to_world_x(mouse_x())
+world_y = screen_to_world_y(mouse_y())
+```
+
+### world_to_screen_x(x)
+Converts a world X coordinate to screen X coordinate.
+
+### world_to_screen_y(y)
+Converts a world Y coordinate to screen Y coordinate.
 
 ## Particles
 
@@ -290,8 +335,13 @@ emitter_emit(explosion, 50)
 | `emitter_set_color(e, color)` | Particle color |
 | `emitter_set_size(e, min, max)` | Size range |
 | `emitter_set_speed(e, min, max)` | Speed range |
-| `emitter_set_lifetime(e, min, max)` | Lifetime range |
-| `emitter_set_direction(e, angle, spread)` | Direction and spread |
+| `emitter_set_lifetime(e, min, max)` | Lifetime range (seconds) |
+| `emitter_set_angle(e, min, max)` | Emission angle range (degrees) |
+| `emitter_set_gravity(e, gravity)` | Gravity applied to particles |
+| `emitter_set_rate(e, rate)` | Emission rate (particles/second) |
+| `emitter_set_position(e, x, y)` | Emitter position |
+| `emitter_set_active(e, active)` | Enable/disable emission |
+| `emitter_count(e)` | Get current particle count |
 
 ### draw_particles(emitter)
 Draws all particles from an emitter.
