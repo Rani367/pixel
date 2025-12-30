@@ -29,7 +29,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
 
       <!-- Code Example -->
-      <div class="max-w-2xl mx-auto text-left">
+      <div id="code-zoom" class="max-w-2xl mx-auto text-left" style="transform-origin: center top; transition: transform 0.1s ease-out;">
         <div class="bg-zinc-900 rounded-lg overflow-hidden shadow-2xl">
           <div class="flex items-center gap-2 px-4 py-3 bg-zinc-800">
             <span class="w-3 h-3 rounded-full bg-red-500"></span>
@@ -121,4 +121,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
     </div>
   </section>
+
+  <script>
+    const codeZoom = document.getElementById('code-zoom');
+
+    function updateZoom() {
+      if (!codeZoom) return;
+
+      const rect = codeZoom.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Calculate progress: 0 when element enters viewport, 1 when it reaches top
+      const startPoint = viewportHeight;
+      const endPoint = viewportHeight * 0.3;
+      const currentPoint = rect.top;
+
+      let progress = (startPoint - currentPoint) / (startPoint - endPoint);
+      progress = Math.max(0, Math.min(1, progress));
+
+      // Scale from 0.75 to 1.25 (25% bigger than before)
+      const scale = 0.75 + (progress * 0.5);
+
+      codeZoom.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener('scroll', updateZoom, { passive: true });
+    window.addEventListener('resize', updateZoom);
+    updateZoom();
+  </script>
 </BaseLayout>
