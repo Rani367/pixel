@@ -1137,6 +1137,9 @@ bool vm_call_closure(VM* vm, ObjClosure* closure, int argc, Value* argv) {
         return false;
     }
 
+    // Save stack position to restore after call
+    Value* saved_stack_top = vm->stack_top;
+
     // Push the closure onto the stack
     vm_push(vm, OBJECT_VAL(closure));
 
@@ -1147,10 +1150,15 @@ bool vm_call_closure(VM* vm, ObjClosure* closure, int argc, Value* argv) {
 
     // Set up the call frame
     if (!call(vm, closure, argc)) {
+        vm->stack_top = saved_stack_top;
         return false;
     }
 
     // Run until this call returns
     InterpretResult result = run(vm);
+
+    // Restore stack to clean up any leftover values
+    vm->stack_top = saved_stack_top;
+
     return result == INTERPRET_OK;
 }

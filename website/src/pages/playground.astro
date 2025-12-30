@@ -4,28 +4,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 const examples = [
   {
     name: 'Bouncing Ball',
-    code: `// DVD-style bouncing ball with random start
-x = 0
-y = 0
-dx = 0
-dy = 0
-color = CYAN
+    code: `// DVD-style bouncing ball - changes color on bounce
+x = 400
+y = 300
+dx = 200
+dy = 150
+color_r = 0
+color_g = 255
+color_b = 255
 
 function random_color() {
-    r = random_range(100, 255)
-    g = random_range(100, 255)
-    b = random_range(100, 255)
-    return rgb(r, g, b)
+    color_r = random_range(50, 255)
+    color_g = random_range(50, 255)
+    color_b = random_range(50, 255)
 }
 
 function on_start() {
     create_window(800, 600, "Bouncing Ball")
-    x = random_range(50, 750)
-    y = random_range(50, 550)
-    dx = random_range(150, 300)
-    dy = random_range(150, 300)
-    if random_range(0, 2) < 1 { dx = -dx }
-    if random_range(0, 2) < 1 { dy = -dy }
+    x = random_range(100, 700)
+    y = random_range(100, 500)
+    dx = random_range(150, 250)
+    dy = random_range(100, 200)
 }
 
 function on_update(dt) {
@@ -34,17 +33,17 @@ function on_update(dt) {
 
     if x < 20 or x > 780 {
         dx = -dx
-        color = random_color()
+        random_color()
     }
     if y < 20 or y > 580 {
         dy = -dy
-        color = random_color()
+        random_color()
     }
 }
 
 function on_draw() {
     clear(rgb(20, 20, 40))
-    draw_circle(x, y, 20, color)
+    draw_circle(x, y, 20, rgb(color_r, color_g, color_b))
 }`
   },
   {
