@@ -24,4 +24,12 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-BUILD_DIR=
+BUILD_DIR=m -rf "$BUILD_DIR"
+mkdir -p "$BUILD_DIR"
+
+for BUILD_TYPE in Debug Release; do
+    echo "--- Building ($BUILD_TYPE) ---"
+    cmake -B "$BUILD_DIR" -S "$PROJECT_DIR" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    cmake --build "$BUILD_DIR" --clean-first
+
+    echo "--- Tes
