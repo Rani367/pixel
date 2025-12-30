@@ -48,3 +48,8 @@ external/
 # Test output
 Testing/
 CTestTestfile.cmake
+
+# Website build artifacts
+website/dist/
+website/.astro/
+website/public/wasm/

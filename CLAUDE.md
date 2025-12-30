@@ -7,6 +7,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Pixel is a beginner-friendly programming language for making 2D games. It compiles to bytecode and runs on a custom virtual machine with an integrated game engine.
 
 **Version:** 1.0.0
+**License:** MIT
+**Repository:** https://github.com/Rani367/pixel
+
+## Dependencies
+
+**Required:**
+- C compiler (GCC or Clang)
+- CMake 3.16+
+
+**Optional (for graphics/audio):**
+- SDL2
+- SDL2_image
+- SDL2_mixer
+- SDL2_ttf
+
+Install on macOS: `brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer`
+Install on Ubuntu: `sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev`
 
 ## Build Commands
 
@@ -24,6 +41,9 @@ cd build && ctest --output-on-failure
 
 # Run CI checks locally (ALWAYS run before pushing)
 ./scripts/ci-local.sh
+
+# Build for web (requires Emscripten)
+./scripts/build-web.sh
 ```
 
 > **Note to Claude:** Always run `./scripts/ci-local.sh` before pushing to GitHub to catch build/test failures early.
@@ -83,6 +103,12 @@ examples/
 tests/
 └── unit/       # Unit tests for all components
 
+scripts/
+├── ci-local.sh   # Local CI verification script
+└── build-web.sh  # Emscripten/WASM build script
+
+website/        # Astro-based documentation site (deployed to GitHub Pages)
+
 benchmarks/     # Performance benchmarks
 ```
 
@@ -96,6 +122,24 @@ benchmarks/     # Performance benchmarks
 | `src/runtime/` | Standard library functions |
 | `src/engine/` | Game engine (loop, callbacks, drawing, input, audio) |
 | `src/pal/` | Platform abstraction layer (SDL2, Emscripten, mock) |
+| `website/` | Astro documentation site with live playground |
+
+### Platform Abstraction Layer (PAL)
+
+The PAL provides a unified interface for platform-specific functionality:
+
+| Backend | File | Use Case |
+|---------|------|----------|
+| SDL2 | `pal_sdl.c` | Native desktop builds (macOS, Linux, Windows) |
+| Emscripten | `pal_sdl.c` | Web/WASM builds (uses SDL2 ports) |
+| Mock | `pal_mock.c` | Testing without graphics dependencies |
+
+The SDL2 backend includes full support for:
+- Window management and rendering
+- Keyboard and mouse input
+- Sound effects and music (SDL_mixer)
+- Font loading and text rendering (SDL_ttf)
+- Image loading (SDL_image)
 
 ### Memory Management
 
@@ -150,3 +194,27 @@ Test files are in `tests/unit/`. Each component has its own test file (test_lexe
 - 4-space indentation
 - Never use emojis in code, comments, or documentation
 - Run `.clang-format` for consistent formatting
+
+## Website
+
+The documentation website is built with Astro and deployed to GitHub Pages.
+
+```bash
+cd website
+npm install
+npm run dev      # Development server
+npm run build    # Production build
+```
+
+The website is automatically deployed via GitHub Actions when changes are pushed to `website/` or `docs/`.
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `CMakeLists.txt` | Main build configuration |
+| `LICENSE` | MIT license |
+| `CONTRIBUTING.md` | Contribution guidelines |
+| `CODE_OF_CONDUCT.md` | Community standards |
+| `.github/workflows/ci.yml` | CI pipeline (build + test) |
+| `.github/workflows/deploy-website.yml` | Website deployment |

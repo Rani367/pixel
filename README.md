@@ -113,7 +113,7 @@ pixel run examples/games/pong.pixel
 ## Building from Source
 
 ```bash
-git clone https://github.com/user/pixel.git
+git clone https://github.com/Rani367/pixel.git
 cd pixel
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release

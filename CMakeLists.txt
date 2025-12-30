@@ -84,6 +84,7 @@ if(EMSCRIPTEN)
         -sUSE_SDL=2
         -sUSE_SDL_IMAGE=2
         -sUSE_SDL_MIXER=2
+        -sUSE_SDL_TTF=2
         -sSDL2_IMAGE_FORMATS=["png","jpg"]
     )
 else()
@@ -91,12 +92,13 @@ else()
     find_package(SDL2 QUIET)
     find_package(SDL2_image QUIET)
     find_package(SDL2_mixer QUIET)
+    find_package(SDL2_ttf QUIET)
 
-    if(SDL2_FOUND AND SDL2_image_FOUND AND SDL2_mixer_FOUND)
+    if(SDL2_FOUND AND SDL2_image_FOUND AND SDL2_mixer_FOUND AND SDL2_ttf_FOUND)
         message(STATUS "SDL2 found - enabling SDL2 backend")
         target_sources(pixel_pal PRIVATE src/pal/pal_sdl.c)
         target_compile_definitions(pixel_pal PRIVATE PAL_USE_SDL2)
-        target_link_libraries(pixel_pal SDL2::SDL2 SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer)
+        target_link_libraries(pixel_pal SDL2::SDL2 SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf)
     else()
         message(STATUS "SDL2 not found - using mock backend only")
     endif()
@@ -126,7 +128,7 @@ target_link_libraries(pixel
 )
 
 # Define PAL_USE_SDL2 for main executable when using SDL2
-if(EMSCRIPTEN OR (SDL2_FOUND AND SDL2_image_FOUND AND SDL2_mixer_FOUND))
+if(EMSCRIPTEN OR (SDL2_FOUND AND SDL2_image_FOUND AND SDL2_mixer_FOUND AND SDL2_ttf_FOUND))
     target_compile_definitions(pixel PRIVATE PAL_USE_SDL2)
 endif()
 
@@ -146,6 +148,7 @@ if(EMSCRIPTEN)
             -sUSE_SDL=2 \
             -sUSE_SDL_IMAGE=2 \
             -sUSE_SDL_MIXER=2 \
+            -sUSE_SDL_TTF=2 \
             -sSDL2_IMAGE_FORMATS=[\"png\",\"jpg\"] \
             -sALLOW_MEMORY_GROWTH=1 \
             -sFORCE_FILESYSTEM=1 \

@@ -8,6 +8,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +18,7 @@
 // -----------------------------------------------------------------------------
 
 static bool sdl_initialized = false;
+static bool ttf_initialized = false;
 static Uint64 sdl_start_time = 0;
 static Uint64 sdl_frequency = 0;
 
@@ -98,6 +100,15 @@ bool pal_sdl_init(void) {
         printf("[PAL] Mix_OpenAudio OK\n");
     }
 
+    // Initialize SDL_ttf (may fail, that's OK - text just won't render)
+    if (TTF_Init() < 0) {
+        printf("[PAL] TTF_Init failed (non-fatal): %s\n", TTF_GetError());
+        ttf_initialized = false;
+    } else {
+        printf("[PAL] TTF_Init OK\n");
+        ttf_initialized = true;
+    }
+
     sdl_start_time = SDL_GetPerformanceCounter();
     sdl_frequency = SDL_GetPerformanceFrequency();
     sdl_keyboard_state = SDL_GetKeyboardState(NULL);
@@ -114,6 +125,10 @@ bool pal_sdl_init(void) {
 void pal_sdl_quit(void) {
     if (!sdl_initialized) return;
 
+    if (ttf_initialized) {
+        TTF_Quit();
+        ttf_initialized = false;
+    }
     Mix_CloseAudio();
     IMG_Quit();
     SDL_Quit();
@@ -611,53 +626,129 @@ void pal_sdl_sleep(double seconds) {
 }
 
 // -----------------------------------------------------------------------------
-// Fonts and Text (stub implementation - SDL_ttf support to be added later)
+// Fonts and Text
 // -----------------------------------------------------------------------------
 
 struct PalFont {
+    TTF_Font* ttf_font;
     int size;
     bool is_default;
 };
 
+// System font paths to try for default font
+static const char* system_font_paths[] = {
+#ifdef __APPLE__
+    "/System/Library/Fonts/Helvetica.ttc",
+    "/System/Library/Fonts/SFNSText.ttf",
+    "/Library/Fonts/Arial.ttf",
+#elif defined(_WIN32)
+    "C:\\Windows\\Fonts\\arial.ttf",
+    "C:\\Windows\\Fonts\\segoeui.ttf",
+    "C:\\Windows\\Fonts\\tahoma.ttf",
+#else
+    // Linux paths
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+    "/usr/share/fonts/TTF/DejaVuSans.ttf",
+#endif
+    NULL
+};
+
 PalFont* pal_sdl_font_load(const char* path, int size) {
-    (void)path;
-    // TODO: Implement with SDL_ttf
+    if (!ttf_initialized || !path) return NULL;
+
+    TTF_Font* ttf_font = TTF_OpenFont(path, size);
+    if (!ttf_font) {
+        printf("[PAL] Failed to load font '%s': %s\n", path, TTF_GetError());
+        return NULL;
+    }
+
     PalFont* font = malloc(sizeof(PalFont));
-    if (!font) return NULL;
+    if (!font) {
+        TTF_CloseFont(ttf_font);
+        return NULL;
+    }
+
+    font->ttf_font = ttf_font;
     font->size = size;
     font->is_default = false;
     return font;
 }
 
 PalFont* pal_sdl_font_default(int size) {
-    // TODO: Implement with embedded font
+    if (!ttf_initialized) return NULL;
+
+    // Try system font paths
+    TTF_Font* ttf_font = NULL;
+    for (int i = 0; system_font_paths[i] != NULL; i++) {
+        ttf_font = TTF_OpenFont(system_font_paths[i], size);
+        if (ttf_font) {
+            printf("[PAL] Using system font: %s\n", system_font_paths[i]);
+            break;
+        }
+    }
+
+    if (!ttf_font) {
+        printf("[PAL] No system font found, text rendering unavailable\n");
+        return NULL;
+    }
+
     PalFont* font = malloc(sizeof(PalFont));
-    if (!font) return NULL;
+    if (!font) {
+        TTF_CloseFont(ttf_font);
+        return NULL;
+    }
+
+    font->ttf_font = ttf_font;
     font->size = size;
     font->is_default = true;
     return font;
 }
 
 void pal_sdl_font_destroy(PalFont* font) {
+    if (!font) return;
+    if (font->ttf_font) {
+        TTF_CloseFont(font->ttf_font);
+    }
     free(font);
 }
 
 void pal_sdl_draw_text(PalWindow* window, PalFont* font, const char* text,
                        int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-    (void)window; (void)font; (void)text;
-    (void)x; (void)y; (void)r; (void)g; (void)b; (void)a;
-    // TODO: Implement with SDL_ttf
-    // For now, no-op since we don't have font rendering
+    if (!window || !window->sdl_renderer || !font || !font->ttf_font || !text || !*text) {
+        return;
+    }
+
+    SDL_Color color = { r, g, b, a };
+    SDL_Surface* surface = TTF_RenderText_Blended(font->ttf_font, text, color);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(window->sdl_renderer, surface);
+    if (!texture) {
+        SDL_FreeSurface(surface);
+        return;
+    }
+
+    SDL_Rect dst = { x, y, surface->w, surface->h };
+    SDL_RenderCopy(window->sdl_renderer, texture, NULL, &dst);
+
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
 }
 
 void pal_sdl_text_size(PalFont* font, const char* text, int* width, int* height) {
-    // Approximate text size without SDL_ttf
-    int len = text ? (int)strlen(text) : 0;
-    int char_width = font ? (font->size / 2) : 8;
-    int char_height = font ? font->size : 16;
+    if (font && font->ttf_font && text) {
+        TTF_SizeText(font->ttf_font, text, width, height);
+    } else {
+        // Fallback approximation if no font
+        int len = text ? (int)strlen(text) : 0;
+        int char_width = font ? (font->size / 2) : 8;
+        int char_height = font ? font->size : 16;
 
-    if (width) *width = len * char_width;
-    if (height) *height = char_height;
+        if (width) *width = len * char_width;
+        if (height) *height = char_height;
+    }
 }
 
 #endif // PAL_USE_SDL2
