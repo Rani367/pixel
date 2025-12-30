@@ -32,6 +32,7 @@ compile_commands.json
 *.data
 !docs/*.html
 !web/shell.html
+!website/public/no-cache.js
 
 # Debug
 *.dSYM/
