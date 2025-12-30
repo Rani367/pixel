@@ -153,6 +153,7 @@ if(EMSCRIPTEN)
             -sALLOW_MEMORY_GROWTH=1 \
             -sFORCE_FILESYSTEM=1 \
             -sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"callMain\",\"FS\"] \
+            -sEXPORTED_FUNCTIONS=[\"_main\",\"_emscripten_cancel_main_loop\"] \
             -sASYNCIFY=1 \
             -sASYNCIFY_STACK_SIZE=65536 \
             ${EMSCRIPTEN_SHELL} \

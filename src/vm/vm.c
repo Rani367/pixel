@@ -24,6 +24,10 @@ static void reset_stack(VM* vm) {
 }
 
 void vm_push(VM* vm, Value value) {
+    if (vm->stack_top >= vm->stack + STACK_MAX) {
+        vm_runtime_error(vm, "Value stack overflow");
+        return;
+    }
     *vm->stack_top = value;
     vm->stack_top++;
 }
@@ -194,7 +198,7 @@ static bool call(VM* vm, ObjClosure* closure, int arg_count) {
     }
 
     if (vm->frame_count == FRAMES_MAX) {
-        vm_runtime_error(vm, "Stack overflow");
+        vm_runtime_error(vm, "Call stack overflow");
         return false;
     }
 

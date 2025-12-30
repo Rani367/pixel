@@ -127,24 +127,39 @@ function on_draw() {
             ))}
           </select>
         </label>
+        <span id="status-badge" class="hidden px-2 py-1 text-xs font-medium rounded bg-cyan-500/20 text-cyan-400">
+          Running
+        </span>
       </div>
-      <button
-        id="run-btn"
-        class="px-4 py-2 bg-[--color-accent] text-zinc-900 font-medium rounded-lg hover:bg-[--color-accent-dark] transition-colors flex items-center gap-2"
-      >
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-        Run
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          id="run-btn"
+          class="px-4 py-2 bg-[--color-accent] text-zinc-900 font-medium rounded-lg hover:bg-[--color-accent-dark] transition-colors flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          Run
+        </button>
+        <button
+          id="stop-btn"
+          class="hidden px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <rect x="6" y="6" width="12" height="12"/>
+          </svg>
+          Stop
+        </button>
+      </div>
     </div>
 
     <!-- Main Content -->
     <div class="flex-1 flex min-h-0">
       <!-- Editor Panel -->
       <div class="w-1/2 border-r border-zinc-200 dark:border-zinc-800 flex flex-col">
-        <div class="px-4 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-          game.pixel
+        <div class="px-4 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+          <span>game.pixel</span>
+          <span class="text-zinc-400 dark:text-zinc-600 text-[10px]">Ctrl+Enter to run</span>
         </div>
         <div id="editor" class="flex-1 overflow-auto scrollbar-hide"></div>
       </div>
@@ -154,14 +169,15 @@ function on_draw() {
         <div class="px-4 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
           Output
         </div>
-        <div class="flex-1 bg-zinc-900 flex items-center justify-center">
-          <canvas id="canvas" width="800" height="600" style="width: 800px; height: 600px; display: block;"></canvas>
+        <div id="canvas-container" class="flex-1 bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden p-2">
+          <canvas id="canvas" width="800" height="600" class="max-w-full max-h-full bg-zinc-200 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800"></canvas>
         </div>
-        <div class="h-32 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-950">
-          <div class="px-4 py-2 text-xs font-medium text-zinc-500 border-b border-zinc-800">
-            Console
+        <div class="h-48 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 flex flex-col">
+          <div class="px-4 py-2 text-xs font-medium text-zinc-500 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+            <span>Console</span>
+            <button id="clear-console-btn" class="text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400 transition-colors">Clear</button>
           </div>
-          <div id="console" class="p-4 font-mono text-sm text-zinc-400 overflow-auto scrollbar-hide h-[calc(100%-2rem)]">
+          <div id="console" class="p-4 font-mono text-sm text-zinc-600 dark:text-zinc-400 overflow-auto scrollbar-hide flex-1">
             <p class="text-zinc-500">// Output will appear here when you run your code</p>
           </div>
         </div>
@@ -179,9 +195,55 @@ function on_draw() {
   import { EditorView, basicSetup } from 'codemirror';
   import { javascript } from '@codemirror/lang-javascript';
   import { oneDark } from '@codemirror/theme-one-dark';
+  import { Compartment } from '@codemirror/state';
 
   // Get examples from window
   const examples = (window as any).pixelExamples;
+
+  // Theme compartment for dynamic switching
+  const themeCompartment = new Compartment();
+
+  // Check if dark mode is active
+  function isDarkMode() {
+    return document.documentElement.classList.contains('dark');
+  }
+
+  // Light theme that matches the website
+  const lightTheme = EditorView.theme({
+    '&': {
+      height: '100%',
+      backgroundColor: '#fafafa',
+      color: '#3f3f46'
+    },
+    '.cm-scroller': { overflow: 'auto' },
+    '.cm-content': { caretColor: '#18181b' },
+    '.cm-cursor': { borderLeftColor: '#18181b' },
+    '.cm-activeLine': { backgroundColor: '#f4f4f5' },
+    '.cm-selectionMatch': { backgroundColor: '#e4e4e7' },
+    '.cm-gutters': {
+      backgroundColor: '#f4f4f5',
+      color: '#a1a1aa',
+      border: 'none',
+      borderRight: '1px solid #e4e4e7'
+    },
+    '.cm-activeLineGutter': { backgroundColor: '#e4e4e7' },
+    '&.cm-focused .cm-selectionBackground, ::selection': { backgroundColor: '#d4d4d8' },
+    '.cm-foldPlaceholder': { backgroundColor: '#e4e4e7', color: '#71717a', border: 'none' }
+  }, { dark: false });
+
+  // Dark theme extensions
+  const darkTheme = [
+    oneDark,
+    EditorView.theme({
+      '&': { height: '100%' },
+      '.cm-scroller': { overflow: 'auto' }
+    })
+  ];
+
+  // Get current theme extensions
+  function getThemeExtensions() {
+    return isDarkMode() ? darkTheme : lightTheme;
+  }
 
   // Initialize CodeMirror
   const editorContainer = document.getElementById('editor');
@@ -193,14 +255,23 @@ function on_draw() {
       extensions: [
         basicSetup,
         javascript(),
-        oneDark,
-        EditorView.theme({
-          '&': { height: '100%' },
-          '.cm-scroller': { overflow: 'auto' }
-        })
+        themeCompartment.of(getThemeExtensions())
       ],
       parent: editorContainer
     });
+
+    // Listen for theme changes
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === 'class') {
+          editor.dispatch({
+            effects: themeCompartment.reconfigure(getThemeExtensions())
+          });
+        }
+      }
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
   }
 
   // Example selector
@@ -233,23 +304,47 @@ function on_draw() {
     if (consoleEl) consoleEl.innerHTML = '';
   }
 
+  // Clear console button
+  const clearConsoleBtn = document.getElementById('clear-console-btn');
+  clearConsoleBtn?.addEventListener('click', clearConsole);
+
+  // UI elements
+  const runBtn = document.getElementById('run-btn');
+  const stopBtn = document.getElementById('stop-btn');
+  const statusBadge = document.getElementById('status-badge');
+
+  // Update UI for running state
+  function setRunningState(running: boolean) {
+    if (running) {
+      runBtn?.classList.add('hidden');
+      stopBtn?.classList.remove('hidden');
+      statusBadge?.classList.remove('hidden');
+    } else {
+      runBtn?.classList.remove('hidden');
+      stopBtn?.classList.add('hidden');
+      statusBadge?.classList.add('hidden');
+    }
+  }
+
   // WASM Module state
   let pixelModule: any = null;
   let isRunning = false;
+  let moduleLoaded = false;
+
+  // Get base URL for assets
+  function getBaseUrl() {
+    const base = import.meta.env.BASE_URL;
+    return base.endsWith('/') ? base : base + '/';
+  }
 
   // Load WASM module
-  async function loadPixelModule() {
-    if (pixelModule) return pixelModule;
+  async function loadPixelModule(): Promise<any> {
+    if (pixelModule && moduleLoaded) return pixelModule;
 
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const baseUrl = getBaseUrl();
 
     return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      const baseUrl = import.meta.env.BASE_URL.endsWith('/')
-        ? import.meta.env.BASE_URL
-        : import.meta.env.BASE_URL + '/';
-      script.src = baseUrl + 'wasm/pixel.js';
-
       // Configure Module before script loads
       (window as any).Module = {
         canvas: canvas,
@@ -270,8 +365,29 @@ function on_draw() {
           if (text) logToConsole(text, 'text-zinc-500');
         },
 
-        onRuntimeInitialized: () => {
+        onRuntimeInitialized: async () => {
           pixelModule = (window as any).Module;
+
+          // Preload the bundled font into the virtual filesystem
+          try {
+            const FS = pixelModule.FS;
+            // Create /fonts directory
+            try { FS.mkdir('/fonts'); } catch (e) { /* may already exist */ }
+
+            // Fetch and write the font file
+            const fontResponse = await fetch(baseUrl + 'fonts/Inter-Regular.ttf');
+            if (fontResponse.ok) {
+              const fontData = await fontResponse.arrayBuffer();
+              FS.writeFile('/fonts/Inter-Regular.ttf', new Uint8Array(fontData));
+              console.log('[Playground] Font preloaded successfully');
+            } else {
+              console.warn('[Playground] Could not load font file');
+            }
+          } catch (e) {
+            console.warn('[Playground] Font preload failed:', e);
+          }
+
+          moduleLoaded = true;
           logToConsole('Pixel runtime loaded', 'text-green-400');
           resolve(pixelModule);
         },
@@ -279,35 +395,51 @@ function on_draw() {
         onAbort: (what: string) => {
           logToConsole(`Aborted: ${what}`, 'text-red-400');
           isRunning = false;
+          setRunningState(false);
         },
 
         locateFile: (path: string) => {
-          const base = import.meta.env.BASE_URL.endsWith('/')
-            ? import.meta.env.BASE_URL
-            : import.meta.env.BASE_URL + '/';
-          return base + 'wasm/' + path;
+          return getBaseUrl() + 'wasm/' + path;
         }
       };
 
+      // Load the script
+      const script = document.createElement('script');
+      script.src = baseUrl + 'wasm/pixel.js';
       script.onerror = () => reject(new Error('Failed to load WASM module'));
       document.body.appendChild(script);
     });
   }
 
+  // Stop the running program
+  function stopExecution() {
+    if (!isRunning) return;
+
+    logToConsole('Stopping...', 'text-yellow-400');
+
+    // Cancel Emscripten main loop
+    const Module = (window as any).Module;
+    if (Module && Module._emscripten_cancel_main_loop) {
+      Module._emscripten_cancel_main_loop();
+    }
+
+    isRunning = false;
+    setRunningState(false);
+    logToConsole('Stopped', 'text-yellow-400');
+  }
+
   // Run Pixel code
   async function runPixelCode(code: string) {
+    // Stop any existing execution
     if (isRunning) {
-      logToConsole('Stopping previous execution...', 'text-yellow-400');
-      // Cancel Emscripten main loop if running
-      if (pixelModule && pixelModule._emscripten_cancel_main_loop) {
-        pixelModule._emscripten_cancel_main_loop();
-      }
-      // Small delay to let cleanup happen
-      await new Promise(r => setTimeout(r, 100));
+      stopExecution();
+      await new Promise(r => setTimeout(r, 200));
     }
 
     clearConsole();
     logToConsole('Running...', 'text-cyan-400');
+    isRunning = true;
+    setRunningState(true);
 
     try {
       const module = await loadPixelModule();
@@ -315,37 +447,57 @@ function on_draw() {
       // Write code to virtual filesystem
       const encoder = new TextEncoder();
       const codeBytes = encoder.encode(code);
-      // FS is a global in Emscripten
       const FS = (window as any).FS || module.FS;
       FS.writeFile('/game.pixel', codeBytes);
 
-      isRunning = true;
-
       // Call main with arguments: pixel run /game.pixel
-      // Use global Module since that's where Emscripten puts callMain
       const Module = (window as any).Module;
       try {
         if (Module.callMain) {
           Module.callMain(['run', '/game.pixel']);
         } else {
           logToConsole('callMain not available', 'text-yellow-400');
+          isRunning = false;
+          setRunningState(false);
         }
       } catch (runErr: any) {
         logToConsole(`Runtime error: ${runErr.message}`, 'text-red-400');
         isRunning = false;
+        setRunningState(false);
       }
 
     } catch (err: any) {
       logToConsole(`Error: ${err.message}`, 'text-red-400');
       isRunning = false;
+      setRunningState(false);
     }
   }
 
-  // Run button
-  const runBtn = document.getElementById('run-btn');
+  // Button handlers
   runBtn?.addEventListener('click', () => {
     const code = editor?.state.doc.toString() || '';
     runPixelCode(code);
+  });
+
+  stopBtn?.addEventListener('click', stopExecution);
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + Enter to run
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (!isRunning) {
+        const code = editor?.state.doc.toString() || '';
+        runPixelCode(code);
+      }
+    }
+    // Ctrl/Cmd + . to stop
+    if ((e.ctrlKey || e.metaKey) && e.key === '.') {
+      e.preventDefault();
+      if (isRunning) {
+        stopExecution();
+      }
+    }
   });
 
   // Pre-load the WASM module
@@ -364,5 +516,10 @@ function on_draw() {
   }
   #editor :global(.cm-scroller)::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Make canvas scale while maintaining aspect ratio */
+  #canvas {
+    object-fit: contain;
   }
 </style>

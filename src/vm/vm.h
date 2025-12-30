@@ -8,7 +8,7 @@
 #include "vm/object.h"
 
 // Stack and frame limits
-#define STACK_MAX 256
+#define STACK_MAX 1024
 #define FRAMES_MAX 64
 
 // Interpretation result

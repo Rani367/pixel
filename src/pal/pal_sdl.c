@@ -637,6 +637,10 @@ struct PalFont {
 
 // System font paths to try when loading the default font
 static const char* system_font_paths[] = {
+#ifdef __EMSCRIPTEN__
+    // Bundled font for WASM builds (preloaded into virtual filesystem)
+    "/fonts/Inter-Regular.ttf",
+#endif
 #ifdef __APPLE__
     "/System/Library/Fonts/Helvetica.ttc",
     "/System/Library/Fonts/SFNSText.ttf",
@@ -645,8 +649,8 @@ static const char* system_font_paths[] = {
     "C:\\Windows\\Fonts\\arial.ttf",
     "C:\\Windows\\Fonts\\segoeui.ttf",
     "C:\\Windows\\Fonts\\tahoma.ttf",
-#else
-    // Linux paths
+#elif !defined(__EMSCRIPTEN__)
+    // Linux paths (not for Emscripten)
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
     "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
