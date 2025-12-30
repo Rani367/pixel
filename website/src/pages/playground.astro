@@ -4,13 +4,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 const examples = [
   {
     name: 'Bouncing Ball',
-    code: `x = 400
-y = 300
-dx = 200
-dy = 150
+    code: `// DVD-style bouncing ball with random start
+x = 0
+y = 0
+dx = 0
+dy = 0
+color = CYAN
+
+function random_color() {
+    r = random_range(100, 255)
+    g = random_range(100, 255)
+    b = random_range(100, 255)
+    return rgb(r, g, b)
+}
 
 function on_start() {
     create_window(800, 600, "Bouncing Ball")
+    x = random_range(50, 750)
+    y = random_range(50, 550)
+    dx = random_range(150, 300)
+    dy = random_range(150, 300)
+    if random_range(0, 2) < 1 { dx = -dx }
+    if random_range(0, 2) < 1 { dy = -dy }
 }
 
 function on_update(dt) {
@@ -19,15 +34,17 @@ function on_update(dt) {
 
     if x < 20 or x > 780 {
         dx = -dx
+        color = random_color()
     }
     if y < 20 or y > 580 {
         dy = -dy
+        color = random_color()
     }
 }
 
 function on_draw() {
     clear(rgb(20, 20, 40))
-    draw_circle(x, y, 20, CYAN)
+    draw_circle(x, y, 20, color)
 }`
   },
   {
