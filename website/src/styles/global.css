@@ -35,10 +35,10 @@ html {
 }
 
 /* Hide scrollbar but keep functionality */
-.scrollbar-hide {
+html, body, .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.scrollbar-hide::-webkit-scrollbar {
+html::-webkit-scrollbar, body::-webkit-scrollbar, .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
