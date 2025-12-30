@@ -33,6 +33,8 @@ compile_commands.json
 !docs/*.html
 !web/shell.html
 !website/public/no-cache.js
+!website/public/wasm/pixel.js
+!website/public/wasm/pixel.wasm
 
 # Debug
 *.dSYM/
@@ -53,4 +55,3 @@ CTestTestfile.cmake
 # Website build artifacts
 website/dist/
 website/.astro/
-website/public/wasm/
