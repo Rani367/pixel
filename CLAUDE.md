@@ -1,4 +1,59 @@
-pixel) → Lexer → Parser → AST → Analyzer → Bytecode → VM
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Pixel is a beginner-friendly programming language for making 2D games. It compiles to bytecode and runs on a custom virtual machine with an integrated game engine.
+
+**Version:** 1.0.0
+
+## Build Commands
+
+```bash
+# Build (from project root)
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug  # or Release
+make
+
+# Run the interpreter
+./build/pixel run <file.pixel>
+
+# Run tests
+cd build && ctest --output-on-failure
+
+# Run CI checks locally (ALWAYS run before pushing)
+./scripts/ci-local.sh
+```
+
+> **Note to Claude:** Always run `./scripts/ci-local.sh` before pushing to GitHub to catch build/test failures early.
+
+## GitHub CI Verification
+
+After pushing changes to GitHub, always verify that CI passes:
+
+```bash
+# Push changes
+git push origin main
+
+# Watch the CI run and wait for completion
+gh run watch --exit-status
+
+# If CI fails, check the logs
+gh run view --log-failed
+```
+
+> **Note to Claude:** After every push, you MUST watch the GitHub CI run using `gh run watch --exit-status`. If it fails, examine the logs with `gh run view --log-failed`, fix the issues, and repeat until all CI checks pass. Do not consider the task complete until GitHub CI is green. Common CI-only failures include:
+> - GCC-specific warnings (Ubuntu uses GCC, not Clang)
+> - Memory leaks detected by LeakSanitizer (only enabled in Debug builds on CI)
+> - Platform-specific issues between macOS and Linux
+
+## Architecture
+
+The system follows a traditional compiler pipeline with a game engine layer:
+
+```
+Source (.pixel) → Lexer → Parser → AST → Analyzer → Bytecode → VM
                                                                  ↓
                                                      Platform Abstraction Layer
                                                      (SDL2 / Web/WASM / Mock)
@@ -95,59 +150,3 @@ Test files are in `tests/unit/`. Each component has its own test file (test_lexe
 - 4-space indentation
 - Never use emojis in code, comments, or documentation
 - Run `.clang-format` for consistent formatting
-ilure
-
-# Run CI checks locally (ALWAYS run before pushing)
-./scripts/ci-local.sh
-```
-
-> **Note to Claude:** Always run `./scripts/ci-local.sh` before pushing to GitHub to catch build/test failures early.
-
-## GitHub CI Verification
-
-After pushing changes to GitHub, always verify that CI passes:
-
-```bash
-# Push changes
-git push origin main
-
-# Watch the CI run and wait for completion
-gh run watch --exit-status
-
-# If CI fails, check the logs
-gh run view --log-failed
-```
-
-> **Note to Claude:** After every push, you MUST watch the GitHub CI run using `gh run watch --exit-status`. If it fails, examine the logs with `gh run view --log-failed`, fix the issues, and repeat until all CI checks pass. Do not consider the task complete until GitHub CI is green. Common CI-only failures include:
-> - GCC-specific warnings (Ubuntu uses GCC, not Clang)
-> - Memory leaks detected by LeakSanitizer (only enabled in Debug builds on CI)
-> - Platform-specific issues between macOS and Linux
-
-## Architecture
-
-The system follows a traditional compiler pipeline with a game engine layer:
-
-```
-Source (.# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Project Overview
-
-Pixel is a beginner-friendly programming language for making 2D games. It compiles to bytecode and runs on a custom virtual machine with an integrated game engine.
-
-**Version:** 1.0.0
-
-## Build Commands
-
-```bash
-# Build (from project root)
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug  # or Release
-make
-
-# Run the interpreter
-./build/pixel run <file.pixel>
-
-# Run tests
-cd build && ctest --output-on-fa

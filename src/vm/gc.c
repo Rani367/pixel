@@ -335,7 +335,26 @@ static void blacken_object(VM* vm, Object* object) {
 
 static void trace_references(VM* vm) {
 #ifdef DEBUG_LOG_GC
-    printf("[gc] -- trace r   Object* object = vm->objects;
+    printf("[gc] -- trace references --\n");
+#endif
+
+    while (vm->gray_count > 0) {
+        Object* object = vm->gray_stack[--vm->gray_count];
+        blacken_object(vm, object);
+    }
+}
+
+// ============================================================================
+// Sweep Phase
+// ============================================================================
+
+static void sweep(VM* vm) {
+#ifdef DEBUG_LOG_GC
+    printf("[gc] -- sweep --\n");
+#endif
+
+    Object* previous = NULL;
+    Object* object = vm->objects;
 
     while (object != NULL) {
         if (object->marked) {
@@ -391,26 +410,7 @@ void gc_collect(VM* vm) {
     // Trace phase
     trace_references(vm);
 
-    // eferences --\n");
-#endif
-
-    while (vm->gray_count > 0) {
-        Object* object = vm->gray_stack[--vm->gray_count];
-        blacken_object(vm, object);
-    }
-}
-
-// ============================================================================
-// Sweep Phase
-// ============================================================================
-
-static void sweep(VM* vm) {
-#ifdef DEBUG_LOG_GC
-    printf("[gc] -- sweep --\n");
-#endif
-
-    Object* previous = NULL;
- Remove weak references to unmarked strings
+    // Remove weak references to unmarked strings
     strings_remove_white();
 
     // Sweep phase

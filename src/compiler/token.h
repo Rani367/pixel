@@ -25,7 +25,13 @@ typedef enum {
     TOKEN_BANG,            // !
     TOKEN_BANG_EQUAL,      // !=
     TOKEN_EQUAL,           // =
-    TTOKEN_PLUS_EQUAL,      // +=
+    TOKEN_EQUAL_EQUAL,     // ==
+    TOKEN_GREATER,         // >
+    TOKEN_GREATER_EQUAL,   // >=
+    TOKEN_LESS,            // <
+    TOKEN_LESS_EQUAL,      // <=
+    TOKEN_ARROW,           // ->
+    TOKEN_PLUS_EQUAL,      // +=
     TOKEN_MINUS_EQUAL,     // -=
     TOKEN_STAR_EQUAL,      // *=
     TOKEN_SLASH_EQUAL,     // /=
@@ -87,10 +93,3 @@ Token token_error(const char* message, int line, int column);
 Token token_eof(int line, int column);
 
 #endif // PH_TOKEN_H
-OKEN_EQUAL_EQUAL,     // ==
-    TOKEN_GREATER,         // >
-    TOKEN_GREATER_EQUAL,   // >=
-    TOKEN_LESS,            // <
-    TOKEN_LESS_EQUAL,      // <=
-    TOKEN_ARROW,           // ->
-    

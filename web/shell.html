@@ -1,112 +1,4 @@
-d="progress-bar"></div>
-            </div>
-        </div>
-    </div>
-    <div id="error"></div>
-    <div id="audio-unlock" class="hidden">
-        <button id="audio-unlock-btn">Click to Start</button>
-        <p>Audio requires user interaction to play</p>
-    </div>
-    <footer>
-        Made with Placeholder
-    </footer>
-
-    <script>
-        var Module = {
-            canvas: (function() {
-                var canvas = document.getElementById('canvas');
-                canvas.addEventListener('webglcontextlost', function(e) {
-                    alert('WebGL context lost. Please reload the page.');
-                    e.preventDefault();
-                }, false);
-                return canvas;
-            })(),
-
-            setStatus: function(text) {
-                var loadingText = document.getElementById('loading-text');
-                if (loadingText) {
-                    if (text) {
-                        loadingText.textContent = text;
-                    }
-                }
-
-                // Hide loading when done
-                if (!text || text === '') {
-                    var loading = document.getElementById('loading');
-                    if (loading)owsers require user interaction before playing audio
-                var audioUnlock = document.getElementById('audio-unlock');
-                var ctx = null;
-                try {
-                    var AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContext) {
-                        ctx = new AudioContext();
-                        if (ctx.state === 'suspended') {
-                            audioUnlock.classList.remove('hidden');
-                        }
-                    }
-                } catch (e) {
-                    // Audio context not available
-                }
-
-                audioUnlock.addEventListener('click', function() {
-                    if (ctx && ctx.state === 'suspended') {
-                        ctx.resume();
-                    }
-                    // Also try to unlock SDL audio
-                    if (typeof SDL !== 'undefined' && SDL.audioContext) {
-                        SDL.audioContext.resume();
-                    }
-                    audioUnlock.classList.add('hidden');
-                });
-            },
-
-            print: function(text) {
-                console.log(text);
-            },
-
-            printErr: function(text) {
-                console.error(text);
-                var errorDiv = document.getElementById('error');
-                if (errorDiv && text.indexOf('exception') !== -1) {
-                    errorDiv.style.display = 'block';
-                    errorDiv.textContent = 'Error: ' + text;
-                }
-            }
-        };
-    </script>
-    {{{ SCRIPT }}}
-</body>
-</html>
- {
-                        loading.style.display = 'none';
-                    }
-                }
-            },
-
-            monitorRunDependencies: function(left) {
-                var progressBar = document.getElementById('progress-bar');
-                if (progressBar) {
-                    // Estimate progress (this is approximate)
-                    var total = Module.totalDependencies || left;
-                    if (left < total) {
-                        Module.totalDependencies = total;
-                    }
-                    var percent = total > 0 ? ((total - left) / total) * 100 : 100;
-                    progressBar.style.width = percent + '%';
-                }
-            },
-
-            totalDependencies: 0,
-
-            onRuntimeInitialized: function() {
-                // Hide loading screen
-                var loading = document.getElementById('loading');
-                if (loading) {
-                    loading.style.display = 'none';
-                }
-
-                // Show audio unlock overlay if needed
-                // Most br<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -243,4 +135,111 @@ d="progress-bar"></div>
             <div id="loading-spinner"></div>
             <div id="loading-text">Loading...</div>
             <div id="progress-container">
-                <div i
+                <div id="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    <div id="error"></div>
+    <div id="audio-unlock" class="hidden">
+        <button id="audio-unlock-btn">Click to Start</button>
+        <p>Audio requires user interaction to play</p>
+    </div>
+    <footer>
+        Made with Placeholder
+    </footer>
+
+    <script>
+        var Module = {
+            canvas: (function() {
+                var canvas = document.getElementById('canvas');
+                canvas.addEventListener('webglcontextlost', function(e) {
+                    alert('WebGL context lost. Please reload the page.');
+                    e.preventDefault();
+                }, false);
+                return canvas;
+            })(),
+
+            setStatus: function(text) {
+                var loadingText = document.getElementById('loading-text');
+                if (loadingText) {
+                    if (text) {
+                        loadingText.textContent = text;
+                    }
+                }
+
+                // Hide loading when done
+                if (!text || text === '') {
+                    var loading = document.getElementById('loading');
+                    if (loading) {
+                        loading.style.display = 'none';
+                    }
+                }
+            },
+
+            monitorRunDependencies: function(left) {
+                var progressBar = document.getElementById('progress-bar');
+                if (progressBar) {
+                    // Estimate progress (this is approximate)
+                    var total = Module.totalDependencies || left;
+                    if (left < total) {
+                        Module.totalDependencies = total;
+                    }
+                    var percent = total > 0 ? ((total - left) / total) * 100 : 100;
+                    progressBar.style.width = percent + '%';
+                }
+            },
+
+            totalDependencies: 0,
+
+            onRuntimeInitialized: function() {
+                // Hide loading screen
+                var loading = document.getElementById('loading');
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+
+                // Show audio unlock overlay if needed
+                // Most browsers require user interaction before playing audio
+                var audioUnlock = document.getElementById('audio-unlock');
+                var ctx = null;
+                try {
+                    var AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        ctx = new AudioContext();
+                        if (ctx.state === 'suspended') {
+                            audioUnlock.classList.remove('hidden');
+                        }
+                    }
+                } catch (e) {
+                    // Audio context not available
+                }
+
+                audioUnlock.addEventListener('click', function() {
+                    if (ctx && ctx.state === 'suspended') {
+                        ctx.resume();
+                    }
+                    // Also try to unlock SDL audio
+                    if (typeof SDL !== 'undefined' && SDL.audioContext) {
+                        SDL.audioContext.resume();
+                    }
+                    audioUnlock.classList.add('hidden');
+                });
+            },
+
+            print: function(text) {
+                console.log(text);
+            },
+
+            printErr: function(text) {
+                console.error(text);
+                var errorDiv = document.getElementById('error');
+                if (errorDiv && text.indexOf('exception') !== -1) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = 'Error: ' + text;
+                }
+            }
+        };
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>

@@ -34,15 +34,7 @@ void log_write(LogLevel level, const char* file, int line, const char* fmt, ...)
     time_t now = time(NULL);
     struct tm* tm_info = localtime(&now);
     char time_buf[20];
-    strftime(time_buf, sizeof(time_buf), "s, fmt);
-    vfprintf(out, fmt, args);
-    va_end(args);
-
-    fprintf(out, "\n");
-    fflush(out);
-}
-#pragma GCC diagnostic pop
-%Y-%m-%d %H:%M:%S", tm_info);
+    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", tm_info);
 
     // Extract just the filename from the path
     const char* filename = file;
@@ -57,4 +49,11 @@ void log_write(LogLevel level, const char* file, int line, const char* fmt, ...)
 
     // Print the message
     va_list args;
-    va_start(arg
+    va_start(args, fmt);
+    vfprintf(out, fmt, args);
+    va_end(args);
+
+    fprintf(out, "\n");
+    fflush(out);
+}
+#pragma GCC diagnostic pop

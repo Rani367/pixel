@@ -1,52 +1,182 @@
-    case OBJ_MUSIC: {
-            ObjMusic* music = (ObjMusic*)object;
-            music_destroy_handle(music);
-            break;
-        }
-        case OBJ_CAMERA:
-            // Camera has no external resources to free
-            break;
-        case OBJ_ANIMATION: {
-            ObjAnimation* anim = (ObjAnimation*)object;
-            if (anim->frames) {
-                PH_FREE(anim->frames);
-            }
-            break;
-        }
-        case OBJ_PARTICLE_EMITTER:
-            // Particle emitter has no external resources to free
-            // (particles are stored in fixed-size array inside the object)
-            break;
+#include "vm/object.h"
+#include "vm/chunk.h"
+#include "vm/gc.h"
+#include "core/table.h"
+#include "core/strings.h"
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+// String intern table
+static Table strings;
+
+// ============================================================================
+// String Objects
+// ============================================================================
+
+void strings_init(void) {
+    table_init(&strings);
+}
+
+void strings_free(void) {
+    table_free(&strings);
+}
+
+uint32_t string_hash(const char* chars, int length) {
+    // FNV-1a hash
+    uint32_t hash = 2166136261u;
+    for (int i = 0; i < length; i++) {
+        hash ^= (uint8_t)chars[i];
+        hash *= 16777619;
+    }
+    return hash;
+}
+
+static ObjString* allocate_string(const char* chars, int length, uint32_t hash) {
+    // Check if already interned
+    const char* interned = table_find_string(&strings, chars, length, hash);
+    if (interned != NULL) {
+        // Find the ObjString that owns this interned string
+        // The string chars are at a fixed offset from the ObjString
+        return (ObjString*)(interned - offsetof(ObjString, chars));
     }
 
-    PH_FREE(object);
+    // Allocate new string using GC
+    ObjString* string = (ObjString*)gc_allocate_object(
+        sizeof(ObjString) + length + 1, OBJ_STRING);
+    string->length = length;
+    string->hash = hash;
+    memcpy(string->chars, chars, length);
+    string->chars[length] = '\0';
+
+    // Intern the string
+    table_set(&strings, string->chars, length, string);
+
+    return string;
+}
+
+ObjString* string_copy(const char* chars, int length) {
+    uint32_t hash = string_hash(chars, length);
+    return allocate_string(chars, length, hash);
+}
+
+ObjString* string_take(char* chars, int length) {
+    uint32_t hash = string_hash(chars, length);
+
+    // Check if already interned
+    const char* interned = table_find_string(&strings, chars, length, hash);
+    if (interned != NULL) {
+        // Free the passed string and return the interned one
+        PH_FREE(chars);
+        return (ObjString*)(interned - offsetof(ObjString, chars));
+    }
+
+    // Create new string using GC (we still need to copy since ObjString uses flexible array)
+    ObjString* string = (ObjString*)gc_allocate_object(
+        sizeof(ObjString) + length + 1, OBJ_STRING);
+    string->length = length;
+    string->hash = hash;
+    memcpy(string->chars, chars, length);
+    string->chars[length] = '\0';
+
+    // Free the original
+    PH_FREE(chars);
+
+    // Intern the string
+    table_set(&strings, string->chars, length, string);
+
+    return string;
+}
+
+ObjString* string_concat(ObjString* a, ObjString* b) {
+    int length = a->length + b->length;
+    char* chars = PH_ALLOC(length + 1);
+    memcpy(chars, a->chars, a->length);
+    memcpy(chars + a->length, b->chars, b->length);
+    chars[length] = '\0';
+
+    return string_take(chars, length);
+}
+
+ObjString* string_intern(const char* chars, int length) {
+    return string_copy(chars, length);
 }
 
 // ============================================================================
-// String Interning - Weak Reference Support for GC
+// Function Objects
 // ============================================================================
 
-// Tombstone marker (must match table.c)
-#define TOMBSTONE_KEY ((const char*)1)
-
-void strings_remove_white(void) {
-    // Remove unmarked strings from the intern table
-    // This is called during GC before the sweep phase
-    for (int i = 0; i < strings.capacity; i++) {
-        TableEntry* entry = &strings.entries[i];
-        if (entry->key != NULL && entry->key != TOMBSTONE_KEY) {
-            // The value is an ObjString*
-            ObjString* string = (ObjString*)entry->value;
-            if (!string->obj.marked) {
-                // String is unmarked (will be freed), remove from table
-                entry->key = TOMBSTONE_KEY;
-                entry->key_length = 0;
-                entry->value = NULL;
-            }
-        }
-    }
+ObjFunction* function_new(void) {
+    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+    function->arity = 0;
+    function->upvalue_count = 0;
+    function->chunk = NULL;  // Will be set in Phase 7
+    function->name = NULL;
+    return function;
 }
-=====================================================================
+
+// ============================================================================
+// Closure Objects
+// ============================================================================
+
+ObjClosure* closure_new(ObjFunction* function) {
+    ObjUpvalue** upvalues = PH_ALLOC(sizeof(ObjUpvalue*) * function->upvalue_count);
+    for (int i = 0; i < function->upvalue_count; i++) {
+        upvalues[i] = NULL;
+    }
+
+    ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
+    closure->function = function;
+    closure->upvalues = upvalues;
+    closure->upvalue_count = function->upvalue_count;
+    return closure;
+}
+
+// ============================================================================
+// Upvalue Objects
+// ============================================================================
+
+ObjUpvalue* upvalue_new(Value* slot) {
+    ObjUpvalue* upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
+    upvalue->location = slot;
+    upvalue->closed = NONE_VAL;
+    upvalue->next = NULL;
+    return upvalue;
+}
+
+// ============================================================================
+// Struct Definition Objects
+// ============================================================================
+
+ObjStructDef* struct_def_new(ObjString* name, int field_count) {
+    ObjStructDef* def = ALLOCATE_OBJ(ObjStructDef, OBJ_STRUCT_DEF);
+    def->name = name;
+    def->field_count = field_count;
+    def->fields = PH_ALLOC(sizeof(ObjString*) * field_count);
+    for (int i = 0; i < field_count; i++) {
+        def->fields[i] = NULL;
+    }
+    table_init(&def->methods);
+    return def;
+}
+
+// ============================================================================
+// Instance Objects
+// ============================================================================
+
+ObjInstance* instance_new(ObjStructDef* struct_def) {
+    ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+    instance->struct_def = struct_def;
+    instance->fields = PH_ALLOC(sizeof(Value) * struct_def->field_count);
+    for (int i = 0; i < struct_def->field_count; i++) {
+        instance->fields[i] = NONE_VAL;
+    }
+    return instance;
+}
+
+// ============================================================================
+// List Objects
+// ============================================================================
 
 ObjList* list_new(void) {
     ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
@@ -750,182 +880,51 @@ void object_free(Object* object) {
             sound_destroy_handle(sound);
             break;
         }
-    #include "vm/object.h"
-#include "vm/chunk.h"
-#include "vm/gc.h"
-#include "core/table.h"
-#include "core/strings.h"
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
-// String intern table
-static Table strings;
-
-// ============================================================================
-// String Objects
-// ============================================================================
-
-void strings_init(void) {
-    table_init(&strings);
-}
-
-void strings_free(void) {
-    table_free(&strings);
-}
-
-uint32_t string_hash(const char* chars, int length) {
-    // FNV-1a hash
-    uint32_t hash = 2166136261u;
-    for (int i = 0; i < length; i++) {
-        hash ^= (uint8_t)chars[i];
-        hash *= 16777619;
-    }
-    return hash;
-}
-
-static ObjString* allocate_string(const char* chars, int length, uint32_t hash) {
-    // Check if already interned
-    const char* interned = table_find_string(&strings, chars, length, hash);
-    if (interned != NULL) {
-        // Find the ObjString that owns this interned string
-        // The string chars are at a fixed offset from the ObjString
-        return (ObjString*)(interned - offsetof(ObjString, chars));
+        case OBJ_MUSIC: {
+            ObjMusic* music = (ObjMusic*)object;
+            music_destroy_handle(music);
+            break;
+        }
+        case OBJ_CAMERA:
+            // Camera has no external resources to free
+            break;
+        case OBJ_ANIMATION: {
+            ObjAnimation* anim = (ObjAnimation*)object;
+            if (anim->frames) {
+                PH_FREE(anim->frames);
+            }
+            break;
+        }
+        case OBJ_PARTICLE_EMITTER:
+            // Particle emitter has no external resources to free
+            // (particles are stored in fixed-size array inside the object)
+            break;
     }
 
-    // Allocate new string using GC
-    ObjString* string = (ObjString*)gc_allocate_object(
-        sizeof(ObjString) + length + 1, OBJ_STRING);
-    string->length = length;
-    string->hash = hash;
-    memcpy(string->chars, chars, length);
-    string->chars[length] = '\0';
-
-    // Intern the string
-    table_set(&strings, string->chars, length, string);
-
-    return string;
+    PH_FREE(object);
 }
 
-ObjString* string_copy(const char* chars, int length) {
-    uint32_t hash = string_hash(chars, length);
-    return allocate_string(chars, length, hash);
-}
+// ============================================================================
+// String Interning - Weak Reference Support for GC
+// ============================================================================
 
-ObjString* string_take(char* chars, int length) {
-    uint32_t hash = string_hash(chars, length);
+// Tombstone marker (must match table.c)
+#define TOMBSTONE_KEY ((const char*)1)
 
-    // Check if already interned
-    const char* interned = table_find_string(&strings, chars, length, hash);
-    if (interned != NULL) {
-        // Free the passed string and return the interned one
-        PH_FREE(chars);
-        return (ObjString*)(interned - offsetof(ObjString, chars));
+void strings_remove_white(void) {
+    // Remove unmarked strings from the intern table
+    // This is called during GC before the sweep phase
+    for (int i = 0; i < strings.capacity; i++) {
+        TableEntry* entry = &strings.entries[i];
+        if (entry->key != NULL && entry->key != TOMBSTONE_KEY) {
+            // The value is an ObjString*
+            ObjString* string = (ObjString*)entry->value;
+            if (!string->obj.marked) {
+                // String is unmarked (will be freed), remove from table
+                entry->key = TOMBSTONE_KEY;
+                entry->key_length = 0;
+                entry->value = NULL;
+            }
+        }
     }
-
-    // Create new string using GC (we still need to copy since ObjString uses flexible array)
-    ObjString* string = (ObjString*)gc_allocate_object(
-        sizeof(ObjString) + length + 1, OBJ_STRING);
-    string->length = length;
-    string->hash = hash;
-    memcpy(string->chars, chars, length);
-    string->chars[length] = '\0';
-
-    // Free the original
-    PH_FREE(chars);
-
-    // Intern the string
-    table_set(&strings, string->chars, length, string);
-
-    return string;
 }
-
-ObjString* string_concat(ObjString* a, ObjString* b) {
-    int length = a->length + b->length;
-    char* chars = PH_ALLOC(length + 1);
-    memcpy(chars, a->chars, a->length);
-    memcpy(chars + a->length, b->chars, b->length);
-    chars[length] = '\0';
-
-    return string_take(chars, length);
-}
-
-ObjString* string_intern(const char* chars, int length) {
-    return string_copy(chars, length);
-}
-
-// ============================================================================
-// Function Objects
-// ============================================================================
-
-ObjFunction* function_new(void) {
-    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
-    function->arity = 0;
-    function->upvalue_count = 0;
-    function->chunk = NULL;  // Will be set in Phase 7
-    function->name = NULL;
-    return function;
-}
-
-// ============================================================================
-// Closure Objects
-// ============================================================================
-
-ObjClosure* closure_new(ObjFunction* function) {
-    ObjUpvalue** upvalues = PH_ALLOC(sizeof(ObjUpvalue*) * function->upvalue_count);
-    for (int i = 0; i < function->upvalue_count; i++) {
-        upvalues[i] = NULL;
-    }
-
-    ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
-    closure->function = function;
-    closure->upvalues = upvalues;
-    closure->upvalue_count = function->upvalue_count;
-    return closure;
-}
-
-// ============================================================================
-// Upvalue Objects
-// ============================================================================
-
-ObjUpvalue* upvalue_new(Value* slot) {
-    ObjUpvalue* upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
-    upvalue->location = slot;
-    upvalue->closed = NONE_VAL;
-    upvalue->next = NULL;
-    return upvalue;
-}
-
-// ============================================================================
-// Struct Definition Objects
-// ============================================================================
-
-ObjStructDef* struct_def_new(ObjString* name, int field_count) {
-    ObjStructDef* def = ALLOCATE_OBJ(ObjStructDef, OBJ_STRUCT_DEF);
-    def->name = name;
-    def->field_count = field_count;
-    def->fields = PH_ALLOC(sizeof(ObjString*) * field_count);
-    for (int i = 0; i < field_count; i++) {
-        def->fields[i] = NULL;
-    }
-    table_init(&def->methods);
-    return def;
-}
-
-// ============================================================================
-// Instance Objects
-// ============================================================================
-
-ObjInstance* instance_new(ObjStructDef* struct_def) {
-    ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
-    instance->struct_def = struct_def;
-    instance->fields = PH_ALLOC(sizeof(Value) * struct_def->field_count);
-    for (int i = 0; i < struct_def->field_count; i++) {
-        instance->fields[i] = NONE_VAL;
-    }
-    return instance;
-}
-
-// ============================================================================
-// List Objects
-// =======

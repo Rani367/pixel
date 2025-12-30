@@ -1,9 +1,30 @@
-)str[i];
-        hash *= 16777619u;
-    }
-    return hash;
+#include "strings.h"
+#include <string.h>
+#include <stdarg.h>
+#include <ctype.h>
+
+StringView sv_from_cstr(const char* cstr) {
+    StringView sv;
+    sv.data = cstr;
+    sv.length = cstr ? strlen(cstr) : 0;
+    return sv;
 }
-sv, StringView prefix) {
+
+StringView sv_from_parts(const char* data, size_t length) {
+    StringView sv;
+    sv.data = data;
+    sv.length = length;
+    return sv;
+}
+
+bool sv_equal(StringView a, StringView b) {
+    if (a.length != b.length) {
+        return false;
+    }
+    return memcmp(a.data, b.data, a.length) == 0;
+}
+
+bool sv_starts_with(StringView sv, StringView prefix) {
     if (prefix.length > sv.length) {
         return false;
     }
@@ -67,77 +88,7 @@ void sb_append_sv(StringBuilder* sb, StringView sv) {
 }
 
 void sb_append_n(StringBuilder* sb, const char* str, size_t n) {
-    ipacity = 0;
-    return result;
-}
-
-StringView sb_view(StringBuilder* sb) {
-    return sv_from_parts(sb->data, sb->length);
-}
-
-void sb_clear(StringBuilder* sb) {
-    sb->length = 0;
-    if (sb->data != NULL) {
-        sb->data[0] = '\0';
-    }
-}
-
-void sb_free(StringBuilder* sb) {
-    PH_FREE(sb->data);
-    sb_init(sb);
-}
-
-char* ph_strdup(const char* str) {
-    if (str == NULL) {
-        return NULL;
-    }
-    size_t len = strlen(str);
-    char* result = PH_ALLOC(len + 1);
-    memcpy(result, str, len + 1);
-    return result;
-}
-
-char* ph_strndup(const char* str, size_t n) {
-    if (str == NULL) {
-        return NULL;
-    }
-    char* result = PH_ALLOC(n + 1);
-    memcpy(result, str, n);
-    result[n] = '\0';
-    return result;
-}
-
-uint32_t ph_hash_string(const char* str, size_t length) {
-    // FNV-1a hash
-    uint32_t hash = 2166136261u;
-    for (size_t i = 0; i < length; i++) {
-        hash ^= (uint8_t#include "strings.h"
-#include <string.h>
-#include <stdarg.h>
-#include <ctype.h>
-
-StringView sv_from_cstr(const char* cstr) {
-    StringView sv;
-    sv.data = cstr;
-    sv.length = cstr ? strlen(cstr) : 0;
-    return sv;
-}
-
-StringView sv_from_parts(const char* data, size_t length) {
-    StringView sv;
-    sv.data = data;
-    sv.length = length;
-    return sv;
-}
-
-bool sv_equal(StringView a, StringView b) {
-    if (a.length != b.length) {
-        return false;
-    }
-    return memcmp(a.data, b.data, a.length) == 0;
-}
-
-bool sv_starts_with(StringView f (n == 0) {
+    if (n == 0) {
         return;
     }
 
@@ -190,4 +141,52 @@ char* sb_finish(StringBuilder* sb) {
     char* result = sb->data;
     sb->data = NULL;
     sb->length = 0;
-    sb->ca
+    sb->capacity = 0;
+    return result;
+}
+
+StringView sb_view(StringBuilder* sb) {
+    return sv_from_parts(sb->data, sb->length);
+}
+
+void sb_clear(StringBuilder* sb) {
+    sb->length = 0;
+    if (sb->data != NULL) {
+        sb->data[0] = '\0';
+    }
+}
+
+void sb_free(StringBuilder* sb) {
+    PH_FREE(sb->data);
+    sb_init(sb);
+}
+
+char* ph_strdup(const char* str) {
+    if (str == NULL) {
+        return NULL;
+    }
+    size_t len = strlen(str);
+    char* result = PH_ALLOC(len + 1);
+    memcpy(result, str, len + 1);
+    return result;
+}
+
+char* ph_strndup(const char* str, size_t n) {
+    if (str == NULL) {
+        return NULL;
+    }
+    char* result = PH_ALLOC(n + 1);
+    memcpy(result, str, n);
+    result[n] = '\0';
+    return result;
+}
+
+uint32_t ph_hash_string(const char* str, size_t length) {
+    // FNV-1a hash
+    uint32_t hash = 2166136261u;
+    for (size_t i = 0; i < length; i++) {
+        hash ^= (uint8_t)str[i];
+        hash *= 16777619u;
+    }
+    return hash;
+}

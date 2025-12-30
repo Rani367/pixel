@@ -1,10 +1,23 @@
-ode(OpCode op) {
-    if (op >= 0 && op < OP_COUNT) {
-        return opcode_modes[op];
-    }
-    return OP_MODE_SIMPLE;
-}
-ACT]       = "OP_SUBTRACT",
+#include "vm/opcodes.h"
+
+// Opcode names for disassembly
+static const char* opcode_names[] = {
+    [OP_CONSTANT]       = "OP_CONSTANT",
+    [OP_CONSTANT_LONG]  = "OP_CONSTANT_LONG",
+    [OP_NONE]            = "OP_NONE",
+    [OP_TRUE]           = "OP_TRUE",
+    [OP_FALSE]          = "OP_FALSE",
+    [OP_POP]            = "OP_POP",
+    [OP_POPN]           = "OP_POPN",
+    [OP_DUP]            = "OP_DUP",
+    [OP_GET_LOCAL]      = "OP_GET_LOCAL",
+    [OP_SET_LOCAL]      = "OP_SET_LOCAL",
+    [OP_GET_GLOBAL]     = "OP_GET_GLOBAL",
+    [OP_SET_GLOBAL]     = "OP_SET_GLOBAL",
+    [OP_GET_UPVALUE]    = "OP_GET_UPVALUE",
+    [OP_SET_UPVALUE]    = "OP_SET_UPVALUE",
+    [OP_ADD]            = "OP_ADD",
+    [OP_SUBTRACT]       = "OP_SUBTRACT",
     [OP_MULTIPLY]       = "OP_MULTIPLY",
     [OP_DIVIDE]         = "OP_DIVIDE",
     [OP_MODULO]         = "OP_MODULO",
@@ -90,23 +103,9 @@ const char* opcode_name(OpCode op) {
     return "OP_UNKNOWN";
 }
 
-OpMode opcode_m#include "vm/opcodes.h"
-
-// Opcode names for disassembly
-static const char* opcode_names[] = {
-    [OP_CONSTANT]       = "OP_CONSTANT",
-    [OP_CONSTANT_LONG]  = "OP_CONSTANT_LONG",
-    [OP_NONE]            = "OP_NONE",
-    [OP_TRUE]           = "OP_TRUE",
-    [OP_FALSE]          = "OP_FALSE",
-    [OP_POP]            = "OP_POP",
-    [OP_POPN]           = "OP_POPN",
-    [OP_DUP]            = "OP_DUP",
-    [OP_GET_LOCAL]      = "OP_GET_LOCAL",
-    [OP_SET_LOCAL]      = "OP_SET_LOCAL",
-    [OP_GET_GLOBAL]     = "OP_GET_GLOBAL",
-    [OP_SET_GLOBAL]     = "OP_SET_GLOBAL",
-    [OP_GET_UPVALUE]    = "OP_GET_UPVALUE",
-    [OP_SET_UPVALUE]    = "OP_SET_UPVALUE",
-    [OP_ADD]            = "OP_ADD",
-    [OP_SUBTR
+OpMode opcode_mode(OpCode op) {
+    if (op >= 0 && op < OP_COUNT) {
+        return opcode_modes[op];
+    }
+    return OP_MODE_SIMPLE;
+}

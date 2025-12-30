@@ -7,8 +7,7 @@ typedef struct {
     const char* source;    // Full source string
     const char* start;     // Start of current token
     const char* current;   // Current character
-    int lEXER_H
-ine;
+    int line;
     int column;
     int start_column;      // Column where current token started
     const char* error;     // Pending error message (NULL if none)
@@ -20,4 +19,4 @@ void lexer_init(Lexer* lexer, const char* source);
 // Scan and return the next token
 Token lexer_scan_token(Lexer* lexer);
 
-#endif // PH_L
+#endif // PH_LEXER_H

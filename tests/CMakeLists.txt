@@ -1,12 +1,4 @@
-_link_libraries(test_vm pixel_compiler)
-add_test(NAME test_vm COMMAND test_vm)
-
-add_executable(test_gc unit/test_gc.c)
-target_link_libraries(test_gc pixel_vm)
-add_test(NAME test_gc COMMAND test_gc)
-
-add_executable(test_stdlib unit/test_stdlib.c)
-target_link_libraries(test_stdlib pixel_compiler pixel_runtim# Test executables
+# Test executables
 add_executable(test_arena unit/test_arena.c)
 target_link_libraries(test_arena pixel_core)
 add_test(NAME test_arena COMMAND test_arena)
@@ -52,7 +44,15 @@ target_link_libraries(test_codegen pixel_compiler)
 add_test(NAME test_codegen COMMAND test_codegen)
 
 add_executable(test_vm unit/test_vm.c)
-targete)
+target_link_libraries(test_vm pixel_compiler)
+add_test(NAME test_vm COMMAND test_vm)
+
+add_executable(test_gc unit/test_gc.c)
+target_link_libraries(test_gc pixel_vm)
+add_test(NAME test_gc COMMAND test_gc)
+
+add_executable(test_stdlib unit/test_stdlib.c)
+target_link_libraries(test_stdlib pixel_compiler pixel_runtime)
 add_test(NAME test_stdlib COMMAND test_stdlib)
 
 add_executable(test_pal unit/test_pal.c)

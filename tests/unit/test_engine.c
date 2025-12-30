@@ -1,4 +1,187 @@
-stered
+// Tests for the Game Engine Core
+
+#define PAL_MOCK_ENABLED
+#include "../test_framework.h"
+#include "engine/engine.h"
+#include "engine/engine_natives.h"
+#include "runtime/stdlib.h"
+#include "vm/vm.h"
+#include "pal/pal.h"
+
+// ============================================================================
+// Color Tests
+// ============================================================================
+
+TEST(color_pack_unpack) {
+    uint32_t color = pack_color(255, 128, 64, 200);
+    uint8_t r, g, b, a;
+    unpack_color(color, &r, &g, &b, &a);
+
+    ASSERT_EQ(r, 255);
+    ASSERT_EQ(g, 128);
+    ASSERT_EQ(b, 64);
+    ASSERT_EQ(a, 200);
+}
+
+TEST(color_constants) {
+    ASSERT_EQ(COLOR_RED, 0xFF0000FFu);
+    ASSERT_EQ(COLOR_GREEN, 0x00FF00FFu);
+    ASSERT_EQ(COLOR_BLUE, 0x0000FFFFu);
+    ASSERT_EQ(COLOR_WHITE, 0xFFFFFFFFu);
+    ASSERT_EQ(COLOR_BLACK, 0x000000FFu);
+}
+
+TEST(color_pack_extremes) {
+    // All zeros
+    uint32_t color = pack_color(0, 0, 0, 0);
+    ASSERT_EQ(color, 0x00000000u);
+
+    // All 255s
+    color = pack_color(255, 255, 255, 255);
+    ASSERT_EQ(color, 0xFFFFFFFFu);
+}
+
+// ============================================================================
+// Engine Lifecycle Tests
+// ============================================================================
+
+TEST(engine_new_free) {
+    VM vm;
+    vm_init(&vm);
+
+    Engine* engine = engine_new(&vm);
+    ASSERT_NOT_NULL(engine);
+    ASSERT_EQ(engine->vm, &vm);
+    ASSERT_NULL(engine->window);
+    ASSERT_NULL(engine->on_start);
+    ASSERT_NULL(engine->on_update);
+    ASSERT_NULL(engine->on_draw);
+    ASSERT(!engine->running);
+
+    engine_free(engine);
+    vm_free(&vm);
+}
+
+TEST(engine_init_shutdown) {
+    VM vm;
+    vm_init(&vm);
+
+    Engine* engine = engine_new(&vm);
+    ASSERT_NOT_NULL(engine);
+
+    ASSERT(engine_init(engine, PAL_BACKEND_MOCK));
+    ASSERT_EQ(pal_get_backend(), PAL_BACKEND_MOCK);
+
+    engine_shutdown(engine);
+    engine_free(engine);
+    vm_free(&vm);
+}
+
+TEST(engine_global_access) {
+    VM vm;
+    vm_init(&vm);
+
+    Engine* engine = engine_new(&vm);
+    engine_set(engine);
+
+    ASSERT_EQ(engine_get(), engine);
+
+    engine_set(NULL);
+    ASSERT_NULL(engine_get());
+
+    engine_free(engine);
+    vm_free(&vm);
+}
+
+// ============================================================================
+// Window Management Tests
+// ============================================================================
+
+TEST(engine_create_window) {
+    VM vm;
+    vm_init(&vm);
+
+    Engine* engine = engine_new(&vm);
+    engine_init(engine, PAL_BACKEND_MOCK);
+
+    ASSERT(engine_create_window(engine, "Test Game", 1024, 768));
+    ASSERT(engine->window_created);
+    ASSERT_NOT_NULL(engine->window);
+
+    ASSERT_EQ(engine_get_width(engine), 1024);
+    ASSERT_EQ(engine_get_height(engine), 768);
+
+    engine_shutdown(engine);
+    engine_free(engine);
+    vm_free(&vm);
+}
+
+TEST(engine_set_title) {
+    VM vm;
+    vm_init(&vm);
+
+    Engine* engine = engine_new(&vm);
+    engine_init(engine, PAL_BACKEND_MOCK);
+    engine_create_window(engine, "Original", 800, 600);
+
+    pal_mock_clear_calls();
+    engine_set_title(engine, "New Title");
+
+    int count;
+    const PalMockCall* calls = pal_mock_get_calls(&count);
+    bool found = false;
+    for (int i = 0; i < count; i++) {
+        if (strcmp(calls[i].function, "pal_window_set_title") == 0) {
+            found = true;
+            break;
+        }
+    }
+    ASSERT(found);
+
+    engine_shutdown(engine);
+    engine_free(engine);
+    vm_free(&vm);
+}
+
+// ============================================================================
+// Callback Detection Tests
+// ============================================================================
+
+TEST(engine_no_callbacks) {
+    VM vm;
+    vm_init(&vm);
+
+    Engine* engine = engine_new(&vm);
+    engine_detect_callbacks(engine);
+
+    ASSERT(!engine_has_callbacks(engine));
+    ASSERT_NULL(engine->on_start);
+    ASSERT_NULL(engine->on_update);
+    ASSERT_NULL(engine->on_draw);
+    ASSERT_NULL(engine->on_key_down);
+    ASSERT_NULL(engine->on_key_up);
+    ASSERT_NULL(engine->on_mouse_click);
+    ASSERT_NULL(engine->on_mouse_move);
+
+    engine_free(engine);
+    vm_free(&vm);
+}
+
+// ============================================================================
+// Native Function Tests
+// ============================================================================
+
+TEST(native_rgb_rgba) {
+    VM vm;
+    vm_init(&vm);
+    stdlib_init(&vm);
+
+    Engine* engine = engine_new(&vm);
+    engine_set(engine);
+    engine_init(engine, PAL_BACKEND_MOCK);
+    engine_natives_init(&vm);
+
+    // Verify color constants are registered
     void* val;
     ASSERT(table_get_cstr(&vm.globals, "RED", &val));
     Value red = *(Value*)val;
@@ -266,187 +449,3 @@ int main(void) {
 
     TEST_SUMMARY();
 }
-// Tests for the Game Engine Core
-
-#define PAL_MOCK_ENABLED
-#include "../test_framework.h"
-#include "engine/engine.h"
-#include "engine/engine_natives.h"
-#include "runtime/stdlib.h"
-#include "vm/vm.h"
-#include "pal/pal.h"
-
-// ============================================================================
-// Color Tests
-// ============================================================================
-
-TEST(color_pack_unpack) {
-    uint32_t color = pack_color(255, 128, 64, 200);
-    uint8_t r, g, b, a;
-    unpack_color(color, &r, &g, &b, &a);
-
-    ASSERT_EQ(r, 255);
-    ASSERT_EQ(g, 128);
-    ASSERT_EQ(b, 64);
-    ASSERT_EQ(a, 200);
-}
-
-TEST(color_constants) {
-    ASSERT_EQ(COLOR_RED, 0xFF0000FFu);
-    ASSERT_EQ(COLOR_GREEN, 0x00FF00FFu);
-    ASSERT_EQ(COLOR_BLUE, 0x0000FFFFu);
-    ASSERT_EQ(COLOR_WHITE, 0xFFFFFFFFu);
-    ASSERT_EQ(COLOR_BLACK, 0x000000FFu);
-}
-
-TEST(color_pack_extremes) {
-    // All zeros
-    uint32_t color = pack_color(0, 0, 0, 0);
-    ASSERT_EQ(color, 0x00000000u);
-
-    // All 255s
-    color = pack_color(255, 255, 255, 255);
-    ASSERT_EQ(color, 0xFFFFFFFFu);
-}
-
-// ============================================================================
-// Engine Lifecycle Tests
-// ============================================================================
-
-TEST(engine_new_free) {
-    VM vm;
-    vm_init(&vm);
-
-    Engine* engine = engine_new(&vm);
-    ASSERT_NOT_NULL(engine);
-    ASSERT_EQ(engine->vm, &vm);
-    ASSERT_NULL(engine->window);
-    ASSERT_NULL(engine->on_start);
-    ASSERT_NULL(engine->on_update);
-    ASSERT_NULL(engine->on_draw);
-    ASSERT(!engine->running);
-
-    engine_free(engine);
-    vm_free(&vm);
-}
-
-TEST(engine_init_shutdown) {
-    VM vm;
-    vm_init(&vm);
-
-    Engine* engine = engine_new(&vm);
-    ASSERT_NOT_NULL(engine);
-
-    ASSERT(engine_init(engine, PAL_BACKEND_MOCK));
-    ASSERT_EQ(pal_get_backend(), PAL_BACKEND_MOCK);
-
-    engine_shutdown(engine);
-    engine_free(engine);
-    vm_free(&vm);
-}
-
-TEST(engine_global_access) {
-    VM vm;
-    vm_init(&vm);
-
-    Engine* engine = engine_new(&vm);
-    engine_set(engine);
-
-    ASSERT_EQ(engine_get(), engine);
-
-    engine_set(NULL);
-    ASSERT_NULL(engine_get());
-
-    engine_free(engine);
-    vm_free(&vm);
-}
-
-// ============================================================================
-// Window Management Tests
-// ============================================================================
-
-TEST(engine_create_window) {
-    VM vm;
-    vm_init(&vm);
-
-    Engine* engine = engine_new(&vm);
-    engine_init(engine, PAL_BACKEND_MOCK);
-
-    ASSERT(engine_create_window(engine, "Test Game", 1024, 768));
-    ASSERT(engine->window_created);
-    ASSERT_NOT_NULL(engine->window);
-
-    ASSERT_EQ(engine_get_width(engine), 1024);
-    ASSERT_EQ(engine_get_height(engine), 768);
-
-    engine_shutdown(engine);
-    engine_free(engine);
-    vm_free(&vm);
-}
-
-TEST(engine_set_title) {
-    VM vm;
-    vm_init(&vm);
-
-    Engine* engine = engine_new(&vm);
-    engine_init(engine, PAL_BACKEND_MOCK);
-    engine_create_window(engine, "Original", 800, 600);
-
-    pal_mock_clear_calls();
-    engine_set_title(engine, "New Title");
-
-    int count;
-    const PalMockCall* calls = pal_mock_get_calls(&count);
-    bool found = false;
-    for (int i = 0; i < count; i++) {
-        if (strcmp(calls[i].function, "pal_window_set_title") == 0) {
-            found = true;
-            break;
-        }
-    }
-    ASSERT(found);
-
-    engine_shutdown(engine);
-    engine_free(engine);
-    vm_free(&vm);
-}
-
-// ============================================================================
-// Callback Detection Tests
-// ============================================================================
-
-TEST(engine_no_callbacks) {
-    VM vm;
-    vm_init(&vm);
-
-    Engine* engine = engine_new(&vm);
-    engine_detect_callbacks(engine);
-
-    ASSERT(!engine_has_callbacks(engine));
-    ASSERT_NULL(engine->on_start);
-    ASSERT_NULL(engine->on_update);
-    ASSERT_NULL(engine->on_draw);
-    ASSERT_NULL(engine->on_key_down);
-    ASSERT_NULL(engine->on_key_up);
-    ASSERT_NULL(engine->on_mouse_click);
-    ASSERT_NULL(engine->on_mouse_move);
-
-    engine_free(engine);
-    vm_free(&vm);
-}
-
-// ============================================================================
-// Native Function Tests
-// ============================================================================
-
-TEST(native_rgb_rgba) {
-    VM vm;
-    vm_init(&vm);
-    stdlib_init(&vm);
-
-    Engine* engine = engine_new(&vm);
-    engine_set(engine);
-    engine_init(engine, PAL_BACKEND_MOCK);
-    engine_natives_init(&vm);
-
-    // Verify color constants are regi

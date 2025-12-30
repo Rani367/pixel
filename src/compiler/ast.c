@@ -1,169 +1,23 @@
+#include "compiler/ast.h"
+#include <stdio.h>
+#include <string.h>
 
-            printf("\n");
-            print_indent(indent + 1);
-            printf("body:\n");
-            ast_print_stmt(e->body, indent + 2);
-            break;
-        }
+// ============================================================================
+// Span Utilities
+// ============================================================================
 
-        case EXPR_VEC2: {
-            printf("Vec2\n");
-            ExprVec2* e = (ExprVec2*)expr;
-            print_indent(indent + 1);
-            printf("x:\n");
-            ast_print_expr(e->x, indent + 2);
-            print_indent(indent + 1);
-            printf("y:\n");
-            ast_print_expr(e->y, indent + 2);
-            break;
-        }
-
-        case EXPR_POSTFIX: {
-            ExprPostfix* e = (ExprPostfix*)expr;
-            printf("Postfix(%s)\n", token_type_name(e->op.type));
-            ast_print_expr(e->operand, indent + 1);
-            break;
-        }
-
-        case EXPR_COUNT:
-            printf("(invalid)\n");
-            break;
-    }
+Span span_from_token(Token token) {
+    return (Span){
+        .start_line = token.line,
+        .start_column = token.column,
+        .end_line = token.line,
+        .end_column = token.column + token.length,
+    };
 }
 
-void ast_print_stmt(Stmt* stmt, int indent) {
-    if (!stmt) {
-        print_indent(indent);
-        printf("(null)\n");
-        return;
-    }
-
-    print_indent(indent);
-
-    switch (stmt->type) {
-        case STMT_EXPRESSION: {
-            printf("ExpressionStmt\n");
-            StmtExpression* s = (StmtExpression*)stmt;
-            ast_print_expr(s->expression, indent + 1);
-            break;
-        }
-
-        case STMT_ASSIGNMENT: {
-            printf("Assignment\n");
-            StmtAssignment* s = (StmtAssignment*)stmt;
-            print_indent(indent + 1);
-            printf("target:\n");
-            ast_print_expr(s->target, indent + 2);
-            print_indent(indent + 1);
-            printf("value:\n");
-            ast_print_expr(s->value, indent + 2);
-            break;
-        }
-
-        case STMT_BLOCK: {
-            StmtBlock* s = (StmtBlock*)stmt;
-            printf("Block(%d statements)\n", s->count);
-            for (int i = 0; i < s->count; i++) {
-                ast_print_stmt(s->statements[i], indent + 1);
-            }
-            break;
-        }
-
-        case STMT_IF: {
-            printf("If\n");
-            StmtIf* s = (StmtIf*)stmt;
-            print_indent(indent + 1);
-            printf("condition:\n");
-            ast_print_expr(s->condition, indent + 2);
-            print_indent(indent + 1);
-            printf("then:\n");
-            ast_print_stmt(s->then_branch, indent + 2);
-            if (s->else_branch) {
-                print_indent(indent + 1);
-                printf("else:\n");
-                ast_print_stmt(s->else_branch, indent + 2);
-            }
-            break;
-        }
-
-        case STMT_WHILE: {
-            printf("While\n");
-            StmtWhile* s = (StmtWhile*)stmt;
-            print_indent(indent + 1);
-            printf("condition:\n");
-            ast_print_expr(s->condition, indent + 2);
-            print_indent(indent + 1);
-            printf("body:\n");
-            ast_print_stmt(s->body, indent + 2);
-            break;
-        }
-
-        case STMT_FOR: {
-            StmtFor* s = (StmtFor*)stmt;
-            printf("For(%.*s in)\n", s->name.length, s->name.start);
-            print_indent(indent + 1);
-            printf("iterable:\n");
-            ast_print_expr(s->iterable, indent + 2);
-            print_indent(indent + 1);
-            printf("body:\n");
-            ast_print_stmt(s->body, indent + 2);
-            break;
-        }
-
-        case STMT_RETURN: {
-            printf("Return\n");
-            StmtReturn* s = (StmtReturn*)stmt;
-            if (s->value) {
-                ast_print_expr(s->value, indent + 1);
-            }
-            break;
-        }
-
-        case STMT_BREAK:
-            printf("Break\n");
-            break;
-
-        case STMT_CONTINUE:
-            printf("Continue\n");
-            break;
-
-        case STMT_FUNCTION: {
-            StmtFunction* s = (StmtFunction*)stmt;
-            printf("FunctionDecl(%.*s, %d params)\n",
-                   s->name.length, s->name.start, s->param_count);
-            print_indent(indent + 1);
-            printf("params: ");
-            for (int i = 0; i < s->param_count; i++) {
-                if (i > 0) printf(", ");
-                printf("%.*s", s->params[i].length, s->params[i].start);
-            }
-            printf("\n");
-            print_indent(indent + 1);
-            printf("body:\n");
-            ast_print_stmt(s->body, indent + 2);
-            break;
-        }
-
-        case STMT_STRUCT: {
-            StmtStruct* s = (StmtStruct*)stmt;
-            printf("Struct(%.*s, %d fields)\n",
-                   s->name.length, s->name.start, s->field_count);
-            print_indent(indent + 1);
-            printf("fields: ");
-            for (int i = 0; i < s->field_count; i++) {
-                if (i > 0) printf(", ");
-                printf("%.*s", s->fields[i].length, s->fields[i].start);
-            }
-            printf("\n");
-            break;
-        }
-
-        case STMT_COUNT:
-            printf("(invalid)\n");
-            break;
-    }
-}
- start.start_line,
+Span span_merge(Span start, Span end) {
+    return (Span){
+        .start_line = start.start_line,
         .start_column = start.start_column,
         .end_line = end.end_line,
         .end_column = end.end_column,
@@ -217,7 +71,143 @@ Expr* expr_identifier(Arena* arena, Token name) {
     return (Expr*)expr;
 }
 
-Expr* expr_unary(Aren   stmt->base.type = STMT_IF;
+Expr* expr_unary(Arena* arena, TokenType op, Expr* operand, Span span) {
+    ExprUnary* expr = arena_alloc(arena, sizeof(ExprUnary));
+    expr->base.type = EXPR_UNARY;
+    expr->base.span = span;
+    expr->operator = op;
+    expr->operand = operand;
+    return (Expr*)expr;
+}
+
+Expr* expr_binary(Arena* arena, Expr* left, TokenType op, Expr* right) {
+    ExprBinary* expr = arena_alloc(arena, sizeof(ExprBinary));
+    expr->base.type = EXPR_BINARY;
+    expr->base.span = span_merge(left->span, right->span);
+    expr->left = left;
+    expr->operator = op;
+    expr->right = right;
+    return (Expr*)expr;
+}
+
+Expr* expr_call(Arena* arena, Expr* callee, Expr** args, int arg_count, Span span) {
+    ExprCall* expr = arena_alloc(arena, sizeof(ExprCall));
+    expr->base.type = EXPR_CALL;
+    expr->base.span = span;
+    expr->callee = callee;
+    expr->arguments = args;
+    expr->arg_count = arg_count;
+    return (Expr*)expr;
+}
+
+Expr* expr_get(Arena* arena, Expr* object, Token name) {
+    ExprGet* expr = arena_alloc(arena, sizeof(ExprGet));
+    expr->base.type = EXPR_GET;
+    expr->base.span = span_merge(object->span, span_from_token(name));
+    expr->object = object;
+    expr->name = name;
+    return (Expr*)expr;
+}
+
+Expr* expr_set(Arena* arena, Expr* object, Token name, Expr* value) {
+    ExprSet* expr = arena_alloc(arena, sizeof(ExprSet));
+    expr->base.type = EXPR_SET;
+    expr->base.span = span_merge(object->span, value->span);
+    expr->object = object;
+    expr->name = name;
+    expr->value = value;
+    return (Expr*)expr;
+}
+
+Expr* expr_index(Arena* arena, Expr* object, Expr* index, Span span) {
+    ExprIndex* expr = arena_alloc(arena, sizeof(ExprIndex));
+    expr->base.type = EXPR_INDEX;
+    expr->base.span = span;
+    expr->object = object;
+    expr->index = index;
+    return (Expr*)expr;
+}
+
+Expr* expr_index_set(Arena* arena, Expr* object, Expr* index, Expr* value) {
+    ExprIndexSet* expr = arena_alloc(arena, sizeof(ExprIndexSet));
+    expr->base.type = EXPR_INDEX_SET;
+    expr->base.span = span_merge(object->span, value->span);
+    expr->object = object;
+    expr->index = index;
+    expr->value = value;
+    return (Expr*)expr;
+}
+
+Expr* expr_list(Arena* arena, Expr** elements, int count, Span span) {
+    ExprList* expr = arena_alloc(arena, sizeof(ExprList));
+    expr->base.type = EXPR_LIST;
+    expr->base.span = span;
+    expr->elements = elements;
+    expr->count = count;
+    return (Expr*)expr;
+}
+
+Expr* expr_function(Arena* arena, Token* params, int param_count, Stmt* body, Span span) {
+    ExprFunction* expr = arena_alloc(arena, sizeof(ExprFunction));
+    expr->base.type = EXPR_FUNCTION;
+    expr->base.span = span;
+    expr->params = params;
+    expr->param_count = param_count;
+    expr->body = body;
+    return (Expr*)expr;
+}
+
+Expr* expr_vec2(Arena* arena, Expr* x, Expr* y, Span span) {
+    ExprVec2* expr = arena_alloc(arena, sizeof(ExprVec2));
+    expr->base.type = EXPR_VEC2;
+    expr->base.span = span;
+    expr->x = x;
+    expr->y = y;
+    return (Expr*)expr;
+}
+
+Expr* expr_postfix(Arena* arena, Expr* operand, Token op) {
+    ExprPostfix* expr = arena_alloc(arena, sizeof(ExprPostfix));
+    expr->base.type = EXPR_POSTFIX;
+    expr->base.span = operand->span;
+    expr->operand = operand;
+    expr->op = op;
+    return (Expr*)expr;
+}
+
+// ============================================================================
+// Statement Constructors
+// ============================================================================
+
+Stmt* stmt_expression(Arena* arena, Expr* expression) {
+    StmtExpression* stmt = arena_alloc(arena, sizeof(StmtExpression));
+    stmt->base.type = STMT_EXPRESSION;
+    stmt->base.span = expression->span;
+    stmt->expression = expression;
+    return (Stmt*)stmt;
+}
+
+Stmt* stmt_assignment(Arena* arena, Expr* target, Expr* value) {
+    StmtAssignment* stmt = arena_alloc(arena, sizeof(StmtAssignment));
+    stmt->base.type = STMT_ASSIGNMENT;
+    stmt->base.span = span_merge(target->span, value->span);
+    stmt->target = target;
+    stmt->value = value;
+    return (Stmt*)stmt;
+}
+
+Stmt* stmt_block(Arena* arena, Stmt** statements, int count, Span span) {
+    StmtBlock* stmt = arena_alloc(arena, sizeof(StmtBlock));
+    stmt->base.type = STMT_BLOCK;
+    stmt->base.span = span;
+    stmt->statements = statements;
+    stmt->count = count;
+    return (Stmt*)stmt;
+}
+
+Stmt* stmt_if(Arena* arena, Expr* condition, Stmt* then_branch, Stmt* else_branch, Span span) {
+    StmtIf* stmt = arena_alloc(arena, sizeof(StmtIf));
+    stmt->base.type = STMT_IF;
     stmt->base.span = span;
     stmt->condition = condition;
     stmt->then_branch = then_branch;
@@ -534,159 +524,168 @@ void ast_print_expr(Expr* expr, int indent) {
             for (int i = 0; i < e->param_count; i++) {
                 if (i > 0) printf(", ");
                 printf("%.*s", e->params[i].length, e->params[i].start);
-            }a* arena, TokenType op, Expr* operand, Span span) {
-    ExprUnary* expr = arena_alloc(arena, sizeof(ExprUnary));
-    expr->base.type = EXPR_UNARY;
-    expr->base.span = span;
-    expr->operator = op;
-    expr->operand = operand;
-    return (Expr*)expr;
+            }
+            printf("\n");
+            print_indent(indent + 1);
+            printf("body:\n");
+            ast_print_stmt(e->body, indent + 2);
+            break;
+        }
+
+        case EXPR_VEC2: {
+            printf("Vec2\n");
+            ExprVec2* e = (ExprVec2*)expr;
+            print_indent(indent + 1);
+            printf("x:\n");
+            ast_print_expr(e->x, indent + 2);
+            print_indent(indent + 1);
+            printf("y:\n");
+            ast_print_expr(e->y, indent + 2);
+            break;
+        }
+
+        case EXPR_POSTFIX: {
+            ExprPostfix* e = (ExprPostfix*)expr;
+            printf("Postfix(%s)\n", token_type_name(e->op.type));
+            ast_print_expr(e->operand, indent + 1);
+            break;
+        }
+
+        case EXPR_COUNT:
+            printf("(invalid)\n");
+            break;
+    }
 }
 
-Expr* expr_binary(Arena* arena, Expr* left, TokenType op, Expr* right) {
-    ExprBinary* expr = arena_alloc(arena, sizeof(ExprBinary));
-    expr->base.type = EXPR_BINARY;
-    expr->base.span = span_merge(left->span, right->span);
-    expr->left = left;
-    expr->operator = op;
-    expr->right = right;
-    return (Expr*)expr;
+void ast_print_stmt(Stmt* stmt, int indent) {
+    if (!stmt) {
+        print_indent(indent);
+        printf("(null)\n");
+        return;
+    }
+
+    print_indent(indent);
+
+    switch (stmt->type) {
+        case STMT_EXPRESSION: {
+            printf("ExpressionStmt\n");
+            StmtExpression* s = (StmtExpression*)stmt;
+            ast_print_expr(s->expression, indent + 1);
+            break;
+        }
+
+        case STMT_ASSIGNMENT: {
+            printf("Assignment\n");
+            StmtAssignment* s = (StmtAssignment*)stmt;
+            print_indent(indent + 1);
+            printf("target:\n");
+            ast_print_expr(s->target, indent + 2);
+            print_indent(indent + 1);
+            printf("value:\n");
+            ast_print_expr(s->value, indent + 2);
+            break;
+        }
+
+        case STMT_BLOCK: {
+            StmtBlock* s = (StmtBlock*)stmt;
+            printf("Block(%d statements)\n", s->count);
+            for (int i = 0; i < s->count; i++) {
+                ast_print_stmt(s->statements[i], indent + 1);
+            }
+            break;
+        }
+
+        case STMT_IF: {
+            printf("If\n");
+            StmtIf* s = (StmtIf*)stmt;
+            print_indent(indent + 1);
+            printf("condition:\n");
+            ast_print_expr(s->condition, indent + 2);
+            print_indent(indent + 1);
+            printf("then:\n");
+            ast_print_stmt(s->then_branch, indent + 2);
+            if (s->else_branch) {
+                print_indent(indent + 1);
+                printf("else:\n");
+                ast_print_stmt(s->else_branch, indent + 2);
+            }
+            break;
+        }
+
+        case STMT_WHILE: {
+            printf("While\n");
+            StmtWhile* s = (StmtWhile*)stmt;
+            print_indent(indent + 1);
+            printf("condition:\n");
+            ast_print_expr(s->condition, indent + 2);
+            print_indent(indent + 1);
+            printf("body:\n");
+            ast_print_stmt(s->body, indent + 2);
+            break;
+        }
+
+        case STMT_FOR: {
+            StmtFor* s = (StmtFor*)stmt;
+            printf("For(%.*s in)\n", s->name.length, s->name.start);
+            print_indent(indent + 1);
+            printf("iterable:\n");
+            ast_print_expr(s->iterable, indent + 2);
+            print_indent(indent + 1);
+            printf("body:\n");
+            ast_print_stmt(s->body, indent + 2);
+            break;
+        }
+
+        case STMT_RETURN: {
+            printf("Return\n");
+            StmtReturn* s = (StmtReturn*)stmt;
+            if (s->value) {
+                ast_print_expr(s->value, indent + 1);
+            }
+            break;
+        }
+
+        case STMT_BREAK:
+            printf("Break\n");
+            break;
+
+        case STMT_CONTINUE:
+            printf("Continue\n");
+            break;
+
+        case STMT_FUNCTION: {
+            StmtFunction* s = (StmtFunction*)stmt;
+            printf("FunctionDecl(%.*s, %d params)\n",
+                   s->name.length, s->name.start, s->param_count);
+            print_indent(indent + 1);
+            printf("params: ");
+            for (int i = 0; i < s->param_count; i++) {
+                if (i > 0) printf(", ");
+                printf("%.*s", s->params[i].length, s->params[i].start);
+            }
+            printf("\n");
+            print_indent(indent + 1);
+            printf("body:\n");
+            ast_print_stmt(s->body, indent + 2);
+            break;
+        }
+
+        case STMT_STRUCT: {
+            StmtStruct* s = (StmtStruct*)stmt;
+            printf("Struct(%.*s, %d fields)\n",
+                   s->name.length, s->name.start, s->field_count);
+            print_indent(indent + 1);
+            printf("fields: ");
+            for (int i = 0; i < s->field_count; i++) {
+                if (i > 0) printf(", ");
+                printf("%.*s", s->fields[i].length, s->fields[i].start);
+            }
+            printf("\n");
+            break;
+        }
+
+        case STMT_COUNT:
+            printf("(invalid)\n");
+            break;
+    }
 }
-
-Expr* expr_call(Arena* arena, Expr* callee, Expr** args, int arg_count, Span span) {
-    ExprCall* expr = arena_alloc(arena, sizeof(ExprCall));
-    expr->base.type = EXPR_CALL;
-    expr->base.span = span;
-    expr->callee = callee;
-    expr->arguments = args;
-    expr->arg_count = arg_count;
-    return (Expr*)expr;
-}
-
-Expr* expr_get(Arena* arena, Expr* object, Token name) {
-    ExprGet* expr = arena_alloc(arena, sizeof(ExprGet));
-    expr->base.type = EXPR_GET;
-    expr->base.span = span_merge(object->span, span_from_token(name));
-    expr->object = object;
-    expr->name = name;
-    return (Expr*)expr;
-}
-
-Expr* expr_set(Arena* arena, Expr* object, Token name, Expr* value) {
-    ExprSet* expr = arena_alloc(arena, sizeof(ExprSet));
-    expr->base.type = EXPR_SET;
-    expr->base.span = span_merge(object->span, value->span);
-    expr->object = object;
-    expr->name = name;
-    expr->value = value;
-    return (Expr*)expr;
-}
-
-Expr* expr_index(Arena* arena, Expr* object, Expr* index, Span span) {
-    ExprIndex* expr = arena_alloc(arena, sizeof(ExprIndex));
-    expr->base.type = EXPR_INDEX;
-    expr->base.span = span;
-    expr->object = object;
-    expr->index = index;
-    return (Expr*)expr;
-}
-
-Expr* expr_index_set(Arena* arena, Expr* object, Expr* index, Expr* value) {
-    ExprIndexSet* expr = arena_alloc(arena, sizeof(ExprIndexSet));
-    expr->base.type = EXPR_INDEX_SET;
-    expr->base.span = span_merge(object->span, value->span);
-    expr->object = object;
-    expr->index = index;
-    expr->value = value;
-    return (Expr*)expr;
-}
-
-Expr* expr_list(Arena* arena, Expr** elements, int count, Span span) {
-    ExprList* expr = arena_alloc(arena, sizeof(ExprList));
-    expr->base.type = EXPR_LIST;
-    expr->base.span = span;
-    expr->elements = elements;
-    expr->count = count;
-    return (Expr*)expr;
-}
-
-Expr* expr_function(Arena* arena, Token* params, int param_count, Stmt* body, Span span) {
-    ExprFunction* expr = arena_alloc(arena, sizeof(ExprFunction));
-    expr->base.type = EXPR_FUNCTION;
-    expr->base.span = span;
-    expr->params = params;
-    expr->param_count = param_count;
-    expr->body = body;
-    return (Expr*)expr;
-}
-
-Expr* expr_vec2(Arena* arena, Expr* x, Expr* y, Span span) {
-    ExprVec2* expr = arena_alloc(arena, sizeof(ExprVec2));
-    expr->base.type = EXPR_VEC2;
-    expr->base.span = span;
-    expr->x = x;
-    expr->y = y;
-    return (Expr*)expr;
-}
-
-Expr* expr_postfix(Arena* arena, Expr* operand, Token op) {
-    ExprPostfix* expr = arena_alloc(arena, sizeof(ExprPostfix));
-    expr->base.type = EXPR_POSTFIX;
-    expr->base.span = operand->span;
-    expr->operand = operand;
-    expr->op = op;
-    return (Expr*)expr;
-}
-
-// ============================================================================
-// Statement Constructors
-// ============================================================================
-
-Stmt* stmt_expression(Arena* arena, Expr* expression) {
-    StmtExpression* stmt = arena_alloc(arena, sizeof(StmtExpression));
-    stmt->base.type = STMT_EXPRESSION;
-    stmt->base.span = expression->span;
-    stmt->expression = expression;
-    return (Stmt*)stmt;
-}
-
-Stmt* stmt_assignment(Arena* arena, Expr* target, Expr* value) {
-    StmtAssignment* stmt = arena_alloc(arena, sizeof(StmtAssignment));
-    stmt->base.type = STMT_ASSIGNMENT;
-    stmt->base.span = span_merge(target->span, value->span);
-    stmt->target = target;
-    stmt->value = value;
-    return (Stmt*)stmt;
-}
-
-Stmt* stmt_block(Arena* arena, Stmt** statements, int count, Span span) {
-    StmtBlock* stmt = arena_alloc(arena, sizeof(StmtBlock));
-    stmt->base.type = STMT_BLOCK;
-    stmt->base.span = span;
-    stmt->statements = statements;
-    stmt->count = count;
-    return (Stmt*)stmt;
-}
-
-Stmt* stmt_if(Arena* arena, Expr* condition, Stmt* then_branch, Stmt* else_branch, Span span) {
-    StmtIf* stmt = arena_alloc(arena, sizeof(StmtIf));
- #include "compiler/ast.h"
-#include <stdio.h>
-#include <string.h>
-
-// ============================================================================
-// Span Utilities
-// ============================================================================
-
-Span span_from_token(Token token) {
-    return (Span){
-        .start_line = token.line,
-        .start_column = token.column,
-        .end_line = token.line,
-        .end_column = token.column + token.length,
-    };
-}
-
-Span span_merge(Span start, Span end) {
-    return (Span){
-        .start_line =

@@ -1,34 +1,50 @@
-  if ball_y > 620 {
-        game_over = true
-    }
+// Web Demo - A simple game demonstrating web export
+// Build with: ./scripts/build-web.sh
+// This example works in both native and web builds
+
+// Game state
+ball_x = 400
+ball_y = 300
+ball_vx = 200
+ball_vy = 150
+ball_radius = 20
+
+paddle_x = 350
+paddle_y = 550
+paddle_width = 100
+paddle_height = 15
+
+score = 0
+game_over = false
+
+function on_start() {
+    create_window("Web Demo - Bounce", 800, 600)
 }
 
-function on_draw() {
-    // Dark blue background
-    clear(rgb(20, 30, 50))
-
-    // Draw paddle
-    draw_rect(paddle_x, paddle_y, paddle_width, paddle_height, rgb(100, 200, 255))
-
-    // Draw ball
-    draw_circle(ball_x, ball_y, ball_radius, rgb(255, 200, 100))
-
-    // Draw score
-    draw_rect(10, 10, 120, 30, rgba(0, 0, 0, 128))
-
+function on_update(dt) {
     if game_over {
-        // Game over overlay
-        draw_rect(200, 200, 400, 200, rgba(0, 0, 0, 200))
-        draw_rect(202, 202, 396, 196, rgb(50, 50, 80))
-
-        // Draw "GAME OVER" text (using rectangles since we don't have font rendering)
-        draw_rect(300, 250, 200, 40, rgb(255, 100, 100))
-
-        // Draw "Press SPACE" hint
-        draw_rect(320, 320, 160, 30, rgb(100, 100, 150))
+        if key_pressed(KEY_SPACE) {
+            // Restart game
+            ball_x = 400
+            ball_y = 300
+            ball_vx = 200
+            ball_vy = 150
+            score = 0
+            game_over = false
+        }
+        return
     }
-}
-2
+
+    // Move paddle with keyboard or mouse
+    if key_down(KEY_LEFT) {
+        paddle_x = paddle_x - 400 * dt
+    }
+    if key_down(KEY_RIGHT) {
+        paddle_x = paddle_x + 400 * dt
+    }
+
+    // Also follow mouse
+    paddle_x = mouse_x() - paddle_width / 2
 
     // Keep paddle in bounds
     if paddle_x < 0 {
@@ -75,50 +91,33 @@ function on_draw() {
     }
 
     // Check if ball fell off screen
-  _over = false
-
-function on_start() {
-    create_window("Web Demo - Bounce", 800, 600)
+    if ball_y > 620 {
+        game_over = true
+    }
 }
 
-function on_update(dt) {
+function on_draw() {
+    // Dark blue background
+    clear(rgb(20, 30, 50))
+
+    // Draw paddle
+    draw_rect(paddle_x, paddle_y, paddle_width, paddle_height, rgb(100, 200, 255))
+
+    // Draw ball
+    draw_circle(ball_x, ball_y, ball_radius, rgb(255, 200, 100))
+
+    // Draw score
+    draw_rect(10, 10, 120, 30, rgba(0, 0, 0, 128))
+
     if game_over {
-        if key_pressed(KEY_SPACE) {
-            // Restart game
-            ball_x = 400
-            ball_y = 300
-            ball_vx = 200
-            ball_vy = 150
-            score = 0
-            game_over = false
-        }
-        return
+        // Game over overlay
+        draw_rect(200, 200, 400, 200, rgba(0, 0, 0, 200))
+        draw_rect(202, 202, 396, 196, rgb(50, 50, 80))
+
+        // Draw "GAME OVER" text (using rectangles since we don't have font rendering)
+        draw_rect(300, 250, 200, 40, rgb(255, 100, 100))
+
+        // Draw "Press SPACE" hint
+        draw_rect(320, 320, 160, 30, rgb(100, 100, 150))
     }
-
-    // Move paddle with keyboard or mouse
-    if key_down(KEY_LEFT) {
-        paddle_x = paddle_x - 400 * dt
-    }
-    if key_down(KEY_RIGHT) {
-        paddle_x = paddle_x + 400 * dt
-    }
-
-    // Also follow mouse
-    paddle_x = mouse_x() - paddle_width / // Web Demo - A simple game demonstrating web export
-// Build with: ./scripts/build-web.sh
-// This example works in both native and web builds
-
-// Game state
-ball_x = 400
-ball_y = 300
-ball_vx = 200
-ball_vy = 150
-ball_radius = 20
-
-paddle_x = 350
-paddle_y = 550
-paddle_width = 100
-paddle_height = 15
-
-score = 0
-game
+}

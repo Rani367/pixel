@@ -394,57 +394,7 @@ static void analyze_expr(Analyzer* analyzer, Expr* expr) {
 // Statement Analysis
 // ============================================================================
 
-static void analyze_stmt(Analyzer* analyzer, Stmt*scope != &analyzer->global_scope) {
-        end_scope(analyzer);
-    }
-
-    // Free global scope
-    scope_free(&analyzer->global_scope);
-
-    // Free errors
-    for (int i = 0; i < analyzer->error_count; i++) {
-        if (analyzer->errors[i] != NULL) {
-            error_free(analyzer->errors[i]);
-            analyzer->errors[i] = NULL;
-        }
-    }
-}
-
-bool analyzer_analyze(Analyzer* analyzer, Stmt** statements, int count) {
-    for (int i = 0; i < count; i++) {
-        analyze_stmt(analyzer, statements[i]);
-    }
-
-    return analyzer->error_count == 0;
-}
-
-int analyzer_error_count(Analyzer* analyzer) {
-    return analyzer->error_count;
-}
-
-Error* analyzer_get_error(Analyzer* analyzer, int index) {
-    if (index < 0 || index >= analyzer->error_count) {
-        return NULL;
-    }
-    return analyzer->errors[index];
-}
-
-void analyzer_print_errors(Analyzer* analyzer, FILE* out) {
-    for (int i = 0; i < analyzer->error_count; i++) {
-        error_print_pretty(analyzer->errors[i], analyzer->source, out);
-    }
-}
-
-void analyzer_declare_global(Analyzer* analyzer, const char* name) {
-    int length = (int)strlen(name);
-    Symbol* existing = scope_lookup_local(&analyzer->global_scope, name, length);
-    if (existing == NULL) {
-        Symbol* sym = scope_add_symbol(&analyzer->global_scope, name, length,
-                                       SYMBOL_FUNCTION, -1);
-        sym->is_initialized = true;
-    }
-}
- stmt) {
+static void analyze_stmt(Analyzer* analyzer, Stmt* stmt) {
     if (stmt == NULL) return;
 
     switch (stmt->type) {
@@ -657,4 +607,53 @@ void analyzer_init(Analyzer* analyzer, const char* source_file, const char* sour
 
 void analyzer_free(Analyzer* analyzer) {
     // Free any remaining non-global scopes
-    while (analyzer->current_
+    while (analyzer->current_scope != &analyzer->global_scope) {
+        end_scope(analyzer);
+    }
+
+    // Free global scope
+    scope_free(&analyzer->global_scope);
+
+    // Free errors
+    for (int i = 0; i < analyzer->error_count; i++) {
+        if (analyzer->errors[i] != NULL) {
+            error_free(analyzer->errors[i]);
+            analyzer->errors[i] = NULL;
+        }
+    }
+}
+
+bool analyzer_analyze(Analyzer* analyzer, Stmt** statements, int count) {
+    for (int i = 0; i < count; i++) {
+        analyze_stmt(analyzer, statements[i]);
+    }
+
+    return analyzer->error_count == 0;
+}
+
+int analyzer_error_count(Analyzer* analyzer) {
+    return analyzer->error_count;
+}
+
+Error* analyzer_get_error(Analyzer* analyzer, int index) {
+    if (index < 0 || index >= analyzer->error_count) {
+        return NULL;
+    }
+    return analyzer->errors[index];
+}
+
+void analyzer_print_errors(Analyzer* analyzer, FILE* out) {
+    for (int i = 0; i < analyzer->error_count; i++) {
+        error_print_pretty(analyzer->errors[i], analyzer->source, out);
+    }
+}
+
+void analyzer_declare_global(Analyzer* analyzer, const char* name) {
+    int length = (int)strlen(name);
+    Symbol* existing = scope_lookup_local(&analyzer->global_scope, name, length);
+    if (existing == NULL) {
+        Symbol* sym = scope_add_symbol(&analyzer->global_scope, name, length,
+                                       SYMBOL_FUNCTION, -1);
+        sym->is_initialized = true;
+    }
+}

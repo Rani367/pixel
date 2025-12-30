@@ -1,8 +1,3 @@
-ge:
-```pixel
-angle_rad = angle_deg * DEG_TO_RAD
-angle_deg = angle_rad * RAD_TO_DEG
-```
 # Math API Reference
 
 ## Basic Math
@@ -307,4 +302,8 @@ DEG_TO_RAD = 0.01745329251
 RAD_TO_DEG = 57.2957795131
 ```
 
-Usa
+Usage:
+```pixel
+angle_rad = angle_deg * DEG_TO_RAD
+angle_deg = angle_rad * RAD_TO_DEG
+```

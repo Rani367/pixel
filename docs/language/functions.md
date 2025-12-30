@@ -139,7 +139,8 @@ function on_key_up(key) {
     // Key was released
 }
 
-function onon == MOUSE_LEFT {
+function on_mouse_click(button, x, y) {
+    if button == MOUSE_LEFT {
         shoot(x, y)
     }
 }
@@ -211,5 +212,3 @@ function create_bullet(x, y, angle) {
     return bullet
 }
 ```
-_mouse_click(button, x, y) {
-    if butt

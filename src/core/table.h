@@ -25,7 +25,12 @@ void table_init(Table* table);
 void table_free(Table* table);
 
 // Set a key-value pair (returns true if key was new)
-bool table_set(Table* table, courns true if key existed)
+bool table_set(Table* table, const char* key, size_t key_length, void* value);
+
+// Get a value by key (returns true if found, stores value in out_value)
+bool table_get(Table* table, const char* key, size_t key_length, void** out_value);
+
+// Delete a key (returns true if key existed)
 bool table_delete(Table* table, const char* key, size_t key_length);
 
 // Find a string in the table (for string interning)
@@ -39,9 +44,3 @@ bool table_get_cstr(Table* table, const char* key, void** out_value);
 bool table_delete_cstr(Table* table, const char* key);
 
 #endif // PH_TABLE_H
-nst char* key, size_t key_length, void* value);
-
-// Get a value by key (returns true if found, stores value in out_value)
-bool table_get(Table* table, const char* key, size_t key_length, void** out_value);
-
-// Delete a key (ret

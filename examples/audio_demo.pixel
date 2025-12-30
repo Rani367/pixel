@@ -1,64 +1,4 @@
-rintln("Music restarted")
-    }
-}
-  // Music volume bar
-    draw_rect(100, 280, 200, 30, GRAY)
-    draw_rect(100, 280, floor(music_vol * 200), 30, BLUE)
-
-    // Draw music status indicator
-    if music_playing() {
-        draw_circle(400, 240, 30, GREEN)
-    } else {
-        draw_circle(400, 240, 30, RED)
-    }
-}
-
-function on_key_down(key) {
-    // Space = play jump sound
-    if key == KEY_SPACE {
-        play_sound(jump_sound)
-        println("Jump!")
-    }
-
-    // C = play coin sound with volume
-    if key == KEY_C {
-        play_sound_volume(coin_sound, 0.5)
-        println("Coin!")
-    }
-
-    // P = pause/resume music
-    if key == KEY_P {
-        if music_playing() {
-            pause_music()
-            println("Music paused")
-        } else {
-            resume_music()
-            println("Music resumed")
-        }
-    }
-
-    // S = stop music
-    if key == KEY_S {
-        stop_music()
-        println("Music stopped")
-    }
-
-    // M = restart music
-    if key == KEY_M {
-        play_music_loop(background_music)
-        ping(music_vol))
-    }
-}
-
-function on_draw() {
-    clear(rgb(30, 30, 50))
-
-    // Draw volume bars
-    // Master volume bar
-    draw_rect(100, 200, 200, 30, GRAY)
-    draw_rect(100, 200, floor(master_vol * 200), 30, GREEN)
-
-  // Audio System Demo
+// Audio System Demo
 // Demonstrates sound effects and music playback
 
 jump_sound = none
@@ -125,4 +65,63 @@ function on_update(dt) {
             music_vol = 1.0
         }
         set_music_volume(music_vol)
-        println("Music volume: " + to_str
+        println("Music volume: " + to_string(music_vol))
+    }
+}
+
+function on_draw() {
+    clear(rgb(30, 30, 50))
+
+    // Draw volume bars
+    // Master volume bar
+    draw_rect(100, 200, 200, 30, GRAY)
+    draw_rect(100, 200, floor(master_vol * 200), 30, GREEN)
+
+    // Music volume bar
+    draw_rect(100, 280, 200, 30, GRAY)
+    draw_rect(100, 280, floor(music_vol * 200), 30, BLUE)
+
+    // Draw music status indicator
+    if music_playing() {
+        draw_circle(400, 240, 30, GREEN)
+    } else {
+        draw_circle(400, 240, 30, RED)
+    }
+}
+
+function on_key_down(key) {
+    // Space = play jump sound
+    if key == KEY_SPACE {
+        play_sound(jump_sound)
+        println("Jump!")
+    }
+
+    // C = play coin sound with volume
+    if key == KEY_C {
+        play_sound_volume(coin_sound, 0.5)
+        println("Coin!")
+    }
+
+    // P = pause/resume music
+    if key == KEY_P {
+        if music_playing() {
+            pause_music()
+            println("Music paused")
+        } else {
+            resume_music()
+            println("Music resumed")
+        }
+    }
+
+    // S = stop music
+    if key == KEY_S {
+        stop_music()
+        println("Music stopped")
+    }
+
+    // M = restart music
+    if key == KEY_M {
+        play_music_loop(background_music)
+        println("Music restarted")
+    }
+}

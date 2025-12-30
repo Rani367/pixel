@@ -43,13 +43,7 @@ bool physics_collides_point(ObjSprite* sprite, double px, double py);
 // ============================================================================
 
 // Check if two sprites overlap (circle collision using min dimension as radius)
-bool physics_collides_circle(ObjSprite* a, ObjSprite* b)p_angle(double a, double b, double t);
-
-// Normalize an angle to 0-360 range
-double physics_normalize_angle(double angle);
-
-#endif // PH_PHYSICS_H
-;
+bool physics_collides_circle(ObjSprite* a, ObjSprite* b);
 
 // ============================================================================
 // Distance & Movement Helpers
@@ -93,4 +87,9 @@ void physics_apply_force(ObjSprite* sprite, double fx, double fy);
 double physics_lerp(double a, double b, double t);
 
 // Angle interpolation (handles wraparound correctly)
-double physics_ler
+double physics_lerp_angle(double a, double b, double t);
+
+// Normalize an angle to 0-360 range
+double physics_normalize_angle(double angle);
+
+#endif // PH_PHYSICS_H

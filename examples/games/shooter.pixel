@@ -1,4 +1,273 @@
-   return
+// Top-Down Shooter - Survive waves of enemies!
+// Move with WASD or arrow keys
+// Aim with mouse, click to shoot
+// Survive as long as you can!
+
+// Game constants
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+PLAYER_SIZE = 30
+PLAYER_SPEED = 250
+BULLET_SIZE = 8
+BULLET_SPEED = 600
+ENEMY_SIZE = 25
+ENEMY_BASE_SPEED = 100
+SPAWN_INTERVAL = 2.0
+MAX_ENEMIES = 20
+PARTICLE_LIFETIME = 0.5
+
+// Game state
+player_x = 0
+player_y = 0
+player_angle = 0
+player_health = 100
+player_max_health = 100
+
+bullets = []
+enemies = []
+particles = []
+
+score = 0
+wave = 1
+enemies_killed = 0
+enemies_per_wave = 5
+spawn_timer = 0
+enemies_spawned = 0
+
+game_over = false
+paused = false
+
+// Fonts
+font = none
+small_font = none
+tiny_font = none
+
+function on_start() {
+    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Top-Down Shooter")
+    font = default_font(48)
+    small_font = default_font(24)
+    tiny_font = default_font(16)
+    reset_game()
+}
+
+function reset_game() {
+    player_x = WINDOW_WIDTH / 2
+    player_y = WINDOW_HEIGHT / 2
+    player_health = player_max_health
+
+    bullets = []
+    enemies = []
+    particles = []
+
+    score = 0
+    wave = 1
+    enemies_killed = 0
+    enemies_per_wave = 5
+    spawn_timer = 0
+    enemies_spawned = 0
+
+    game_over = false
+    paused = false
+}
+
+function on_update(dt) {
+    if game_over {
+        if key_pressed(KEY_SPACE) {
+            reset_game()
+        }
+        return
+    }
+
+    if key_pressed(KEY_P) or key_pressed(KEY_ESCAPE) {
+        paused = not paused
+    }
+
+    if paused {
+        return
+    }
+
+    update_player(dt)
+    update_bullets(dt)
+    update_enemies(dt)
+    update_particles(dt)
+    update_spawning(dt)
+    check_wave_complete()
+}
+
+function update_player(dt) {
+    // Movement
+    move_x = 0
+    move_y = 0
+
+    if key_down(KEY_W) or key_down(KEY_UP) {
+        move_y = -1
+    }
+    if key_down(KEY_S) or key_down(KEY_DOWN) {
+        move_y = 1
+    }
+    if key_down(KEY_A) or key_down(KEY_LEFT) {
+        move_x = -1
+    }
+    if key_down(KEY_D) or key_down(KEY_RIGHT) {
+        move_x = 1
+    }
+
+    // Normalize diagonal movement
+    if move_x != 0 and move_y != 0 {
+        move_x = move_x * 0.707
+        move_y = move_y * 0.707
+    }
+
+    player_x = player_x + move_x * PLAYER_SPEED * dt
+    player_y = player_y + move_y * PLAYER_SPEED * dt
+
+    // Keep player on screen
+    player_x = clamp(player_x, PLAYER_SIZE / 2, WINDOW_WIDTH - PLAYER_SIZE / 2)
+    player_y = clamp(player_y, PLAYER_SIZE / 2, WINDOW_HEIGHT - PLAYER_SIZE / 2)
+
+    // Aim at mouse
+    mx = mouse_x()
+    my = mouse_y()
+    player_angle = atan2(my - player_y, mx - player_x)
+
+    // Shoot on click
+    if mouse_pressed(MOUSE_LEFT) {
+        shoot()
+    }
+}
+
+function shoot() {
+    bullet = {}
+    bullet.x = player_x + cos(player_angle) * PLAYER_SIZE / 2
+    bullet.y = player_y + sin(player_angle) * PLAYER_SIZE / 2
+    bullet.vel_x = cos(player_angle) * BULLET_SPEED
+    bullet.vel_y = sin(player_angle) * BULLET_SPEED
+    push(bullets, bullet)
+}
+
+function update_bullets(dt) {
+    i = len(bullets) - 1
+    while i >= 0 {
+        bullet = bullets[i]
+
+        // Move bullet
+        bullet.x = bullet.x + bullet.vel_x * dt
+        bullet.y = bullet.y + bullet.vel_y * dt
+
+        // Remove if off screen
+        if bullet.x < 0 or bullet.x > WINDOW_WIDTH or bullet.y < 0 or bullet.y > WINDOW_HEIGHT {
+            remove(bullets, i)
+        }
+
+        i = i - 1
+    }
+}
+
+function update_enemies(dt) {
+    i = len(enemies) - 1
+    while i >= 0 {
+        enemy = enemies[i]
+
+        // Move toward player
+        dx = player_x - enemy.x
+        dy = player_y - enemy.y
+        dist = sqrt(dx * dx + dy * dy)
+
+        if dist > 0 {
+            enemy.x = enemy.x + (dx / dist) * enemy.speed * dt
+            enemy.y = enemy.y + (dy / dist) * enemy.speed * dt
+        }
+
+        // Check collision with player
+        if dist < PLAYER_SIZE / 2 + ENEMY_SIZE / 2 {
+            player_health = player_health - 10
+            spawn_particles(enemy.x, enemy.y, RED, 5)
+            remove(enemies, i)
+
+            if player_health <= 0 {
+                game_over = true
+                spawn_particles(player_x, player_y, YELLOW, 20)
+            }
+
+            i = i - 1
+            continue
+        }
+
+        // Check collision with bullets
+        j = len(bullets) - 1
+        hit = false
+        while j >= 0 and not hit {
+            bullet = bullets[j]
+            bdx = bullet.x - enemy.x
+            bdy = bullet.y - enemy.y
+            bdist = sqrt(bdx * bdx + bdy * bdy)
+
+            if bdist < BULLET_SIZE / 2 + ENEMY_SIZE / 2 {
+                // Hit!
+                enemy.health = enemy.health - 25
+                remove(bullets, j)
+                spawn_particles(enemy.x, enemy.y, enemy.color, 3)
+
+                if enemy.health <= 0 {
+                    remove(enemies, i)
+                    score = score + enemy.points
+                    enemies_killed = enemies_killed + 1
+                    spawn_particles(enemy.x, enemy.y, enemy.color, 10)
+                    hit = true
+                }
+            }
+            j = j - 1
+        }
+
+        i = i - 1
+    }
+}
+
+function update_particles(dt) {
+    i = len(particles) - 1
+    while i >= 0 {
+        p = particles[i]
+
+        // Move particle
+        p.x = p.x + p.vel_x * dt
+        p.y = p.y + p.vel_y * dt
+
+        // Apply friction
+        p.vel_x = p.vel_x * 0.95
+        p.vel_y = p.vel_y * 0.95
+
+        // Age particle
+        p.life = p.life - dt
+
+        if p.life <= 0 {
+            remove(particles, i)
+        }
+
+        i = i - 1
+    }
+}
+
+function spawn_particles(x, y, color, count) {
+    i = 0
+    while i < count {
+        p = {}
+        p.x = x
+        p.y = y
+        angle = random() * 6.283
+        speed = random_range(50, 150)
+        p.vel_x = cos(angle) * speed
+        p.vel_y = sin(angle) * speed
+        p.color = color
+        p.life = PARTICLE_LIFETIME
+        p.size = random_range(3, 8)
+        push(particles, p)
+        i = i + 1
+    }
+}
+
+function update_spawning(dt) {
+    if enemies_spawned >= enemies_per_wave {
+        return
     }
 
     spawn_timer = spawn_timer + dt
@@ -269,273 +538,3 @@ function draw_paused() {
     hint_width = text_width(hint, small_font)
     draw_text(hint, WINDOW_WIDTH / 2 - hint_width / 2, WINDOW_HEIGHT / 2 + 40, small_font, GRAY)
 }
-  move_x = 1
-    }
-
-    // Normalize diagonal movement
-    if move_x != 0 and move_y != 0 {
-        move_x = move_x * 0.707
-        move_y = move_y * 0.707
-    }
-
-    plse
-    paused = false
-}
-
-function on_update(dt) {
-    if game_over {
-        if key_pressed(KEY_SPACE) {
-            reset_game()
-        }
-        return
-    }
-
-    if key_pressed(KEY_P) or key_pressed(KEY_ESCAPE) {
-        paused = not paused
-    }
-
-    if paused {
-        return
-    }
-
-    update_player(dt)
-    update_bullets(dt)
-    update_enemies(dt)
-    update_particles(dt)
-    update_spawning(dt)
-    check_wave_complete()
-}
-
-function update_player(dt) {
-    // Movement
-    move_x = 0
-    move_y = 0
-
-    if key_down(KEY_W) or key_down(KEY_UP) {
-        move_y = -1
-    }
-    if key_down(KEY_S) or key_down(KEY_DOWN) {
-        move_y = 1
-    }
-    if key_down(KEY_A) or key_down(KEY_LEFT) {
-        move_x = -1
-    }
-    if key_down(KEY_D) or key_down(KEY_RIGHT) {
-      ayer_x = player_x + move_x * PLAYER_SPEED * dt
-    player_y = player_y + move_y * PLAYER_SPEED * dt
-
-    // Keep player on screen
-    player_x = clamp(player_x, PLAYER_SIZE / 2, WINDOW_WIDTH - PLAYER_SIZE / 2)
-    player_y = clamp(player_y, PLAYER_SIZE / 2, WINDOW_HEIGHT - PLAYER_SIZE / 2)
-
-    // Aim at mouse
-    mx = mouse_x()
-    my = mouse_y()
-    player_angle = atan2(my - player_y, mx - player_x)
-
-    // Shoot on click
-    if mouse_pressed(MOUSE_LEFT) {
-        shoot()
-    }
-}
-
-function shoot() {
-    bullet = {}
-    bullet.x = player_x + cos(player_angle) * PLAYER_SIZE / 2
-    bullet.y = player_y + sin(player_angle) * PLAYER_SIZE / 2
-    bullet.vel_x = cos(player_angle) * BULLET_SPEED
-    bullet.vel_y = sin(player_angle) * BULLET_SPEED
-    push(bullets, bullet)
-}
-
-function update_bullets(dt) {
-    i = len(bullets) - 1
-    while i >= 0 {
-        bullet = bullets[i]
-
-        // Move bullet
-        bullet.x = bullet.x + bullet.vel_x * dt
-        bullet.y = bullet.y + bullet.vel_y * dt
-
-        // Remove if off screen
-        if bullet.x < 0 or bullet.x > WINDOW_WIDTH or bullet.y < 0 or bullet.y > WINDOW_HEIGHT {
-            remove(bullets, i)
-        }
-
-        i = i - 1
-    }
-}
-
-function update_enemies(dt) {
-    i = len(enemies) - 1
-    while i >= 0 {
-        enemy = enemies[i]
-
-        // Move toward player
-        dx = player_x - enemy.x
-        dy = player_y - enemy.y
-        dist = sqrt(dx * dx + dy * dy)
-
-        if dist > 0 {
-            enemy.x = enemy.x + (dx / dist) * enemy.speed * dt
-            enemy.y = enemy.y + (dy / dist) * enemy.speed * dt
-        }
-
-        // Check collision with player
-        if dist < PLAYER_SIZE / 2 + ENEMY_SIZE / 2 {
-            player_health = player_health - 10
-            spawn_particles(enemy.x, enemy.y, RED, 5)
-            remove(enemies, i)
-
-            if player_health <= 0 {
-                game_over = true
-                spawn_particles(player_x, player_y, YELLOW, 20)
-            }
-
-            i = i - 1
-            continue
-        }
-
-        // Check collision with bullets
-        j = len(bullets) - 1
-        hit = false
-        while j >= 0 and not hit {
-            bullet = bullets[j]
-            bdx = bullet.x - enemy.x
-            bdy = bullet.y - enemy.y
-            bdist = sqrt(bdx * bdx + bdy * bdy)
-
-            if bdist < BULLET_SIZE / 2 + ENEMY_SIZE / 2 {
-                // Hit!
-                enemy.health = enemy.health - 25
-                remove(bullets, j)
-                spawn_particles(enemy.x, enemy.y, enemy.color, 3)
-
-                if enemy.health <= 0 {
-                    remove(enemies, i)
-                    score = score + enemy.points
-                    enemies_killed = enemies_killed + 1
-                    spawn_particles(enemy.x, enemy.y, enemy.color, 10)
-                    hit = true
-                }
-            }
-            j = j - 1
-        }
-
-        i = i - 1
-    }
-}
-
-function update_particles(dt) {
-    i = len(particles) - 1
-    while i >= 0 {
-        p = particles[i]
-
-        // Move particle
-        p.x = p.x + p.vel_x * dt
-        p.y = p.y + p.vel_y * dt
-
-        // Apply friction
-        p.vel_x = p.vel_x * 0.95
-        p.vel_y = p.vel_y * 0.95
-
-        // Age particle
-        p.life = p.life - dt
-
-        if p.life <= 0 {
-            remove(particles, i)
-        }
-
-        i = i - 1
-    }
-}
-
-function spawn_particles(x, y, color, count) {
-    i = 0
-    while i < count {
-        p = {}
-        p.x = x
-        p.y = y
-        angle = random() * 6.283
-        speed = random_range(50, 150)
-        p.vel_x = cos(angle) * speed
-        p.vel_y = sin(angle) * speed
-        p.color = color
-        p.life = PARTICLE_LIFETIME
-        p.size = random_range(3, 8)
-        push(particles, p)
-        i = i + 1
-    }
-}
-
-function update_spawning(dt) {
-    if enemies_spawned >= enemies_per_wave {
-     // Top-Down Shooter - Survive waves of enemies!
-// Move with WASD or arrow keys
-// Aim with mouse, click to shoot
-// Survive as long as you can!
-
-// Game constants
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 600
-PLAYER_SIZE = 30
-PLAYER_SPEED = 250
-BULLET_SIZE = 8
-BULLET_SPEED = 600
-ENEMY_SIZE = 25
-ENEMY_BASE_SPEED = 100
-SPAWN_INTERVAL = 2.0
-MAX_ENEMIES = 20
-PARTICLE_LIFETIME = 0.5
-
-// Game state
-player_x = 0
-player_y = 0
-player_angle = 0
-player_health = 100
-player_max_health = 100
-
-bullets = []
-enemies = []
-particles = []
-
-score = 0
-wave = 1
-enemies_killed = 0
-enemies_per_wave = 5
-spawn_timer = 0
-enemies_spawned = 0
-
-game_over = false
-paused = false
-
-// Fonts
-font = none
-small_font = none
-tiny_font = none
-
-function on_start() {
-    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Top-Down Shooter")
-    font = default_font(48)
-    small_font = default_font(24)
-    tiny_font = default_font(16)
-    reset_game()
-}
-
-function reset_game() {
-    player_x = WINDOW_WIDTH / 2
-    player_y = WINDOW_HEIGHT / 2
-    player_health = player_max_health
-
-    bullets = []
-    enemies = []
-    particles = []
-
-    score = 0
-    wave = 1
-    enemies_killed = 0
-    enemies_per_wave = 5
-    spawn_timer = 0
-    enemies_spawned = 0
-
-    game_over = fal

@@ -1,4 +1,231 @@
-int8_t a) {
+// SDL2 PAL backend
+// Implements the platform abstraction layer using SDL2
+
+#ifdef PAL_USE_SDL2
+
+#include "pal/pal.h"
+
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
+
+#include <stdlib.h>
+#include <string.h>
+
+// -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
+static bool sdl_initialized = false;
+static Uint64 sdl_start_time = 0;
+static Uint64 sdl_frequency = 0;
+
+// Input state
+static bool sdl_quit_requested = false;
+static const Uint8* sdl_keyboard_state = NULL;
+static Uint8 sdl_keys_prev[PAL_KEY_COUNT];
+static Uint32 sdl_mouse_state = 0;
+static Uint32 sdl_mouse_prev = 0;
+static int sdl_mouse_x = 0;
+static int sdl_mouse_y = 0;
+
+// -----------------------------------------------------------------------------
+// Window
+// -----------------------------------------------------------------------------
+
+struct PalWindow {
+    SDL_Window* sdl_window;
+    SDL_Renderer* sdl_renderer;
+};
+
+// -----------------------------------------------------------------------------
+// Texture
+// -----------------------------------------------------------------------------
+
+struct PalTexture {
+    SDL_Texture* sdl_texture;
+    int width;
+    int height;
+};
+
+// -----------------------------------------------------------------------------
+// Audio
+// -----------------------------------------------------------------------------
+
+struct PalSound {
+    Mix_Chunk* chunk;
+};
+
+struct PalMusic {
+    Mix_Music* music;
+};
+
+// -----------------------------------------------------------------------------
+// Backend initialization
+// -----------------------------------------------------------------------------
+
+bool pal_sdl_init(void) {
+    if (sdl_initialized) return true;
+
+    printf("[PAL] Initializing SDL...\n");
+
+#ifdef __EMSCRIPTEN__
+    // For Emscripten, rely on Module.canvas set in JavaScript
+    // Don't set SDL_EMSCRIPTEN_CANVAS_SELECTOR as it may conflict
+    SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
+#endif
+
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+        printf("[PAL] SDL_Init failed: %s\n", SDL_GetError());
+        return false;
+    }
+    printf("[PAL] SDL_Init OK\n");
+
+    // Initialize SDL_image
+    int img_flags = IMG_INIT_PNG | IMG_INIT_JPG;
+    if ((IMG_Init(img_flags) & img_flags) != img_flags) {
+        printf("[PAL] IMG_Init failed: %s\n", IMG_GetError());
+        SDL_Quit();
+        return false;
+    }
+    printf("[PAL] IMG_Init OK\n");
+
+    // Initialize SDL_mixer (may fail in browser, that's OK)
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        printf("[PAL] Mix_OpenAudio failed (non-fatal): %s\n", Mix_GetError());
+        // Don't fail on audio - it's optional for web
+    } else {
+        printf("[PAL] Mix_OpenAudio OK\n");
+    }
+
+    sdl_start_time = SDL_GetPerformanceCounter();
+    sdl_frequency = SDL_GetPerformanceFrequency();
+    sdl_keyboard_state = SDL_GetKeyboardState(NULL);
+    memset(sdl_keys_prev, 0, sizeof(sdl_keys_prev));
+    sdl_quit_requested = false;
+    sdl_mouse_state = 0;
+    sdl_mouse_prev = 0;
+
+    printf("[PAL] SDL initialized successfully\n");
+    sdl_initialized = true;
+    return true;
+}
+
+void pal_sdl_quit(void) {
+    if (!sdl_initialized) return;
+
+    Mix_CloseAudio();
+    IMG_Quit();
+    SDL_Quit();
+    sdl_initialized = false;
+}
+
+// -----------------------------------------------------------------------------
+// Window management
+// -----------------------------------------------------------------------------
+
+PalWindow* pal_sdl_window_create(const char* title, int width, int height) {
+    printf("[PAL] Creating window: %s (%dx%d)\n", title ? title : "Pixel", width, height);
+
+    PalWindow* window = malloc(sizeof(PalWindow));
+    if (!window) {
+        printf("[PAL] Failed to allocate window struct\n");
+        return NULL;
+    }
+
+#ifdef __EMSCRIPTEN__
+    // For Emscripten, use simple window creation - SDL will use the canvas
+    window->sdl_window = SDL_CreateWindow(
+        title ? title : "Pixel",
+        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+        width, height,
+        0  // No special flags needed for Emscripten
+    );
+#else
+    window->sdl_window = SDL_CreateWindow(
+        title ? title : "Pixel",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        width, height,
+        SDL_WINDOW_SHOWN
+    );
+#endif
+
+    if (!window->sdl_window) {
+        printf("[PAL] SDL_CreateWindow failed: %s\n", SDL_GetError());
+        free(window);
+        return NULL;
+    }
+    printf("[PAL] Window created OK\n");
+
+#ifdef __EMSCRIPTEN__
+    // For Emscripten, use accelerated renderer (required for HTML5 canvas)
+    window->sdl_renderer = SDL_CreateRenderer(
+        window->sdl_window, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+#else
+    window->sdl_renderer = SDL_CreateRenderer(
+        window->sdl_window, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+#endif
+
+    if (!window->sdl_renderer) {
+        printf("[PAL] SDL_CreateRenderer failed: %s\n", SDL_GetError());
+        SDL_DestroyWindow(window->sdl_window);
+        free(window);
+        return NULL;
+    }
+    printf("[PAL] Renderer created OK\n");
+
+    // Enable alpha blending
+    SDL_SetRenderDrawBlendMode(window->sdl_renderer, SDL_BLENDMODE_BLEND);
+
+    printf("[PAL] Window initialization complete\n");
+    return window;
+}
+
+void pal_sdl_window_destroy(PalWindow* window) {
+    if (!window) return;
+    if (window->sdl_renderer) SDL_DestroyRenderer(window->sdl_renderer);
+    if (window->sdl_window) SDL_DestroyWindow(window->sdl_window);
+    free(window);
+}
+
+void pal_sdl_window_present(PalWindow* window) {
+    if (window && window->sdl_renderer) {
+        SDL_RenderPresent(window->sdl_renderer);
+    }
+}
+
+void pal_sdl_window_clear(PalWindow* window, uint8_t r, uint8_t g, uint8_t b) {
+    if (window && window->sdl_renderer) {
+        SDL_SetRenderDrawColor(window->sdl_renderer, r, g, b, 255);
+        SDL_RenderClear(window->sdl_renderer);
+    }
+}
+
+void pal_sdl_window_set_title(PalWindow* window, const char* title) {
+    if (window && window->sdl_window) {
+        SDL_SetWindowTitle(window->sdl_window, title);
+    }
+}
+
+void pal_sdl_window_get_size(PalWindow* window, int* width, int* height) {
+    if (window && window->sdl_window) {
+        SDL_GetWindowSize(window->sdl_window, width, height);
+    } else {
+        if (width) *width = 0;
+        if (height) *height = 0;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Rendering primitives
+// -----------------------------------------------------------------------------
+
+void pal_sdl_draw_rect(PalWindow* window, int x, int y, int w, int h,
+                       uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     if (!window || !window->sdl_renderer) return;
 
 #ifdef __EMSCRIPTEN__
@@ -434,231 +661,3 @@ void pal_sdl_text_size(PalFont* font, const char* text, int* width, int* height)
 }
 
 #endif // PAL_USE_SDL2
-// SDL2 PAL backend
-// Implements the platform abstraction layer using SDL2
-
-#ifdef PAL_USE_SDL2
-
-#include "pal/pal.h"
-
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
-
-#include <stdlib.h>
-#include <string.h>
-
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
-static bool sdl_initialized = false;
-static Uint64 sdl_start_time = 0;
-static Uint64 sdl_frequency = 0;
-
-// Input state
-static bool sdl_quit_requested = false;
-static const Uint8* sdl_keyboard_state = NULL;
-static Uint8 sdl_keys_prev[PAL_KEY_COUNT];
-static Uint32 sdl_mouse_state = 0;
-static Uint32 sdl_mouse_prev = 0;
-static int sdl_mouse_x = 0;
-static int sdl_mouse_y = 0;
-
-// -----------------------------------------------------------------------------
-// Window
-// -----------------------------------------------------------------------------
-
-struct PalWindow {
-    SDL_Window* sdl_window;
-    SDL_Renderer* sdl_renderer;
-};
-
-// -----------------------------------------------------------------------------
-// Texture
-// -----------------------------------------------------------------------------
-
-struct PalTexture {
-    SDL_Texture* sdl_texture;
-    int width;
-    int height;
-};
-
-// -----------------------------------------------------------------------------
-// Audio
-// -----------------------------------------------------------------------------
-
-struct PalSound {
-    Mix_Chunk* chunk;
-};
-
-struct PalMusic {
-    Mix_Music* music;
-};
-
-// -----------------------------------------------------------------------------
-// Backend initialization
-// -----------------------------------------------------------------------------
-
-bool pal_sdl_init(void) {
-    if (sdl_initialized) return true;
-
-    printf("[PAL] Initializing SDL...\n");
-
-#ifdef __EMSCRIPTEN__
-    // For Emscripten, rely on Module.canvas set in JavaScript
-    // Don't set SDL_EMSCRIPTEN_CANVAS_SELECTOR as it may conflict
-    SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
-#endif
-
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
-        printf("[PAL] SDL_Init failed: %s\n", SDL_GetError());
-        return false;
-    }
-    printf("[PAL] SDL_Init OK\n");
-
-    // Initialize SDL_image
-    int img_flags = IMG_INIT_PNG | IMG_INIT_JPG;
-    if ((IMG_Init(img_flags) & img_flags) != img_flags) {
-        printf("[PAL] IMG_Init failed: %s\n", IMG_GetError());
-        SDL_Quit();
-        return false;
-    }
-    printf("[PAL] IMG_Init OK\n");
-
-    // Initialize SDL_mixer (may fail in browser, that's OK)
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        printf("[PAL] Mix_OpenAudio failed (non-fatal): %s\n", Mix_GetError());
-        // Don't fail on audio - it's optional for web
-    } else {
-        printf("[PAL] Mix_OpenAudio OK\n");
-    }
-
-    sdl_start_time = SDL_GetPerformanceCounter();
-    sdl_frequency = SDL_GetPerformanceFrequency();
-    sdl_keyboard_state = SDL_GetKeyboardState(NULL);
-    memset(sdl_keys_prev, 0, sizeof(sdl_keys_prev));
-    sdl_quit_requested = false;
-    sdl_mouse_state = 0;
-    sdl_mouse_prev = 0;
-
-    printf("[PAL] SDL initialized successfully\n");
-    sdl_initialized = true;
-    return true;
-}
-
-void pal_sdl_quit(void) {
-    if (!sdl_initialized) return;
-
-    Mix_CloseAudio();
-    IMG_Quit();
-    SDL_Quit();
-    sdl_initialized = false;
-}
-
-// -----------------------------------------------------------------------------
-// Window management
-// -----------------------------------------------------------------------------
-
-PalWindow* pal_sdl_window_create(const char* title, int width, int height) {
-    printf("[PAL] Creating window: %s (%dx%d)\n", title ? title : "Pixel", width, height);
-
-    PalWindow* window = malloc(sizeof(PalWindow));
-    if (!window) {
-        printf("[PAL] Failed to allocate window struct\n");
-        return NULL;
-    }
-
-#ifdef __EMSCRIPTEN__
-    // For Emscripten, use simple window creation - SDL will use the canvas
-    window->sdl_window = SDL_CreateWindow(
-        title ? title : "Pixel",
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        width, height,
-        0  // No special flags needed for Emscripten
-    );
-#else
-    window->sdl_window = SDL_CreateWindow(
-        title ? title : "Pixel",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        width, height,
-        SDL_WINDOW_SHOWN
-    );
-#endif
-
-    if (!window->sdl_window) {
-        printf("[PAL] SDL_CreateWindow failed: %s\n", SDL_GetError());
-        free(window);
-        return NULL;
-    }
-    printf("[PAL] Window created OK\n");
-
-#ifdef __EMSCRIPTEN__
-    // For Emscripten, use accelerated renderer (required for HTML5 canvas)
-    window->sdl_renderer = SDL_CreateRenderer(
-        window->sdl_window, -1,
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-    );
-#else
-    window->sdl_renderer = SDL_CreateRenderer(
-        window->sdl_window, -1,
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-    );
-#endif
-
-    if (!window->sdl_renderer) {
-        printf("[PAL] SDL_CreateRenderer failed: %s\n", SDL_GetError());
-        SDL_DestroyWindow(window->sdl_window);
-        free(window);
-        return NULL;
-    }
-    printf("[PAL] Renderer created OK\n");
-
-    // Enable alpha blending
-    SDL_SetRenderDrawBlendMode(window->sdl_renderer, SDL_BLENDMODE_BLEND);
-
-    printf("[PAL] Window initialization complete\n");
-    return window;
-}
-
-void pal_sdl_window_destroy(PalWindow* window) {
-    if (!window) return;
-    if (window->sdl_renderer) SDL_DestroyRenderer(window->sdl_renderer);
-    if (window->sdl_window) SDL_DestroyWindow(window->sdl_window);
-    free(window);
-}
-
-void pal_sdl_window_present(PalWindow* window) {
-    if (window && window->sdl_renderer) {
-        SDL_RenderPresent(window->sdl_renderer);
-    }
-}
-
-void pal_sdl_window_clear(PalWindow* window, uint8_t r, uint8_t g, uint8_t b) {
-    if (window && window->sdl_renderer) {
-        SDL_SetRenderDrawColor(window->sdl_renderer, r, g, b, 255);
-        SDL_RenderClear(window->sdl_renderer);
-    }
-}
-
-void pal_sdl_window_set_title(PalWindow* window, const char* title) {
-    if (window && window->sdl_window) {
-        SDL_SetWindowTitle(window->sdl_window, title);
-    }
-}
-
-void pal_sdl_window_get_size(PalWindow* window, int* width, int* height) {
-    if (window && window->sdl_window) {
-        SDL_GetWindowSize(window->sdl_window, width, height);
-    } else {
-        if (width) *width = 0;
-        if (height) *height = 0;
-    }
-}
-
-// -----------------------------------------------------------------------------
-// Rendering primitives
-// -----------------------------------------------------------------------------
-
-void pal_sdl_draw_rect(PalWindow* window, int x, int y, int w, int h,
-                       uint8_t r, uint8_t g, uint8_t b, u

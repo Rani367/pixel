@@ -1,40 +1,3 @@
-intptr_t current = (uintptr_t)(block->memory + block->used);
-    uintptr_t aligned = (current + align - 1) & ~(align - 1);
-    size_t padding = aligned - current;
-    size_t total_size = padding + size;
-
-    // Check if we need a new block
-    if (block->used + total_size > block->capacity) {
-        // Allocate a new block (at least as big as requested)
-        size_t new_capacity = block->capacity * 2;
-        if (new_capacity < size + align) {
-            new_capacity = size + align;
-        }
-
-        ArenaBlock* new_block = arena_block_new(new_capacity);
-        if (new_block == NULL) {
-            return NULL;
-        }
-
-        block->next = new_block;
-        arena->current = new_block;
-        block = new_block;
-
-        // Recalculate alignment for new block
-        current = (uintptr_t)block->memory;
-        aligned = (current + align - 1) & ~(align - 1);
-        padding = aligned - current;
-        total_size = padding + size;tal_used(Arena* arena) {
-    PH_ASSERT(arena != NULL);
-
-    size_t total = 0;
-    ArenaBlock* block = arena->first;
-    while (block != NULL) {
-        total += block->used;
-        block = block->next;
-    }
-    return total;
-}
 #include "arena.h"
 #include <string.h>
 
@@ -70,7 +33,59 @@ Arena* arena_new(size_t initial_capacity) {
     }
 
     Arena* arena = PH_ALLOC(sizeof(Arena));
-    if (
+    if (arena == NULL) {
+        return NULL;
+    }
+
+    arena->first = arena_block_new(initial_capacity);
+    if (arena->first == NULL) {
+        PH_FREE(arena);
+        return NULL;
+    }
+
+    arena->current = arena->first;
+    return arena;
+}
+
+void* arena_alloc(Arena* arena, size_t size) {
+    return arena_alloc_aligned(arena, size, sizeof(void*));
+}
+
+void* arena_alloc_aligned(Arena* arena, size_t size, size_t align) {
+    PH_ASSERT(arena != NULL);
+    PH_ASSERT(size > 0);
+    PH_ASSERT(align > 0 && (align & (align - 1)) == 0); // Power of 2
+
+    ArenaBlock* block = arena->current;
+
+    // Calculate aligned offset
+    uintptr_t current = (uintptr_t)(block->memory + block->used);
+    uintptr_t aligned = (current + align - 1) & ~(align - 1);
+    size_t padding = aligned - current;
+    size_t total_size = padding + size;
+
+    // Check if we need a new block
+    if (block->used + total_size > block->capacity) {
+        // Allocate a new block (at least as big as requested)
+        size_t new_capacity = block->capacity * 2;
+        if (new_capacity < size + align) {
+            new_capacity = size + align;
+        }
+
+        ArenaBlock* new_block = arena_block_new(new_capacity);
+        if (new_block == NULL) {
+            return NULL;
+        }
+
+        block->next = new_block;
+        arena->current = new_block;
+        block = new_block;
+
+        // Recalculate alignment for new block
+        current = (uintptr_t)block->memory;
+        aligned = (current + align - 1) & ~(align - 1);
+        padding = aligned - current;
+        total_size = padding + size;
     }
 
     void* ptr = block->memory + block->used + padding;
@@ -123,30 +138,14 @@ size_t arena_total_allocated(Arena* arena) {
     return total;
 }
 
-size_t arena_toarena == NULL) {
-        return NULL;
-    }
-
-    arena->first = arena_block_new(initial_capacity);
-    if (arena->first == NULL) {
-        PH_FREE(arena);
-        return NULL;
-    }
-
-    arena->current = arena->first;
-    return arena;
-}
-
-void* arena_alloc(Arena* arena, size_t size) {
-    return arena_alloc_aligned(arena, size, sizeof(void*));
-}
-
-void* arena_alloc_aligned(Arena* arena, size_t size, size_t align) {
+size_t arena_total_used(Arena* arena) {
     PH_ASSERT(arena != NULL);
-    PH_ASSERT(size > 0);
-    PH_ASSERT(align > 0 && (align & (align - 1)) == 0); // Power of 2
 
-    ArenaBlock* block = arena->current;
-
-    // Calculate aligned offset
-    u
+    size_t total = 0;
+    ArenaBlock* block = arena->first;
+    while (block != NULL) {
+        total += block->used;
+        block = block->next;
+    }
+    return total;
+}

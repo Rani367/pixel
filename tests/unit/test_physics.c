@@ -341,73 +341,7 @@ TEST(physics_update_acceleration) {
     ASSERT(FLOAT_EQ(sprite->velocity_x, 100.0));
     ASSERT(FLOAT_EQ(sprite->velocity_y, 50.0));
     ASSERT(FLOAT_EQ(sprite->x, 100.0));
-    ASSERT(Faparound);
-
-    TEST_SUITE("Gravity");
-    RUN_TEST(gravity_default);
-    RUN_TEST(gravity_set_get);
-
-    TEST_SUITE("AABB Collision");
-    RUN_TEST(collides_overlapping);
-    RUN_TEST(collides_not_overlapping);
-    RUN_TEST(collides_touching);
-    RUN_TEST(collides_rect);
-    RUN_TEST(collides_point);
-
-    TEST_SUITE("Circle Collision");
-    RUN_TEST(collides_circle_overlapping);
-    RUN_TEST(collides_circle_not_overlapping);
-
-    TEST_SUITE("Distance");
-    RUN_TEST(distance_basic);
-    RUN_TEST(distance_diagonal);
-
-    TEST_SUITE("Physics Update");
-    RUN_TEST(physics_update_velocity);
-    RUN_TEST(physics_update_acceleration);
-    RUN_TEST(physics_update_gravity);
-    RUN_TEST(physics_update_gravity_scale);
-    RUN_TEST(physics_update_zero_gravity_scale);
-
-    TEST_SUITE("Movement Helpers");
-    RUN_TEST(apply_force);
-    RUN_TEST(look_at_right);
-    RUN_TEST(look_at_down);
-    RUN_TEST(move_toward_not_reached);
-    RUN_TEST(move_toward_reached);
-
-    TEST_SUITE("Native Registration");
-    RUN_TEST(physics_natives_registered);
-
-    TEST_SUMMARY();
-}
-ble_get_cstr(&test_vm.globals, "get_gravity", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "collides", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "collides_rect", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "collides_point", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "collides_circle", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "distance", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "apply_force", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "move_toward", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "look_at", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "lerp", &val));
-    ASSERT(table_get_cstr(&test_vm.globals, "lerp_angle", &val));
-
-    teardown_test_env();
-}
-
-// ============================================================================
-// Main
-// ============================================================================
-
-int main(void) {
-    TEST_SUITE("Math Helpers");
-    RUN_TEST(lerp_basic);
-    RUN_TEST(lerp_clamps);
-    RUN_TEST(lerp_negative);
-    RUN_TEST(normalize_angle);
-    RUN_TEST(lerp_angle_basic);
-    RUN_TEST(lerp_angle_wrLOAT_EQ(sprite->y, 50.0));
+    ASSERT(FLOAT_EQ(sprite->y, 50.0));
 
     teardown_test_env();
 }
@@ -578,4 +512,69 @@ TEST(physics_natives_registered) {
 
     void* val;
     ASSERT(table_get_cstr(&test_vm.globals, "set_gravity", &val));
-    ASSERT(ta
+    ASSERT(table_get_cstr(&test_vm.globals, "get_gravity", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "collides", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "collides_rect", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "collides_point", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "collides_circle", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "distance", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "apply_force", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "move_toward", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "look_at", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "lerp", &val));
+    ASSERT(table_get_cstr(&test_vm.globals, "lerp_angle", &val));
+
+    teardown_test_env();
+}
+
+// ============================================================================
+// Main
+// ============================================================================
+
+int main(void) {
+    TEST_SUITE("Math Helpers");
+    RUN_TEST(lerp_basic);
+    RUN_TEST(lerp_clamps);
+    RUN_TEST(lerp_negative);
+    RUN_TEST(normalize_angle);
+    RUN_TEST(lerp_angle_basic);
+    RUN_TEST(lerp_angle_wraparound);
+
+    TEST_SUITE("Gravity");
+    RUN_TEST(gravity_default);
+    RUN_TEST(gravity_set_get);
+
+    TEST_SUITE("AABB Collision");
+    RUN_TEST(collides_overlapping);
+    RUN_TEST(collides_not_overlapping);
+    RUN_TEST(collides_touching);
+    RUN_TEST(collides_rect);
+    RUN_TEST(collides_point);
+
+    TEST_SUITE("Circle Collision");
+    RUN_TEST(collides_circle_overlapping);
+    RUN_TEST(collides_circle_not_overlapping);
+
+    TEST_SUITE("Distance");
+    RUN_TEST(distance_basic);
+    RUN_TEST(distance_diagonal);
+
+    TEST_SUITE("Physics Update");
+    RUN_TEST(physics_update_velocity);
+    RUN_TEST(physics_update_acceleration);
+    RUN_TEST(physics_update_gravity);
+    RUN_TEST(physics_update_gravity_scale);
+    RUN_TEST(physics_update_zero_gravity_scale);
+
+    TEST_SUITE("Movement Helpers");
+    RUN_TEST(apply_force);
+    RUN_TEST(look_at_right);
+    RUN_TEST(look_at_down);
+    RUN_TEST(move_toward_not_reached);
+    RUN_TEST(move_toward_reached);
+
+    TEST_SUITE("Native Registration");
+    RUN_TEST(physics_natives_registered);
+
+    TEST_SUMMARY();
+}

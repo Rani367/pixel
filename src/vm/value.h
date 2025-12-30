@@ -1,4 +1,9 @@
-ward declaration for objects
+#ifndef PH_VALUE_H
+#define PH_VALUE_H
+
+#include "core/common.h"
+
+// Forward declaration for objects
 typedef struct Object Object;
 
 // Value types
@@ -56,9 +61,3 @@ void value_array_write(ValueArray* array, Value value);
 void value_array_free(ValueArray* array);
 
 #endif // PH_VALUE_H
-#ifndef PH_VALUE_H
-#define PH_VALUE_H
-
-#include "core/common.h"
-
-// For

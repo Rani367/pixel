@@ -1,52 +1,58 @@
-ruct_def == def);
-    ASSERT(AS_NUMBER(retrieved->fields[0]) == 10);
+#include "../test_framework.h"
+#include "vm/vm.h"
+#include "vm/gc.h"
+#include "vm/object.h"
+#include "vm/chunk.h"
+#include <string.h>
 
-    vm_pop(&vm);
+// ============================================================================
+// Test Helpers
+// ============================================================================
+
+static VM vm;
+
+static void setup(void) {
+    vm_init(&vm);
+    gc_set_vm(&vm);
+}
+
+static void teardown(void) {
+    vm_free(&vm);
+}
+
+// Count objects in the VM's list
+static int count_objects(void) {
+    int count = 0;
+    Object* obj = vm.objects;
+    while (obj != NULL) {
+        count++;
+        obj = obj->next;
+    }
+    return count;
+}
+
+// ============================================================================
+// Basic GC Tests
+// ============================================================================
+
+TEST(gc_initial_state) {
+    setup();
+
+    ASSERT_EQ(vm.bytes_allocated, 0);
+    ASSERT_EQ(vm.objects, NULL);
+    ASSERT_EQ(vm.gray_stack, NULL);
+    ASSERT_EQ(vm.gray_count, 0);
+
     teardown();
 }
 
-TEST(gc_stress_test) {
+TEST(gc_object_tracking) {
     setup();
 
-    // Create many objects to trigger multiple GC cycles
-    for (int i = 0; i < 1000; i++) {
-        ObjList* list = list_new();
-        char buf[32];
-        snprintf(buf, sizeof(buf), "string_%d", i);
-        ObjString* str = string_copy(buf, (int)strlen(buf));
-        list_append(list, OBJECT_VAL(str));
-
-        // Push every 10th object to keep some alive
-        if (i % 10 == 0) {
-            vm_push(&vm, OBJECT_VAL(list));
-        }
-    }
-
-    // Run GC
-    gc_collect(&vm);
-
-    // Pop all the kept lists
-    for (int i = 0; i < 100; i++) {
-        vm_pop(&vm);
-    }
-
-    // Final GC to clean up
-    gc_collect(&vm);
-
-    teardown();
-}
-
-TEST(gc_bytes_allocated_tracking) {
-    setup();
-
-    size_t initial = vm.bytes_allocated;
-
-    // Allocate some objects
-    (void)string_copy("test string", 11);
-    (void)list_new();
-    (void)vec2_new(1.0, 2.0);
-
-    // Bytes    ObjList* list = list_new();
+    // Create some objects
+    ObjString* s1 = string_copy("hello", 5);
+    ObjString* s2 = string_copy("world", 5);
+    ObjList* list = list_new();
 
     // Objects should be tracked
     ASSERT(count_objects() >= 3);
@@ -215,7 +221,55 @@ TEST(gc_traces_instances) {
 
     // Instance should still exist
     ObjInstance* retrieved = AS_INSTANCE(vm_peek(&vm, 0));
-    ASSERT(retrieved->st should have increased
+    ASSERT(retrieved->struct_def == def);
+    ASSERT(AS_NUMBER(retrieved->fields[0]) == 10);
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_stress_test) {
+    setup();
+
+    // Create many objects to trigger multiple GC cycles
+    for (int i = 0; i < 1000; i++) {
+        ObjList* list = list_new();
+        char buf[32];
+        snprintf(buf, sizeof(buf), "string_%d", i);
+        ObjString* str = string_copy(buf, (int)strlen(buf));
+        list_append(list, OBJECT_VAL(str));
+
+        // Push every 10th object to keep some alive
+        if (i % 10 == 0) {
+            vm_push(&vm, OBJECT_VAL(list));
+        }
+    }
+
+    // Run GC
+    gc_collect(&vm);
+
+    // Pop all the kept lists
+    for (int i = 0; i < 100; i++) {
+        vm_pop(&vm);
+    }
+
+    // Final GC to clean up
+    gc_collect(&vm);
+
+    teardown();
+}
+
+TEST(gc_bytes_allocated_tracking) {
+    setup();
+
+    size_t initial = vm.bytes_allocated;
+
+    // Allocate some objects
+    (void)string_copy("test string", 11);
+    (void)list_new();
+    (void)vec2_new(1.0, 2.0);
+
+    // Bytes should have increased
     ASSERT(vm.bytes_allocated > initial);
 
     teardown();
@@ -246,57 +300,3 @@ int main(void) {
 
     TEST_SUMMARY();
 }
-#include "../test_framework.h"
-#include "vm/vm.h"
-#include "vm/gc.h"
-#include "vm/object.h"
-#include "vm/chunk.h"
-#include <string.h>
-
-// ============================================================================
-// Test Helpers
-// ============================================================================
-
-static VM vm;
-
-static void setup(void) {
-    vm_init(&vm);
-    gc_set_vm(&vm);
-}
-
-static void teardown(void) {
-    vm_free(&vm);
-}
-
-// Count objects in the VM's list
-static int count_objects(void) {
-    int count = 0;
-    Object* obj = vm.objects;
-    while (obj != NULL) {
-        count++;
-        obj = obj->next;
-    }
-    return count;
-}
-
-// ============================================================================
-// Basic GC Tests
-// ============================================================================
-
-TEST(gc_initial_state) {
-    setup();
-
-    ASSERT_EQ(vm.bytes_allocated, 0);
-    ASSERT_EQ(vm.objects, NULL);
-    ASSERT_EQ(vm.gray_stack, NULL);
-    ASSERT_EQ(vm.gray_count, 0);
-
-    teardown();
-}
-
-TEST(gc_object_tracking) {
-    setup();
-
-    // Create some objects
-    ObjString* s1 = string_copy("hello", 5);
-    ObjString* s2 = string_copy("world", 5);

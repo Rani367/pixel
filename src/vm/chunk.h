@@ -1,4 +1,9 @@
-codes.h"
+#ifndef PH_CHUNK_H
+#define PH_CHUNK_H
+
+#include "core/common.h"
+#include "vm/value.h"
+#include "vm/opcodes.h"
 
 // Bytecode chunk
 // Contains the bytecode, constants, and line information for a function
@@ -34,12 +39,9 @@ void chunk_write_op(Chunk* chunk, OpCode op, int line);
 int chunk_add_constant(Chunk* chunk, Value value);
 
 // Write a constant instruction (handles long constants automatically)
-void chunk_write_constant(Chunk* chunk, Value val#ifndef PH_CHUNK_H
-#define PH_CHUNK_H
+void chunk_write_constant(Chunk* chunk, Value value, int line);
 
-#include "core/common.h"
-#include "vm/value.h"
-#include "vm/opmber for a bytecode offset
+// Get the line number for a bytecode offset
 int chunk_get_line(Chunk* chunk, int offset);
 
 // ============================================================================
@@ -61,6 +63,3 @@ bool chunk_write_file(Chunk* chunk, const char* path);
 Chunk* chunk_read_file(const char* path);
 
 #endif // PH_CHUNK_H
-ue, int line);
-
-// Get the line nu

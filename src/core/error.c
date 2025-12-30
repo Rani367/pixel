@@ -156,18 +156,7 @@ void error_print(Error* err, FILE* out) {
 }
 
 // Find the start and length of line N in source (1-indexed)
-static const char* find_source_line(const char* source, int line_num, int* out_lesource or location
-    if (source == NULL || err->location.file == NULL || err->location.line <= 0) {
-        error_print(err, out);
-        return;
-    }
-
-    // Print error header: error[EXXX]: message
-    fprintf(out, "error[%s]: %s\n", error_code_name(err->code), err->message);
-
-    // Print location: --> file:line:column
-    fprintf(out, "  --> %s:%d:%d\n",
-            err->locationngth) {
+static const char* find_source_line(const char* source, int line_num, int* out_length) {
     if (source == NULL || line_num <= 0) {
         *out_length = 0;
         return NULL;
@@ -204,7 +193,18 @@ void error_print_pretty(Error* err, const char* source, FILE* out) {
         return;
     }
 
-    // Fall back to simple print if no .file,
+    // Fall back to simple print if no source or location
+    if (source == NULL || err->location.file == NULL || err->location.line <= 0) {
+        error_print(err, out);
+        return;
+    }
+
+    // Print error header: error[EXXX]: message
+    fprintf(out, "error[%s]: %s\n", error_code_name(err->code), err->message);
+
+    // Print location: --> file:line:column
+    fprintf(out, "  --> %s:%d:%d\n",
+            err->location.file,
             err->location.line,
             err->location.column);
 

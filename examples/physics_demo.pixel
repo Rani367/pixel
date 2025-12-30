@@ -1,4 +1,75 @@
-zontal control
+// Physics & Collision Demo
+// Demonstrates gravity, collision detection, and physics helpers
+
+// Ball sprite (simulated with rect since we have no image)
+ball = nil
+ball_color = CYAN
+
+// Platform rectangles
+platform1_x = 100
+platform1_y = 450
+platform1_w = 200
+platform1_h = 20
+
+platform2_x = 500
+platform2_y = 350
+platform2_w = 200
+platform2_h = 20
+
+// Floor
+floor_y = 550
+
+// Target position for move_toward demo
+target_x = 400
+target_y = 100
+target_sprite = nil
+
+// Stats
+bounce_count = 0
+
+function on_start() {
+    create_window(800, 600, "Physics Demo - Press R to reset, Space to jump")
+
+    // Set up gravity (pixels per second^2)
+    set_gravity(500)
+
+    // Create ball sprite
+    ball = create_sprite()
+    ball.x = 100
+    ball.y = 50
+    ball.width = 30
+    ball.height = 30
+    ball.velocity_x = 100
+    ball.velocity_y = 0
+    ball.friction = 0.99
+    ball.gravity_scale = 1.0
+
+    // Create target sprite for move_toward demo
+    target_sprite = create_sprite()
+    target_sprite.x = target_x
+    target_sprite.y = target_y
+    target_sprite.width = 20
+    target_sprite.height = 20
+    target_sprite.gravity_scale = 0  // No gravity for target
+}
+
+function on_update(dt) {
+    // Reset on R key
+    if key_pressed(KEY_R) {
+        ball.x = 100
+        ball.y = 50
+        ball.velocity_x = 100
+        ball.velocity_y = 0
+        bounce_count = 0
+    }
+
+    // Jump on space (only when grounded)
+    if key_pressed(KEY_SPACE) and ball.grounded {
+        ball.velocity_y = -300
+        ball.grounded = false
+    }
+
+    // Apply horizontal control
     if key_down(KEY_LEFT) or key_down(KEY_A) {
         ball.velocity_x = ball.velocity_x - 500 * dt
     }
@@ -125,75 +196,3 @@ function lerp_color(t) {
     b = lerp(0, 255, t)
     return rgb(r, 0, b)
 }
-r
-floor_y = 550
-
-// Target position for move_toward demo
-target_x = 400
-target_y = 100
-target_sprite = nil
-
-// Stats
-bounce_count = 0
-
-function on_start() {
-    create_window(800, 600, "Physics Demo - Press R to reset, Space to jump")
-
-    // Set up gravity (pixels per second^2)
-    set_gravity(500)
-
-    // Create ball sprite
-    ball = create_sprite()
-    ball.x = 100
-    ball.y = 50
-    ball.width = 30
-    ball.height = 30
-    ball.velocity_x = 100
-    ball.velocity_y = 0
-    ball.friction = 0.99
-    ball.gravity_scale = 1.0
-
-    // Create target sprite for move_toward demo
-    target_sprite = create_sprite()
-    target_sprite.x = target_x
-    target_sprite.y = target_y
-    target_sprite.width = 20
-    target_sprite.height = 20
-    target_sprite.gravity_scale = 0  // No gravity for target
-}
-
-function on_update(dt) {
-    // Reset on R key
-    if key_pressed(KEY_R) {
-        ball.x = 100
-        ball.y = 50
-        ball.velocity_x = 100
-        ball.velocity_y = 0
-        bounce_count = 0
-    }
-
-    // Jump on space (only when grounded)
-    if key_pressed(KEY_SPACE) and ball.grounded {
-        ball.velocity_y = -300
-        ball.grounded = false
-    }
-
-    // Apply hori// Physics & Collision Demo
-// Demonstrates gravity, collision detection, and physics helpers
-
-// Ball sprite (simulated with rect since we have no image)
-ball = nil
-ball_color = CYAN
-
-// Platform rectangles
-platform1_x = 100
-platform1_y = 450
-platform1_w = 200
-platform1_h = 20
-
-platform2_x = 500
-platform2_y = 350
-platform2_w = 200
-platform2_h = 20
-
-// Floo

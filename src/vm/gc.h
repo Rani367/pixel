@@ -1,7 +1,3 @@
-call at shutdown if no VM ran)
-void gc_free_all(void);
-
-#endif // PH_GC_H
 #ifndef PH_GC_H
 #define PH_GC_H
 
@@ -74,4 +70,7 @@ void gc_init(void);
 // Call after compilation and before interpretation
 void gc_transfer_objects(struct VM* vm);
 
-// Free all remaining global objects (
+// Free all remaining global objects (call at shutdown if no VM ran)
+void gc_free_all(void);
+
+#endif // PH_GC_H

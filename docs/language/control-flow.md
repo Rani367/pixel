@@ -1,4 +1,51 @@
-lth > 0 and ammo > 0 {
+# Control Flow
+
+## If Statements
+
+```pixel
+if health > 0 {
+    println("Alive!")
+}
+```
+
+### Else
+
+```pixel
+if health > 0 {
+    println("Alive!")
+} else {
+    println("Game Over")
+}
+```
+
+### Else If
+
+```pixel
+if score >= 100 {
+    println("A")
+} else if score >= 70 {
+    println("B")
+} else if score >= 50 {
+    println("C")
+} else {
+    println("F")
+}
+```
+
+### Nested Conditions
+
+```pixel
+if is_alive {
+    if has_key {
+        open_door()
+    }
+}
+```
+
+### Compound Conditions
+
+```pixel
+if health > 0 and ammo > 0 {
     can_fight = true
 }
 
@@ -35,7 +82,46 @@ Exit a loop immediately:
 ```pixel
 i = 0
 while i < 100 {
-   i < len(items) {
+    if found_target {
+        break  // Exit the loop
+    }
+    i = i + 1
+}
+```
+
+## Continue
+
+Skip to the next iteration:
+
+```pixel
+i = 0
+while i < 10 {
+    i = i + 1
+    if i == 5 {
+        continue  // Skip printing 5
+    }
+    println(i)
+}
+```
+
+## Common Patterns
+
+### Counting Loop
+
+```pixel
+i = 0
+while i < 10 {
+    // Do something with i
+    i = i + 1
+}
+```
+
+### Iterating a List
+
+```pixel
+items = ["sword", "shield", "potion"]
+i = 0
+while i < len(items) {
     println(items[i])
     i = i + 1
 }
@@ -81,90 +167,3 @@ while countdown > 0 {
 }
 println("Go!")
 ```
-If
-
-```pixel
-if score >= 100 {
-    println("A")
-} else if score >= 70 {
-    println("B")
-} else if score >= 50 {
-    println("C")
-} else {
-    println("F")
-}
-```
-
-### Nested Conditions
-
-```pixel
-if is_alive {
-    if has_key {
-        open_door()
-    }
-}
-```
-
-### Compound Conditions
-
-```pixel
-if hea if found_target {
-        break  // Exit the loop
-    }
-    i = i + 1
-}
-```
-
-## Continue
-
-Skip to the next iteration:
-
-```pixel
-i = 0
-while i < 10 {
-    i = i + 1
-    if i == 5 {
-        continue  // Skip printing 5
-    }
-    println(i)
-}
-```
-
-## Common Patterns
-
-### Counting Loop
-
-```pixel
-i = 0
-while i < 10 {
-    // Do something with i
-    i = i + 1
-}
-```
-
-### Iterating a List
-
-```pixel
-items = ["sword", "shield", "potion"]
-i = 0
-while # Control Flow
-
-## If Statements
-
-```pixel
-if health > 0 {
-    println("Alive!")
-}
-```
-
-### Else
-
-```pixel
-if health > 0 {
-    println("Alive!")
-} else {
-    println("Game Over")
-}
-```
-
-### Else 

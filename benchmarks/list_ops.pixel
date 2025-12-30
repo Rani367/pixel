@@ -1,4 +1,4 @@
-T) + " items: " + t// List Operations Benchmark
+// List Operations Benchmark
 // Measures list push, pop, and iteration performance
 
 COUNT = 10000
@@ -37,7 +37,7 @@ function on_start() {
         pop(items)
     }
     pop_time = clock() - start
-    println("Pop " + to_string(COUNo_string(pop_time) + "s")
+    println("Pop " + to_string(COUNT) + " items: " + to_string(pop_time) + "s")
 
     // Benchmark insert at beginning (slow operation)
     items = []

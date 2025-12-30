@@ -1,18 +1,4 @@
-unctions
-    OP_CALL,            // Call function (8-bit arg count)
-    OP_RETURN,          // Return from function
-    OP_CLOSURE,         // Create closure (8-bit constant index)
-    OP_CLOSE_UPVALUE,   // Close upvalue at top of stack
-
-    // Objects
-    OP_GET_PROPERTY,    // Get property (8-bit constant index for name)
-    OP_SET_PROPERTY,    // Set property (8-bit constant index for name)
-    OP_STRUCT,          // Create struct instance (8-bit constant index)
-    OP_METHOD,          // Define method (8-bit constant index for name)
-    OP_INVOKE,          // Optimized method call (8-bit name index, 8-bit arg count)
-
-    // Collections
-    OP_LIST,            // Create list (8-bit#ifndef PH_OPCODES_H
+#ifndef PH_OPCODES_H
 #define PH_OPCODES_H
 
 #include "core/common.h"
@@ -43,12 +29,7 @@ typedef enum {
 
     // Arithmetic
     OP_ADD,             // a + b
-    OP_SUBTRACT,        // a/ Unconditional jump (16-bit offset)
-    OP_JUMP_IF_FALSE,   // Jump if top is falsey (16-bit offset)
-    OP_JUMP_IF_TRUE,    // Jump if top is truthy (16-bit offset)
-    OP_LOOP,            // Loop backward (16-bit offset)
-
-    // F - b
+    OP_SUBTRACT,        // a - b
     OP_MULTIPLY,        // a * b
     OP_DIVIDE,          // a / b
     OP_MODULO,          // a % b
@@ -66,7 +47,26 @@ typedef enum {
     OP_NOT,             // !a
 
     // Control flow
-    OP_JUMP,            / element count)
+    OP_JUMP,            // Unconditional jump (16-bit offset)
+    OP_JUMP_IF_FALSE,   // Jump if top is falsey (16-bit offset)
+    OP_JUMP_IF_TRUE,    // Jump if top is truthy (16-bit offset)
+    OP_LOOP,            // Loop backward (16-bit offset)
+
+    // Functions
+    OP_CALL,            // Call function (8-bit arg count)
+    OP_RETURN,          // Return from function
+    OP_CLOSURE,         // Create closure (8-bit constant index)
+    OP_CLOSE_UPVALUE,   // Close upvalue at top of stack
+
+    // Objects
+    OP_GET_PROPERTY,    // Get property (8-bit constant index for name)
+    OP_SET_PROPERTY,    // Set property (8-bit constant index for name)
+    OP_STRUCT,          // Create struct instance (8-bit constant index)
+    OP_METHOD,          // Define method (8-bit constant index for name)
+    OP_INVOKE,          // Optimized method call (8-bit name index, 8-bit arg count)
+
+    // Collections
+    OP_LIST,            // Create list (8-bit element count)
     OP_INDEX_GET,       // Get element at index (list[i])
     OP_INDEX_SET,       // Set element at index (list[i] = v)
 

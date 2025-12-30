@@ -1,37 +1,31 @@
+#ifndef PH_CODEGEN_H
+#define PH_CODEGEN_H
 
-// Get an error by index
-Error* codegen_get_error(Codegen* codegen, int index);
+#include "core/common.h"
+#include "core/error.h"
+#include "compiler/ast.h"
+#include "vm/chunk.h"
+#include "vm/object.h"
 
-// Print all errors
-void codegen_print_errors(Codegen* codegen, FILE* out);
+// Maximum number of local variables per function
+#define UINT8_COUNT 256
 
-#endif // PH_CODEGEN_H
-messages
-    const char* source_file;
-    const char* source;             // Source code for pretty error printing
-} Codegen;
+// Maximum number of upvalues per closure
+#define MAX_UPVALUES 256
 
-// ============================================================================
-// Codegen API
-// ============================================================================
+// Maximum number of errors before stopping compilation
+#define CODEGEN_MAX_ERRORS 32
 
-// Initialize the codegen context
-void codegen_init(Codegen* codegen, const char* source_file, const char* source);
+// Local variable in the current scope
+typedef struct {
+    const char* name;       // Pointer into source (not owned)
+    int length;             // Name length
+    int depth;              // Scope depth where declared
+    bool is_captured;       // Captured by a closure?
+} Local;
 
-// Free codegen resources
-void codegen_free(Codegen* codegen);
-
-// Compile a list of top-level statements
-// Returns the compiled function (script), or NULL on error
-ObjFunction* codegen_compile(Codegen* codegen, Stmt** statements, int count);
-
-// ============================================================================
-// Error Reporting
-// ============================================================================
-
-// Get the number of errors
-int codegen_error_count(Codegen* codegen);
-
+// Upvalue tracking
+typedef struct {
     uint8_t index;          // Index in enclosing function's locals or upvalues
     bool is_local;          // true = local in enclosing, false = upvalue in enclosing
 } Upvalue;
@@ -74,31 +68,36 @@ typedef struct {
     bool had_error;
     bool panic_mode;
 
-    // Source info for error #ifndef PH_CODEGEN_H
-#define PH_CODEGEN_H
+    // Source info for error messages
+    const char* source_file;
+    const char* source;             // Source code for pretty error printing
+} Codegen;
 
-#include "core/common.h"
-#include "core/error.h"
-#include "compiler/ast.h"
-#include "vm/chunk.h"
-#include "vm/object.h"
+// ============================================================================
+// Codegen API
+// ============================================================================
 
-// Maximum number of local variables per function
-#define UINT8_COUNT 256
+// Initialize the codegen context
+void codegen_init(Codegen* codegen, const char* source_file, const char* source);
 
-// Maximum number of upvalues per closure
-#define MAX_UPVALUES 256
+// Free codegen resources
+void codegen_free(Codegen* codegen);
 
-// Maximum number of errors before stopping compilation
-#define CODEGEN_MAX_ERRORS 32
+// Compile a list of top-level statements
+// Returns the compiled function (script), or NULL on error
+ObjFunction* codegen_compile(Codegen* codegen, Stmt** statements, int count);
 
-// Local variable in the current scope
-typedef struct {
-    const char* name;       // Pointer into source (not owned)
-    int length;             // Name length
-    int depth;              // Scope depth where declared
-    bool is_captured;       // Captured by a closure?
-} Local;
+// ============================================================================
+// Error Reporting
+// ============================================================================
 
-// Upvalue tracking
-typedef struct {
+// Get the number of errors
+int codegen_error_count(Codegen* codegen);
+
+// Get an error by index
+Error* codegen_get_error(Codegen* codegen, int index);
+
+// Print all errors
+void codegen_print_errors(Codegen* codegen, FILE* out);
+
+#endif // PH_CODEGEN_H

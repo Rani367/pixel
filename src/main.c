@@ -1,4 +1,84 @@
-;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core/common.h"
+#include "core/arena.h"
+#include "compiler/parser.h"
+#include "compiler/analyzer.h"
+#include "compiler/codegen.h"
+#include "vm/vm.h"
+#include "runtime/stdlib.h"
+#include "engine/engine.h"
+#include "engine/engine_natives.h"
+#include "pal/pal.h"
+
+#define VERSION "1.0.0"
+
+// ============================================================================
+// File Reading
+// ============================================================================
+
+static char* read_file(const char* path) {
+    FILE* file = fopen(path, "rb");
+    if (!file) {
+        fprintf(stderr, "Error: Could not open file '%s'\n", path);
+        return NULL;
+    }
+
+    // Get file size
+    fseek(file, 0L, SEEK_END);
+    size_t file_size = (size_t)ftell(file);
+    rewind(file);
+
+    // Allocate buffer
+    char* buffer = (char*)malloc(file_size + 1);
+    if (!buffer) {
+        fprintf(stderr, "Error: Not enough memory to read '%s'\n", path);
+        fclose(file);
+        return NULL;
+    }
+
+    // Read file
+    size_t bytes_read = fread(buffer, 1, file_size, file);
+    if (bytes_read < file_size) {
+        fprintf(stderr, "Error: Could not read file '%s'\n", path);
+        free(buffer);
+        fclose(file);
+        return NULL;
+    }
+
+    buffer[bytes_read] = '\0';
+    fclose(file);
+    return buffer;
+}
+
+// ============================================================================
+// Builtin Declarations for Analyzer
+// ============================================================================
+
+static void declare_builtins(Analyzer* analyzer) {
+    // Standard library functions
+    analyzer_declare_global(analyzer, "print");
+    analyzer_declare_global(analyzer, "println");
+    analyzer_declare_global(analyzer, "type");
+    analyzer_declare_global(analyzer, "to_string");
+    analyzer_declare_global(analyzer, "to_number");
+    analyzer_declare_global(analyzer, "abs");
+    analyzer_declare_global(analyzer, "floor");
+    analyzer_declare_global(analyzer, "ceil");
+    analyzer_declare_global(analyzer, "round");
+    analyzer_declare_global(analyzer, "min");
+    analyzer_declare_global(analyzer, "max");
+    analyzer_declare_global(analyzer, "clamp");
+    analyzer_declare_global(analyzer, "sqrt");
+    analyzer_declare_global(analyzer, "pow");
+    analyzer_declare_global(analyzer, "sin");
+    analyzer_declare_global(analyzer, "cos");
+    analyzer_declare_global(analyzer, "tan");
+    analyzer_declare_global(analyzer, "atan2");
+    analyzer_declare_global(analyzer, "random");
+    analyzer_declare_global(analyzer, "random_range");
     analyzer_declare_global(analyzer, "random_int");
     analyzer_declare_global(analyzer, "len");
     analyzer_declare_global(analyzer, "push");
@@ -274,84 +354,3 @@ int main(int argc, char* argv[]) {
     print_usage(argv[0]);
     return 1;
 }
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "core/common.h"
-#include "core/arena.h"
-#include "compiler/parser.h"
-#include "compiler/analyzer.h"
-#include "compiler/codegen.h"
-#include "vm/vm.h"
-#include "runtime/stdlib.h"
-#include "engine/engine.h"
-#include "engine/engine_natives.h"
-#include "pal/pal.h"
-
-#define VERSION "1.0.0"
-
-// ============================================================================
-// File Reading
-// ============================================================================
-
-static char* read_file(const char* path) {
-    FILE* file = fopen(path, "rb");
-    if (!file) {
-        fprintf(stderr, "Error: Could not open file '%s'\n", path);
-        return NULL;
-    }
-
-    // Get file size
-    fseek(file, 0L, SEEK_END);
-    size_t file_size = (size_t)ftell(file);
-    rewind(file);
-
-    // Allocate buffer
-    char* buffer = (char*)malloc(file_size + 1);
-    if (!buffer) {
-        fprintf(stderr, "Error: Not enough memory to read '%s'\n", path);
-        fclose(file);
-        return NULL;
-    }
-
-    // Read file
-    size_t bytes_read = fread(buffer, 1, file_size, file);
-    if (bytes_read < file_size) {
-        fprintf(stderr, "Error: Could not read file '%s'\n", path);
-        free(buffer);
-        fclose(file);
-        return NULL;
-    }
-
-    buffer[bytes_read] = '\0';
-    fclose(file);
-    return buffer;
-}
-
-// ============================================================================
-// Builtin Declarations for Analyzer
-// ============================================================================
-
-static void declare_builtins(Analyzer* analyzer) {
-    // Standard library functions
-    analyzer_declare_global(analyzer, "print");
-    analyzer_declare_global(analyzer, "println");
-    analyzer_declare_global(analyzer, "type");
-    analyzer_declare_global(analyzer, "to_string");
-    analyzer_declare_global(analyzer, "to_number");
-    analyzer_declare_global(analyzer, "abs");
-    analyzer_declare_global(analyzer, "floor");
-    analyzer_declare_global(analyzer, "ceil");
-    analyzer_declare_global(analyzer, "round");
-    analyzer_declare_global(analyzer, "min");
-    analyzer_declare_global(analyzer, "max");
-    analyzer_declare_global(analyzer, "clamp");
-    analyzer_declare_global(analyzer, "sqrt");
-    analyzer_declare_global(analyzer, "pow");
-    analyzer_declare_global(analyzer, "sin");
-    analyzer_declare_global(analyzer, "cos");
-    analyzer_declare_global(analyzer, "tan");
-    analyzer_declare_global(analyzer, "atan2");
-    analyzer_declare_global(analyzer, "random");
-    analyzer_declare_global(analyzer, "random_range")

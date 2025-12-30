@@ -1,16 +1,14 @@
-s';
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
 
 interface Props {
   title?: string;
   description?: string;
 }
 
-co}
-</style>
----
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import '../styles/global.csnst {
+const {
   title = 'Pixel',
   description = 'A beginner-friendly programming language for making 2D games'
 } = Astro.props;
@@ -46,4 +44,5 @@ import '../styles/global.csnst {
 <style>
   body {
     font-family: 'Inter', system-ui, sans-serif;
-  
+  }
+</style>
