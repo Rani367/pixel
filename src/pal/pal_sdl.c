@@ -635,7 +635,7 @@ struct PalFont {
     bool is_default;
 };
 
-// System font paths to try for default font
+// System font paths to try when loading the default font
 static const char* system_font_paths[] = {
 #ifdef __APPLE__
     "/System/Library/Fonts/Helvetica.ttc",
