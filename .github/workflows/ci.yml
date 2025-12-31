@@ -61,11 +61,11 @@ jobs:
           cd build
           COVERAGE=$(lcov --summary coverage.info 2>&1 | grep "lines" | sed 's/.*: *\([0-9.]*\)%.*/\1/')
           echo "Line coverage: $COVERAGE%"
-          # For now, just report coverage. Enable threshold check when we reach 100%
-          # if [ $(echo "$COVERAGE < 100" | bc -l) -eq 1 ]; then
-          #   echo "ERROR: Coverage below 100%"
-          #   exit 1
-          # fi
+          if [ $(echo "$COVERAGE < 100" | bc -l) -eq 1 ]; then
+            echo "ERROR: Coverage is $COVERAGE%, but 100% is required"
+            echo "New code must have tests, or use LCOV_EXCL markers for untestable code"
+            exit 1
+          fi
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
