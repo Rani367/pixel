@@ -8,7 +8,13 @@ keywords: ["install Pixel", "Pixel download", "game engine setup", "programming 
 
 ## Quick Install (Recommended)
 
-Clone the repository and run the install script:
+Run this single command to install Pixel and all dependencies:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Rani367/pixel/main/scripts/install.sh | bash
+```
+
+Or clone and run locally:
 
 ```bash
 git clone https://github.com/Rani367/pixel.git
@@ -16,11 +22,11 @@ cd pixel
 ./scripts/install.sh
 ```
 
-This builds Pixel and installs it to `~/.local/bin`. For system-wide installation:
-
-```bash
-sudo ./scripts/install.sh
-```
+The installer automatically:
+- Installs Homebrew (macOS) or uses apt/dnf/pacman (Linux)
+- Installs CMake and SDL2 with all extensions
+- Builds Pixel with graphics support
+- Adds `pixel` to your PATH
 
 After installation:
 ```bash
