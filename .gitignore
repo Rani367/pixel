@@ -58,3 +58,9 @@ website/.astro/
 
 # Claude Code instructions
 CLAUDE.md
+
+# Playwright MCP screenshots
+.playwright-mcp/
+
+# Node.js
+node_modules/
