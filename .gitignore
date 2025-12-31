@@ -55,3 +55,6 @@ CTestTestfile.cmake
 # Website build artifacts
 website/dist/
 website/.astro/
+
+# Claude Code instructions
+CLAUDE.md
