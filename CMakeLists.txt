@@ -180,8 +180,9 @@ if(ENABLE_COVERAGE AND NOT EMSCRIPTEN)
         add_custom_target(coverage
             COMMAND ${LCOV} --zerocounters --directory . --ignore-errors unused,unsupported
             COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-            COMMAND ${LCOV} --capture --directory . --output-file coverage.info
-                    --exclude '*/tests/*' --exclude '*/build/*'
+            COMMAND ${LCOV} --capture --directory . --output-file coverage_raw.info
+                    --ignore-errors unused,unsupported
+            COMMAND ${LCOV} --extract coverage_raw.info '*/src/*' --output-file coverage.info
                     --ignore-errors unused,unsupported
             COMMAND ${GENHTML} coverage.info --output-directory coverage_report
                     --ignore-errors unused,unsupported
