@@ -156,21 +156,21 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
     window.addEventListener('resize', updateZoom);
     updateZoom();
 
-    // Interactive 3D Pixel Background
+    // STUNNING 3D PARTICLE WAVE BACKGROUND
     (function() {
       const canvas = document.getElementById('pixel-bg');
       if (!canvas || typeof THREE === 'undefined') return;
 
       // Scene setup
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.z = 30;
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 50;
+      camera.position.y = 15;
 
       const renderer = new THREE.WebGLRenderer({
         canvas,
         alpha: true,
-        antialias: true,
-        powerPreference: 'high-performance'
+        antialias: true
       });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -178,94 +178,62 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
       // Check dark mode
       const isDark = () => document.documentElement.classList.contains('dark');
 
-      // Pixel cube colors - cyan accent theme
-      const colors = [
-        0x00d4ff, // Primary cyan
-        0x00b8e6, // Darker cyan
-        0x00f0ff, // Lighter cyan
-        0x7dd3fc, // Sky blue
-        0x22d3ee, // Teal
-        0x06b6d4, // Cyan 500
-      ];
+      // ============ PARTICLE GRID WAVE ============
+      const GRID_SIZE = 80;
+      const SPACING = 1.2;
+      const particles = [];
+      const particleGeometry = new THREE.SphereGeometry(0.15, 8, 8);
 
-      // Create pixel cubes
-      const cubes = [];
-      const cubeCount = 80;
+      // Create gradient colors: cyan -> purple -> pink
+      function getGradientColor(x, z, time) {
+        const normalizedX = (x + GRID_SIZE * SPACING / 2) / (GRID_SIZE * SPACING);
+        const wave = Math.sin(time * 0.5 + normalizedX * Math.PI * 2) * 0.5 + 0.5;
 
-      for (let i = 0; i < cubeCount; i++) {
-        const size = Math.random() * 0.8 + 0.3;
-        const geometry = new THREE.BoxGeometry(size, size, size);
+        // Cyan to purple to pink gradient
+        const r = Math.floor(lerp(0, 255, wave * 0.8));
+        const g = Math.floor(lerp(212, 50, wave));
+        const b = Math.floor(lerp(255, 255, 1));
 
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const material = new THREE.MeshBasicMaterial({
-          color,
-          transparent: true,
-          opacity: Math.random() * 0.4 + 0.1
-        });
-
-        const cube = new THREE.Mesh(geometry, material);
-
-        // Random position in a wide field
-        cube.position.x = (Math.random() - 0.5) * 60;
-        cube.position.y = (Math.random() - 0.5) * 40;
-        cube.position.z = (Math.random() - 0.5) * 30 - 10;
-
-        // Random rotation
-        cube.rotation.x = Math.random() * Math.PI;
-        cube.rotation.y = Math.random() * Math.PI;
-
-        // Store velocity for animation
-        cube.userData = {
-          rotationSpeed: {
-            x: (Math.random() - 0.5) * 0.01,
-            y: (Math.random() - 0.5) * 0.01,
-            z: (Math.random() - 0.5) * 0.005
-          },
-          floatSpeed: Math.random() * 0.5 + 0.2,
-          floatOffset: Math.random() * Math.PI * 2,
-          originalY: cube.position.y
-        };
-
-        scene.add(cube);
-        cubes.push(cube);
+        return new THREE.Color(`rgb(${r}, ${g}, ${b})`);
       }
 
-      // Add some wireframe cubes for extra depth
-      for (let i = 0; i < 20; i++) {
-        const size = Math.random() * 1.5 + 0.5;
-        const geometry = new THREE.BoxGeometry(size, size, size);
-        const edges = new THREE.EdgesGeometry(geometry);
-        const material = new THREE.LineBasicMaterial({
-          color: 0x00d4ff,
-          transparent: true,
-          opacity: Math.random() * 0.2 + 0.05
-        });
-
-        const wireframe = new THREE.LineSegments(edges, material);
-
-        wireframe.position.x = (Math.random() - 0.5) * 70;
-        wireframe.position.y = (Math.random() - 0.5) * 50;
-        wireframe.position.z = (Math.random() - 0.5) * 20 - 15;
-
-        wireframe.rotation.x = Math.random() * Math.PI;
-        wireframe.rotation.y = Math.random() * Math.PI;
-
-        wireframe.userData = {
-          rotationSpeed: {
-            x: (Math.random() - 0.5) * 0.008,
-            y: (Math.random() - 0.5) * 0.008,
-            z: (Math.random() - 0.5) * 0.004
-          },
-          floatSpeed: Math.random() * 0.3 + 0.1,
-          floatOffset: Math.random() * Math.PI * 2,
-          originalY: wireframe.position.y
-        };
-
-        scene.add(wireframe);
-        cubes.push(wireframe);
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
       }
 
-      // Mouse tracking for parallax
+      // Create particle grid
+      const particleGroup = new THREE.Group();
+      for (let i = 0; i < GRID_SIZE; i++) {
+        for (let j = 0; j < GRID_SIZE; j++) {
+          const material = new THREE.MeshBasicMaterial({
+            color: 0x00d4ff,
+            transparent: true,
+            opacity: 0.8
+          });
+
+          const particle = new THREE.Mesh(particleGeometry, material);
+
+          particle.position.x = (i - GRID_SIZE / 2) * SPACING;
+          particle.position.z = (j - GRID_SIZE / 2) * SPACING;
+          particle.position.y = 0;
+
+          particle.userData = {
+            originalX: particle.position.x,
+            originalZ: particle.position.z,
+            gridI: i,
+            gridJ: j
+          };
+
+          particleGroup.add(particle);
+          particles.push(particle);
+        }
+      }
+
+      particleGroup.rotation.x = -0.5;
+      particleGroup.position.y = -20;
+      scene.add(particleGroup);
+
+      // ============ MOUSE INTERACTION ============
       let mouseX = 0;
       let mouseY = 0;
       let targetMouseX = 0;
@@ -276,33 +244,65 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
         targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
       });
 
-      // Animation loop
+      // ============ ANIMATION LOOP ============
       let time = 0;
+
       function animate() {
         requestAnimationFrame(animate);
-        time += 0.01;
+        time += 0.016;
 
         // Smooth mouse following
         mouseX += (targetMouseX - mouseX) * 0.05;
         mouseY += (targetMouseY - mouseY) * 0.05;
 
-        // Animate cubes
-        cubes.forEach((cube) => {
-          const data = cube.userData;
+        // Animate particle wave
+        const dark = isDark();
+        particles.forEach((particle, idx) => {
+          const data = particle.userData;
+          const i = data.gridI;
+          const j = data.gridJ;
 
-          // Rotation
-          cube.rotation.x += data.rotationSpeed.x;
-          cube.rotation.y += data.rotationSpeed.y;
-          cube.rotation.z += data.rotationSpeed.z;
+          // Complex wave pattern
+          const waveX = Math.sin(time * 0.8 + i * 0.15) * 2;
+          const waveZ = Math.cos(time * 0.6 + j * 0.15) * 2;
+          const waveXZ = Math.sin(time * 0.4 + (i + j) * 0.1) * 1.5;
 
-          // Floating motion
-          cube.position.y = data.originalY + Math.sin(time * data.floatSpeed + data.floatOffset) * 0.5;
+          // Mouse influence on nearby particles
+          const distToCenter = Math.sqrt(
+            Math.pow(data.originalX - mouseX * 30, 2) +
+            Math.pow(data.originalZ - mouseY * 20, 2)
+          );
+          const mouseInfluence = Math.max(0, 1 - distToCenter / 25) * 5;
+
+          particle.position.y = waveX + waveZ + waveXZ + mouseInfluence;
+
+          // Color based on height
+          const heightNorm = (particle.position.y + 5) / 15;
+          const r = Math.floor(lerp(0, 200, heightNorm));
+          const g = Math.floor(lerp(212, 100, heightNorm));
+          const b = 255;
+          particle.material.color.setRGB(r/255, g/255, b/255);
+
+          // Opacity based on position and theme
+          const edgeFade = Math.min(
+            Math.min(i, GRID_SIZE - i) / 10,
+            Math.min(j, GRID_SIZE - j) / 10,
+            1
+          );
+          particle.material.opacity = (0.4 + heightNorm * 0.4) * edgeFade * (dark ? 1 : 0.6);
+
+          // Scale based on height (pulsing effect)
+          const scale = 1 + heightNorm * 0.5;
+          particle.scale.setScalar(scale);
         });
 
-        // Camera parallax based on mouse
-        camera.position.x += (mouseX * 3 - camera.position.x) * 0.02;
-        camera.position.y += (-mouseY * 2 - camera.position.y) * 0.02;
-        camera.lookAt(scene.position);
+        // Camera movement
+        camera.position.x += (mouseX * 8 - camera.position.x) * 0.02;
+        camera.position.y += (15 - mouseY * 5 - camera.position.y) * 0.02;
+        camera.lookAt(0, 0, 0);
+
+        // Gentle auto-rotation of particle grid
+        particleGroup.rotation.z = Math.sin(time * 0.1) * 0.05;
 
         renderer.render(scene, camera);
       }
@@ -314,27 +314,14 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
-      // Update colors based on theme
-      const updateTheme = () => {
-        const dark = isDark();
-        cubes.forEach((cube) => {
-          if (cube.material) {
-            // Slightly adjust opacity based on theme
-            const baseOpacity = cube.material.opacity;
-            cube.material.opacity = dark ? baseOpacity : baseOpacity * 0.7;
-          }
-        });
-      };
-
-      // Watch for theme changes
-      const observer = new MutationObserver(updateTheme);
-      observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      });
-
-      updateTheme();
       animate();
     })();
   </script>
+
+  <style>
+    /* Add glow effect to canvas */
+    #pixel-bg {
+      filter: blur(0px);
+    }
+  </style>
 </BaseLayout>
