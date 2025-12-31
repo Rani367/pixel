@@ -181,6 +181,7 @@ if(ENABLE_COVERAGE AND NOT EMSCRIPTEN)
             COMMAND ${LCOV} --zerocounters --directory . --ignore-errors unused,unsupported
             COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
             COMMAND ${LCOV} --capture --directory . --output-file coverage_raw.info
+                    --rc geninfo_unexecuted_blocks=1
                     --ignore-errors unused,unsupported
             COMMAND ${LCOV} --extract coverage_raw.info '*/src/*' --output-file coverage.info
                     --ignore-errors unused,unsupported
