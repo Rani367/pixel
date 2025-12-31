@@ -6,8 +6,11 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
 ---
 
 <BaseLayout description={description} keywords={keywords}>
+  <!-- 3D Background Canvas (decorative) -->
+  <canvas id="pixel-bg" class="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true"></canvas>
+
   <!-- Hero Section -->
-  <section class="py-20 md:py-32">
+  <section class="py-20 md:py-32 relative">
     <div class="max-w-6xl mx-auto px-4 text-center">
       <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">
         Pixel: 2D Game Development Made Simple
@@ -125,7 +128,11 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
     </div>
   </section>
 
-  <script>
+  <!-- Three.js for 3D background -->
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script is:inline>
+    // Code zoom scroll effect
     const codeZoom = document.getElementById('code-zoom');
 
     function updateZoom() {
@@ -134,7 +141,6 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
       const rect = codeZoom.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
-      // Calculate progress: 0 when element enters viewport, 1 when it reaches top
       const startPoint = viewportHeight;
       const endPoint = viewportHeight * 0.3;
       const currentPoint = rect.top;
@@ -142,14 +148,193 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
       let progress = (startPoint - currentPoint) / (startPoint - endPoint);
       progress = Math.max(0, Math.min(1, progress));
 
-      // Scale from 0.75 to 1.25 (25% bigger than before)
       const scale = 0.75 + (progress * 0.5);
-
       codeZoom.style.transform = `scale(${scale})`;
     }
 
     window.addEventListener('scroll', updateZoom, { passive: true });
     window.addEventListener('resize', updateZoom);
     updateZoom();
+
+    // Interactive 3D Pixel Background
+    (function() {
+      const canvas = document.getElementById('pixel-bg');
+      if (!canvas || typeof THREE === 'undefined') return;
+
+      // Scene setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 30;
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance'
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Check dark mode
+      const isDark = () => document.documentElement.classList.contains('dark');
+
+      // Pixel cube colors - cyan accent theme
+      const colors = [
+        0x00d4ff, // Primary cyan
+        0x00b8e6, // Darker cyan
+        0x00f0ff, // Lighter cyan
+        0x7dd3fc, // Sky blue
+        0x22d3ee, // Teal
+        0x06b6d4, // Cyan 500
+      ];
+
+      // Create pixel cubes
+      const cubes = [];
+      const cubeCount = 80;
+
+      for (let i = 0; i < cubeCount; i++) {
+        const size = Math.random() * 0.8 + 0.3;
+        const geometry = new THREE.BoxGeometry(size, size, size);
+
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const material = new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity: Math.random() * 0.4 + 0.1
+        });
+
+        const cube = new THREE.Mesh(geometry, material);
+
+        // Random position in a wide field
+        cube.position.x = (Math.random() - 0.5) * 60;
+        cube.position.y = (Math.random() - 0.5) * 40;
+        cube.position.z = (Math.random() - 0.5) * 30 - 10;
+
+        // Random rotation
+        cube.rotation.x = Math.random() * Math.PI;
+        cube.rotation.y = Math.random() * Math.PI;
+
+        // Store velocity for animation
+        cube.userData = {
+          rotationSpeed: {
+            x: (Math.random() - 0.5) * 0.01,
+            y: (Math.random() - 0.5) * 0.01,
+            z: (Math.random() - 0.5) * 0.005
+          },
+          floatSpeed: Math.random() * 0.5 + 0.2,
+          floatOffset: Math.random() * Math.PI * 2,
+          originalY: cube.position.y
+        };
+
+        scene.add(cube);
+        cubes.push(cube);
+      }
+
+      // Add some wireframe cubes for extra depth
+      for (let i = 0; i < 20; i++) {
+        const size = Math.random() * 1.5 + 0.5;
+        const geometry = new THREE.BoxGeometry(size, size, size);
+        const edges = new THREE.EdgesGeometry(geometry);
+        const material = new THREE.LineBasicMaterial({
+          color: 0x00d4ff,
+          transparent: true,
+          opacity: Math.random() * 0.2 + 0.05
+        });
+
+        const wireframe = new THREE.LineSegments(edges, material);
+
+        wireframe.position.x = (Math.random() - 0.5) * 70;
+        wireframe.position.y = (Math.random() - 0.5) * 50;
+        wireframe.position.z = (Math.random() - 0.5) * 20 - 15;
+
+        wireframe.rotation.x = Math.random() * Math.PI;
+        wireframe.rotation.y = Math.random() * Math.PI;
+
+        wireframe.userData = {
+          rotationSpeed: {
+            x: (Math.random() - 0.5) * 0.008,
+            y: (Math.random() - 0.5) * 0.008,
+            z: (Math.random() - 0.5) * 0.004
+          },
+          floatSpeed: Math.random() * 0.3 + 0.1,
+          floatOffset: Math.random() * Math.PI * 2,
+          originalY: wireframe.position.y
+        };
+
+        scene.add(wireframe);
+        cubes.push(wireframe);
+      }
+
+      // Mouse tracking for parallax
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetMouseX = 0;
+      let targetMouseY = 0;
+
+      document.addEventListener('mousemove', (e) => {
+        targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      // Animation loop
+      let time = 0;
+      function animate() {
+        requestAnimationFrame(animate);
+        time += 0.01;
+
+        // Smooth mouse following
+        mouseX += (targetMouseX - mouseX) * 0.05;
+        mouseY += (targetMouseY - mouseY) * 0.05;
+
+        // Animate cubes
+        cubes.forEach((cube) => {
+          const data = cube.userData;
+
+          // Rotation
+          cube.rotation.x += data.rotationSpeed.x;
+          cube.rotation.y += data.rotationSpeed.y;
+          cube.rotation.z += data.rotationSpeed.z;
+
+          // Floating motion
+          cube.position.y = data.originalY + Math.sin(time * data.floatSpeed + data.floatOffset) * 0.5;
+        });
+
+        // Camera parallax based on mouse
+        camera.position.x += (mouseX * 3 - camera.position.x) * 0.02;
+        camera.position.y += (-mouseY * 2 - camera.position.y) * 0.02;
+        camera.lookAt(scene.position);
+
+        renderer.render(scene, camera);
+      }
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Update colors based on theme
+      const updateTheme = () => {
+        const dark = isDark();
+        cubes.forEach((cube) => {
+          if (cube.material) {
+            // Slightly adjust opacity based on theme
+            const baseOpacity = cube.material.opacity;
+            cube.material.opacity = dark ? baseOpacity : baseOpacity * 0.7;
+          }
+        });
+      };
+
+      // Watch for theme changes
+      const observer = new MutationObserver(updateTheme);
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+
+      updateTheme();
+      animate();
+    })();
   </script>
 </BaseLayout>

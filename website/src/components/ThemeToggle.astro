@@ -6,6 +6,7 @@
   type="button"
   class="p-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
   aria-label="Toggle dark mode"
+  aria-pressed="false"
 >
   <!-- Sun icon (shown in dark mode) -->
   <svg class="hidden dark:block w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -20,8 +21,19 @@
 <script>
   const toggle = document.getElementById('theme-toggle');
 
+  // Update aria-pressed state on load
+  function updateAriaState() {
+    const isDark = document.documentElement.classList.contains('dark');
+    toggle?.setAttribute('aria-pressed', isDark.toString());
+    toggle?.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+
+  // Initial state
+  updateAriaState();
+
   toggle?.addEventListener('click', () => {
     const isDark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    updateAriaState();
   });
 </script>

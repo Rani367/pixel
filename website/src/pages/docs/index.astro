@@ -3,38 +3,110 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import fs from 'node:fs';
 import path from 'node:path';
 
+// Parse YAML frontmatter
+function parseFrontmatter(content: string): { frontmatter: Record<string, string | string[]>; body: string } {
+  const frontmatterRegex = /^---\n([\s\S]*?)\n---\n/;
+  const match = content.match(frontmatterRegex);
+
+  if (!match) {
+    return { frontmatter: {}, body: content };
+  }
+
+  const frontmatter: Record<string, string | string[]> = {};
+  const yamlLines = match[1].split('\n');
+
+  for (const line of yamlLines) {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex > 0) {
+      const key = line.slice(0, colonIndex).trim();
+      let value = line.slice(colonIndex + 1).trim();
+      // Remove quotes if present
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      // Handle arrays (simple case)
+      if (value.startsWith('[') && value.endsWith(']')) {
+        frontmatter[key] = value.slice(1, -1).split(',').map(s => s.trim().replace(/['"]/g, ''));
+      } else {
+        frontmatter[key] = value;
+      }
+    }
+  }
+
+  return { frontmatter, body: content.slice(match[0].length) };
+}
+
 // Read the main docs index
 const docsPath = path.join(process.cwd(), '..', 'docs', 'index.md');
 let content = '';
 try {
-  content = fs.readFileSync(docsPath, 'utf-8');
+  const rawContent = fs.readFileSync(docsPath, 'utf-8');
+  const { body } = parseFrontmatter(rawContent);
+  content = body;
 } catch (e) {
   content = '# Documentation\n\nWelcome to Pixel documentation.';
 }
 
-// Simple markdown to HTML (basic conversion)
+// Simple markdown to HTML (improved version)
 function parseMarkdown(md: string): string {
-  return md
+  // First, handle tables
+  let result = md.replace(/\n\|(.+)\|\n\|[-\s|]+\|\n((?:\|.+\|\n?)+)/g, (match, header, body) => {
+    const headers = header.split('|').map((h: string) => h.trim()).filter((h: string) => h);
+    const rows = body.trim().split('\n').map((row: string) => {
+      return row.split('|').map((cell: string) => cell.trim()).filter((cell: string) => cell !== '');
+    });
+
+    let table = '<div class="overflow-x-auto my-4"><table class="w-full text-sm border-collapse">';
+    table += '<thead><tr class="border-b border-zinc-300 dark:border-zinc-700">';
+    headers.forEach((h: string) => {
+      table += `<th class="text-left py-2 px-3 font-semibold">${h}</th>`;
+    });
+    table += '</tr></thead><tbody>';
+    rows.forEach((row: string[]) => {
+      table += '<tr class="border-b border-zinc-200 dark:border-zinc-800">';
+      row.forEach((cell: string) => {
+        table += `<td class="py-2 px-3">${cell}</td>`;
+      });
+      table += '</tr>';
+    });
+    table += '</tbody></table></div>';
+    return table;
+  });
+
+  return result
+    // Code blocks (must be before other replacements, escape HTML)
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+      return `<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+    })
     // Headers
+    .replace(/^#### (.*$)/gim, '<h4 class="text-base font-semibold mt-5 mb-2">$1</h4>')
     .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-6 mb-2">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-8 mb-3">$1</h2>')
+    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">$1</h2>')
     .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mb-6">$1</h1>')
     // Bold and italic
     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Code blocks
-    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>$2</code></pre>')
     // Inline code
-    .replace(/`([^`]+)`/g, '<code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm">$1</code>')
+    .replace(/`([^`]+)`/g, '<code class="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
     // Links
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[--color-accent] hover:underline">$1</a>')
-    // Lists
-    .replace(/^\- (.*$)/gim, '<li class="ml-4">$1</li>')
-    // Paragraphs
-    .replace(/\n\n/g, '</p><p class="mb-4">')
-    // Wrap in paragraph
-    ;
+    // Unordered lists
+    .replace(/^\- (.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+    // Numbered lists
+    .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal">$1</li>')
+    // Horizontal rule
+    .replace(/^---$/gim, '<hr class="my-8 border-zinc-200 dark:border-zinc-800">')
+    // Paragraphs (improved approach)
+    .split('\n\n')
+    .map(p => {
+      const trimmed = p.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('<')) return trimmed;
+      if (trimmed.startsWith('-') || trimmed.match(/^\d+\./)) return `<ul class="my-4 space-y-1">${trimmed}</ul>`;
+      return `<p class="mb-4 leading-relaxed">${trimmed}</p>`;
+    })
+    .join('\n');
 }
 
 const html = parseMarkdown(content);
@@ -71,6 +143,9 @@ const sidebar = [
     <button
       id="sidebar-toggle"
       class="md:hidden mb-4 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-medium flex items-center gap-2"
+      aria-expanded="false"
+      aria-controls="sidebar"
+      aria-label="Toggle navigation menu"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -125,8 +200,9 @@ const sidebar = [
     const sidebar = document.getElementById('sidebar');
 
     toggle?.addEventListener('click', () => {
-      sidebar?.classList.toggle('hidden');
+      const isExpanded = sidebar?.classList.toggle('hidden') === false;
       sidebar?.classList.toggle('block');
+      toggle?.setAttribute('aria-expanded', isExpanded.toString());
     });
   </script>
 </BaseLayout>
