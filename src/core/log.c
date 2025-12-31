@@ -57,3 +57,11 @@ void log_write(LogLevel level, const char* file, int line, const char* fmt, ...)
     fflush(out);
 }
 #pragma GCC diagnostic pop
+
+// TEST: Untested function to verify dynamic badge
+int untested_badge_test(int x) {
+    if (x > 10) return x * 2;
+    if (x > 5) return x * 3;
+    if (x > 0) return x * 4;
+    return 0;
+}
