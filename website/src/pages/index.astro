@@ -37,13 +37,13 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
       <!-- Code Example -->
       <div id="code-zoom" class="max-w-2xl mx-auto text-left" style="transform-origin: center top; transition: transform 0.1s ease-out;">
         <div class="bg-zinc-900 rounded-lg overflow-hidden shadow-2xl">
-          <div class="flex items-center gap-2 px-4 py-3 bg-zinc-800">
-            <span class="w-3 h-3 rounded-full bg-red-500"></span>
-            <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
-            <span class="w-3 h-3 rounded-full bg-green-500"></span>
-            <span class="ml-2 text-sm text-zinc-400">game.pixel</span>
+          <div class="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-zinc-800">
+            <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500"></span>
+            <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-500"></span>
+            <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500"></span>
+            <span class="ml-2 text-xs sm:text-sm text-zinc-400">game.pixel</span>
           </div>
-          <pre class="p-6 text-sm leading-relaxed overflow-x-auto"><code class="text-zinc-300"><span class="text-purple-400">function</span> <span class="text-cyan-400">on_start</span>() {'{'}
+          <pre class="p-3 sm:p-6 text-[11px] sm:text-sm leading-relaxed overflow-x-auto"><code class="text-zinc-300"><span class="text-purple-400">function</span> <span class="text-cyan-400">on_start</span>() {'{'}
     <span class="text-cyan-400">create_window</span>(<span class="text-orange-400">800</span>, <span class="text-orange-400">600</span>, <span class="text-green-400">"My Game"</span>)
     player = <span class="text-cyan-400">create_sprite</span>(<span class="text-cyan-400">load_image</span>(<span class="text-green-400">"hero.png"</span>))
     player.x = <span class="text-orange-400">400</span>
@@ -113,10 +113,10 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-2xl font-bold text-center mb-8">Quick Start</h2>
       <div class="max-w-xl mx-auto">
-        <div class="bg-zinc-900 rounded-lg p-6 overflow-x-auto">
-          <div class="space-y-2 font-mono text-sm whitespace-nowrap">
+        <div class="bg-zinc-900 rounded-lg p-4 sm:p-6 overflow-x-auto">
+          <div class="space-y-2 font-mono text-xs sm:text-sm">
             <p class="text-zinc-400"># Install Pixel (one command)</p>
-            <p class="text-zinc-100">$ <span class="text-green-400">curl -fsSL https://raw.githubusercontent.com/Rani367/pixel/main/scripts/install.sh | bash</span></p>
+            <p class="text-zinc-100 break-all sm:whitespace-nowrap">$ <span class="text-green-400">curl -fsSL https://raw.githubusercontent.com/Rani367/pixel/main/scripts/install.sh | bash</span></p>
             <p class="text-zinc-400 mt-4"># Run your first game</p>
             <p class="text-zinc-100">$ <span class="text-green-400">pixel game.pixel</span></p>
           </div>

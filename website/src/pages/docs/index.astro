@@ -138,6 +138,50 @@ const sidebar = [
 ---
 
 <BaseLayout title="Documentation" description="Official documentation for Pixel, a beginner-friendly programming language for making 2D games. Learn to create games with simple syntax and built-in game engine features." keywords={["Pixel documentation", "game programming tutorial", "beginner game development", "2D game engine docs"]}>
+  <!-- Mobile Sidebar Backdrop -->
+  <div id="sidebar-backdrop" class="hidden md:hidden" style="position: fixed; inset: 0; z-index: 9998; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);"></div>
+  <!-- Mobile Sidebar Panel -->
+  <aside id="sidebar-panel" class="hidden md:hidden bg-white dark:bg-zinc-950 shadow-2xl overflow-y-auto" style="position: fixed; top: 0; left: 0; bottom: 0; width: 18rem; z-index: 9999;">
+      <div class="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+        <span class="font-semibold">Navigation</span>
+        <button id="sidebar-close" class="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <nav class="space-y-6 p-4">
+        {sidebar.map(section => (
+          <div>
+            {section.items ? (
+              <>
+                <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mb-2">{section.title}</h4>
+                <ul class="space-y-1">
+                  {section.items.map(item => (
+                    <li>
+                      <a
+                        href={item.href}
+                        class="block text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 py-1"
+                      >
+                        {item.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <a
+                href={section.href}
+                class="block text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              >
+                {section.title}
+              </a>
+            )}
+          </div>
+        ))}
+      </nav>
+    </aside>
+
   <div class="max-w-6xl mx-auto px-4 py-12">
     <!-- Mobile sidebar toggle -->
     <button
@@ -154,7 +198,7 @@ const sidebar = [
     </button>
 
     <div class="flex gap-12">
-      <!-- Sidebar -->
+      <!-- Desktop Sidebar -->
       <aside id="sidebar" class="w-64 shrink-0 hidden md:block">
         <nav class="sticky top-24 space-y-6">
           {sidebar.map(section => (
@@ -197,12 +241,34 @@ const sidebar = [
 
   <script>
     const toggle = document.getElementById('sidebar-toggle');
-    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const panel = document.getElementById('sidebar-panel');
+    const closeBtn = document.getElementById('sidebar-close');
+
+    function openSidebar() {
+      backdrop?.classList.remove('hidden');
+      panel?.classList.remove('hidden');
+      toggle?.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      backdrop?.classList.add('hidden');
+      panel?.classList.add('hidden');
+      toggle?.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
 
     toggle?.addEventListener('click', () => {
-      const isExpanded = sidebar?.classList.toggle('hidden') === false;
-      sidebar?.classList.toggle('block');
-      toggle?.setAttribute('aria-expanded', isExpanded.toString());
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      if (isExpanded) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
     });
+
+    backdrop?.addEventListener('click', closeSidebar);
+    closeBtn?.addEventListener('click', closeSidebar);
   </script>
 </BaseLayout>
