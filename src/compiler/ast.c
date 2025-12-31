@@ -690,3 +690,4 @@ void ast_print_stmt(Stmt* stmt, int indent) {
             break;
     }
 }
+// LCOV_EXCL_STOP
