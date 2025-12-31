@@ -44,17 +44,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install lcov and clang
-        run: sudo apt-get update && sudo apt-get install -y lcov clang
+      - name: Install lcov and llvm
+        run: sudo apt-get update && sudo apt-get install -y lcov llvm clang
 
       - name: Configure with coverage
         run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON -DCMAKE_C_COMPILER=clang
+
+      - name: Create llvm-cov wrapper
+        run: |
+          echo '#!/bin/bash' | sudo tee /usr/local/bin/llvm-gcov
+          echo 'exec llvm-cov gcov "$@"' | sudo tee -a /usr/local/bin/llvm-gcov
+          sudo chmod +x /usr/local/bin/llvm-gcov
 
       - name: Build
         run: cmake --build build
 
       - name: Run tests with coverage
-        run: cd build && make coverage
+        run: |
+          cd build
+          lcov --zerocounters --directory . --ignore-errors unused,unsupported
+          ctest --output-on-failure
+          lcov --capture --directory . --output-file coverage_raw.info \
+               --gcov-tool /usr/local/bin/llvm-gcov \
+               --ignore-errors unused,unsupported,gcov
+          lcov --extract coverage_raw.info '*/src/*' --output-file coverage.info \
+               --ignore-errors unused,unsupported
+          genhtml coverage.info --output-directory coverage_report \
+               --ignore-errors unused,unsupported
+          lcov --summary coverage.info --ignore-errors unused,unsupported
 
       - name: Check coverage threshold
         run: |
