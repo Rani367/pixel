@@ -4,11 +4,22 @@
 # Usage:
 #   ./scripts/install.sh           # Install to ~/.local/bin (no sudo)
 #   sudo ./scripts/install.sh      # Install to /usr/local/bin
+#   ./scripts/install.sh -y        # Non-interactive (skip prompts)
 #
 # After installation, you can run Pixel scripts with:
 #   pixel game.pixel
 
 set -e
+
+# Parse arguments
+FORCE=false
+for arg in "$@"; do
+    case $arg in
+        -y|--yes)
+            FORCE=true
+            ;;
+    esac
+done
 
 # Colors for output
 RED='\033[0;31m'
@@ -107,10 +118,14 @@ if [ "$SDL2_FOUND" = false ]; then
             ;;
     esac
     echo ""
-    read -p "  Continue without graphics support? [y/N] " -n 1 -r
-    echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
+    if [ "$FORCE" = false ]; then
+        read -p "  Continue without graphics support? [y/N] " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    else
+        echo "  Continuing without graphics support (-y flag set)"
     fi
 fi
 
