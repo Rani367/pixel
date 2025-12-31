@@ -25,8 +25,8 @@ static int run_pixel_command(const char* args[], int* exit_code) {
     if (pid == 0) {
         // Child process
         // Redirect stdout/stderr to /dev/null
-        freopen("/dev/null", "w", stdout);
-        freopen("/dev/null", "w", stderr);
+        if (!freopen("/dev/null", "w", stdout)) _exit(127);
+        if (!freopen("/dev/null", "w", stderr)) _exit(127);
         execvp(args[0], (char* const*)args);
         exit(127);  // exec failed
     } else if (pid > 0) {
