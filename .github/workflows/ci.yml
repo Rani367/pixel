@@ -80,7 +80,7 @@ jobs:
           COVERAGE=$(lcov --summary coverage.info 2>&1 | grep "lines" | sed 's/.*: *\([0-9.]*\)%.*/\1/')
           echo "Line coverage: $COVERAGE%"
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
-          if [ $(echo "$COVERAGE < 90" | bc -l) -eq 1 ]; then
+          if [ $(echo "$COVERAGE < 100" | bc -l) -eq 1 ]; then
             echo "ERROR: Coverage is $COVERAGE%, but 100% is required"
             echo "New code must have tests, or use LCOV_EXCL markers for untestable code"
             exit 1
