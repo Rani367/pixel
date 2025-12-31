@@ -59,5 +59,5 @@ main.pixel
 ## Running Programs
 
 ```bash
-pixel run game.pixel
+pixel game.pixel
 ```

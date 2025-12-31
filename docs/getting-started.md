@@ -10,31 +10,15 @@ Pixel is a beginner-friendly programming language for making 2D games. This guid
 
 ## Installation
 
-### Download Binary (Recommended)
-
-Download the latest release for your platform:
-- **macOS (Intel)**: `pixel-macos-x64`
-- **macOS (Apple Silicon)**: `pixel-macos-arm64`
-- **Linux**: `pixel-linux-x64`
-- **Windows**: `pixel-windows-x64.exe`
-
-Make the binary executable (macOS/Linux):
-```bash
-chmod +x pixel
-./pixel --version
-```
-
-### Build from Source
-
-Requirements: C compiler (gcc or clang), CMake 3.16+, SDL2
+Run this single command to install Pixel:
 
 ```bash
-git clone https://github.com/Rani367/pixel.git
-cd pixel
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make
+curl -fsSL https://raw.githubusercontent.com/Rani367/pixel/main/scripts/install.sh | bash
 ```
+
+This automatically installs all dependencies (CMake, SDL2, etc.) and adds `pixel` to your PATH.
+
+For other installation options, see the [Installation Guide](/pixel/docs/installation).
 
 ## Your First Program
 
@@ -48,7 +32,7 @@ function on_start() {
 
 Run it:
 ```bash
-./pixel run hello.pixel
+pixel hello.pixel
 ```
 
 ## Creating a Game Window

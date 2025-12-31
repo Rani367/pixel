@@ -21,19 +21,14 @@ function on_draw() {
 
 ## Installation
 
-Download the latest binary for your platform:
-
-- **Windows:** `pixel-windows-x64.exe`
-- **macOS (Intel):** `pixel-macos-x64`
-- **macOS (Apple Silicon):** `pixel-macos-arm64`
-- **Linux:** `pixel-linux-x64`
-
-Make it executable (macOS/Linux):
+**One command install (macOS/Linux):**
 ```bash
-chmod +x pixel
+curl -fsSL https://raw.githubusercontent.com/Rani367/pixel/main/scripts/install.sh | bash
 ```
 
-See [Installation Guide](docs/installation.md) for detailed instructions.
+This automatically installs all dependencies and adds `pixel` to your PATH.
+
+See [Installation Guide](docs/installation.md) for other options.
 
 ## Quick Start
 
@@ -64,7 +59,7 @@ function on_draw() {
 
 Run it:
 ```bash
-pixel run game.pixel
+pixel game.pixel
 ```
 
 ## Features
@@ -121,7 +116,7 @@ Full games in `examples/games/`:
 
 Run an example:
 ```bash
-pixel run examples/games/pong.pixel
+pixel examples/games/pong.pixel
 ```
 
 ## Building from Source
@@ -129,12 +124,10 @@ pixel run examples/games/pong.pixel
 ```bash
 git clone https://github.com/Rani367/pixel.git
 cd pixel
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build .
+./scripts/install.sh
 ```
 
-Requirements: C compiler, CMake 3.16+, SDL2
+The install script handles all dependencies automatically.
 
 ## License
 
