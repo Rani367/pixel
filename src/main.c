@@ -299,13 +299,21 @@ static int cmd_run(const char* filename) {
 // ============================================================================
 
 static void print_usage(const char* program) {
-    fprintf(stderr, "Usage: %s <command> [options] [file]\n\n", program);
+    fprintf(stderr, "Usage: %s [command] <file.pixel>\n\n", program);
+    fprintf(stderr, "Run a Pixel script:\n");
+    fprintf(stderr, "  %s game.pixel          Run directly\n", program);
+    fprintf(stderr, "  %s run game.pixel      Run with explicit command\n\n", program);
     fprintf(stderr, "Commands:\n");
     fprintf(stderr, "  run <file>      Run a Pixel script\n");
     fprintf(stderr, "  compile <file>  Compile to bytecode\n");
     fprintf(stderr, "  disasm <file>   Disassemble bytecode\n");
     fprintf(stderr, "  version         Print version\n");
     fprintf(stderr, "  help            Show this message\n");
+}
+
+static int has_pixel_extension(const char* filename) {
+    size_t len = strlen(filename);
+    return len > 6 && strcmp(filename + len - 6, ".pixel") == 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -348,6 +356,11 @@ int main(int argc, char* argv[]) {
         }
         printf("Disassembling: %s (not yet implemented)\n", argv[2]);
         return 0;
+    }
+
+    // If argument ends with .pixel, run it directly
+    if (has_pixel_extension(argv[1])) {
+        return cmd_run(argv[1]);
     }
 
     fprintf(stderr, "Unknown command: %s\n", argv[1]);

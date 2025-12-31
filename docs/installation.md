@@ -6,7 +6,28 @@ keywords: ["install Pixel", "Pixel download", "game engine setup", "programming 
 
 # Installation
 
-## Download
+## Quick Install (Recommended)
+
+Clone the repository and run the install script:
+
+```bash
+git clone https://github.com/Rani367/pixel.git
+cd pixel
+./scripts/install.sh
+```
+
+This builds Pixel and installs it to `~/.local/bin`. For system-wide installation:
+
+```bash
+sudo ./scripts/install.sh
+```
+
+After installation:
+```bash
+pixel game.pixel
+```
+
+## Download Pre-built Binaries
 
 Download the latest release for your platform:
 
@@ -26,7 +47,7 @@ Download the latest release for your platform:
 3. Add to your PATH or run from the download directory
 
 ```cmd
-pixel.exe run game.pixel
+pixel.exe game.pixel
 ```
 
 ### macOS
@@ -36,13 +57,13 @@ pixel.exe run game.pixel
 
 ```bash
 chmod +x pixel-macos-*
-./pixel-macos-arm64 run game.pixel
+./pixel-macos-arm64 game.pixel
 ```
 
 To install system-wide:
 ```bash
 sudo mv pixel-macos-arm64 /usr/local/bin/pixel
-pixel run game.pixel
+pixel game.pixel
 ```
 
 ### Linux
@@ -52,13 +73,13 @@ pixel run game.pixel
 
 ```bash
 chmod +x pixel-linux-x64
-./pixel-linux-x64 run game.pixel
+./pixel-linux-x64 game.pixel
 ```
 
 To install system-wide:
 ```bash
 sudo mv pixel-linux-x64 /usr/local/bin/pixel
-pixel run game.pixel
+pixel game.pixel
 ```
 
 ## Building from Source
@@ -105,6 +126,12 @@ pixel version
 ```
 
 Should output: `Pixel 1.0.0`
+
+### Run a Game
+
+```bash
+pixel examples/games/pong.pixel
+```
 
 ## Web Build (Optional)
 
