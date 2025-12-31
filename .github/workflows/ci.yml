@@ -74,15 +74,30 @@ jobs:
           lcov --summary coverage.info --ignore-errors unused,unsupported
 
       - name: Check coverage threshold
+        id: coverage
         run: |
           cd build
           COVERAGE=$(lcov --summary coverage.info 2>&1 | grep "lines" | sed 's/.*: *\([0-9.]*\)%.*/\1/')
           echo "Line coverage: $COVERAGE%"
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
           if [ $(echo "$COVERAGE < 100" | bc -l) -eq 1 ]; then
             echo "ERROR: Coverage is $COVERAGE%, but 100% is required"
             echo "New code must have tests, or use LCOV_EXCL markers for untestable code"
             exit 1
           fi
+
+      - name: Update coverage badge
+        if: github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ secrets.COVERAGE_GIST_ID }}
+          filename: coverage.json
+          label: coverage
+          message: ${{ steps.coverage.outputs.coverage }}%
+          valColorRange: ${{ steps.coverage.outputs.coverage }}
+          maxColorRange: 100
+          minColorRange: 0
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

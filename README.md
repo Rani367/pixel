@@ -1,6 +1,6 @@
 # Pixel
 
-[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/Rani367/pixel/actions)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Rani367/45a4bd6cbc1add6850e45c3206976183/raw/coverage.json)](https://github.com/Rani367/pixel/actions)
 
 A beginner-friendly programming language for making 2D games.
 
