@@ -1,3 +1,9 @@
+---
+title: "Engine API Reference"
+description: "Pixel game engine API: window management, drawing primitives, sprites, animations, fonts, camera control, particles, and scene management."
+keywords: ["Pixel engine", "sprite API", "drawing functions", "game camera", "particle effects", "scene management"]
+---
+
 # Engine API Reference
 
 ## Window Management

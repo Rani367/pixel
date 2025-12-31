@@ -1,3 +1,9 @@
+---
+title: "Getting Started with Pixel"
+description: "Create your first 2D game in minutes with Pixel. Learn the basics of game windows, sprites, movement, collision detection, and the game loop."
+keywords: ["Pixel tutorial", "first game programming", "beginner game tutorial", "game development quickstart", "learn 2D game development"]
+---
+
 # Getting Started with Pixel
 
 Pixel is a beginner-friendly programming language for making 2D games. This guide will help you get up and running in minutes.

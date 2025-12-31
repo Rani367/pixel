@@ -1,0 +1,107 @@
+---
+interface Props {
+  type: 'WebSite' | 'SoftwareApplication' | 'Article' | 'BreadcrumbList';
+  data?: Record<string, unknown>;
+  breadcrumbs?: Array<{ name: string; url: string }>;
+}
+
+const { type, data = {}, breadcrumbs = [] } = Astro.props;
+
+const baseUrl = 'https://rani367.github.io/pixel';
+
+function generateSchema() {
+  switch (type) {
+    case 'WebSite':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Pixel Programming Language',
+        description: 'A beginner-friendly programming language for making 2D games',
+        url: baseUrl,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${baseUrl}/docs?search={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
+        ...data,
+      };
+
+    case 'SoftwareApplication':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'Pixel',
+        description: 'A beginner-friendly programming language for making 2D games. Compiles to bytecode and runs on a custom virtual machine with an integrated game engine.',
+        url: baseUrl,
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: 'macOS, Linux, Windows, Web',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+        author: {
+          '@type': 'Organization',
+          name: 'Pixel Language Team',
+          url: 'https://github.com/Rani367/pixel',
+        },
+        license: 'https://opensource.org/licenses/MIT',
+        programmingLanguage: 'C',
+        featureList: [
+          'Beginner-friendly syntax',
+          '2D game development',
+          'Built-in game engine',
+          'Cross-platform support',
+          'Web/WASM support',
+          'Integrated graphics and audio',
+        ],
+        ...data,
+      };
+
+    case 'Article':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: data.title || 'Pixel Documentation',
+        description: data.description || 'Documentation for the Pixel programming language',
+        url: data.url || baseUrl,
+        author: {
+          '@type': 'Organization',
+          name: 'Pixel Language Team',
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'Pixel Language Team',
+          url: 'https://github.com/Rani367/pixel',
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': data.url || baseUrl,
+        },
+        ...data,
+      };
+
+    case 'BreadcrumbList':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbs.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.name,
+          item: item.url,
+        })),
+      };
+
+    default:
+      return {};
+  }
+}
+
+const schema = generateSchema();
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

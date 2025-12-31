@@ -1,3 +1,9 @@
+---
+title: "Input API Reference"
+description: "Handle keyboard and mouse input in Pixel games. Learn key constants, mouse functions, input callbacks, and common patterns like WASD movement."
+keywords: ["Pixel input", "keyboard controls", "mouse input", "game controls", "input handling"]
+---
+
 # Input API Reference
 
 ## Keyboard Input

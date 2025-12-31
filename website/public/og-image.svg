@@ -1,0 +1,36 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#18181B"/>
+
+  <!-- Grid pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#27272A" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- Accent glow -->
+  <ellipse cx="600" cy="315" rx="400" ry="200" fill="#22D3EE" opacity="0.1"/>
+
+  <!-- Logo/Title -->
+  <text x="600" y="280" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="120" font-weight="bold" fill="#FAFAFA">
+    Pixel
+  </text>
+
+  <!-- Tagline -->
+  <text x="600" y="360" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#A1A1AA">
+    A beginner-friendly programming language
+  </text>
+  <text x="600" y="410" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#A1A1AA">
+    for making 2D games
+  </text>
+
+  <!-- Accent bar -->
+  <rect x="500" y="450" width="200" height="4" rx="2" fill="#22D3EE"/>
+
+  <!-- URL -->
+  <text x="600" y="560" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#52525B">
+    rani367.github.io/pixel
+  </text>
+</svg>

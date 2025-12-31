@@ -1,3 +1,9 @@
+---
+title: "Core Language Reference"
+description: "Complete API reference for Pixel's core language features: variables, operators, control flow, functions, lists, structs, strings, and utility functions."
+keywords: ["Pixel API", "core functions", "string functions", "list operations", "type conversion"]
+---
+
 # Core Language Reference
 
 ## Variables

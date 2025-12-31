@@ -1,3 +1,9 @@
+---
+title: "Pixel Language Guide"
+description: "Complete guide to the Pixel programming language syntax and features. Learn variables, functions, control flow, and data structures for game development."
+keywords: ["Pixel syntax", "programming language guide", "game scripting language", "Pixel language reference", "beginner programming syntax"]
+---
+
 # Language Guide
 
 This guide covers the Pixel programming language syntax and features.

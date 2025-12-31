@@ -1,3 +1,9 @@
+---
+title: "Pixel Language Basics"
+description: "Learn the fundamentals of Pixel programming: variables, data types, numbers, strings, booleans, and operators. Perfect for programming beginners."
+keywords: ["Pixel variables", "data types", "programming basics", "operators", "beginner programming concepts"]
+---
+
 # Basics
 
 ## Variables

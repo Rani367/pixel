@@ -1,3 +1,9 @@
+---
+title: "Functions in Pixel"
+description: "Define and use functions in Pixel. Learn about parameters, return values, closures, anonymous functions, recursion, and game callbacks like on_update and on_draw."
+keywords: ["Pixel functions", "game callbacks", "closures", "anonymous functions", "function programming"]
+---
+
 # Functions
 
 ## Defining Functions

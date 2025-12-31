@@ -1,3 +1,9 @@
+---
+title: "Installation"
+description: "Download and install Pixel programming language on Windows, macOS, or Linux. Build from source or use pre-built binaries to start making 2D games."
+keywords: ["install Pixel", "Pixel download", "game engine setup", "programming language installation", "cross-platform game development"]
+---
+
 # Installation
 
 ## Download

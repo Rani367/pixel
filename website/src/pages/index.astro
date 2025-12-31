@@ -1,8 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const description = "Pixel is a beginner-friendly programming language for making 2D games. Simple syntax, built-in game engine, and cross-platform support. Perfect for learning game development.";
+const keywords = ["Pixel programming language", "2D game engine", "beginner game development", "learn game programming", "simple game engine", "educational coding"];
 ---
 
-<BaseLayout>
+<BaseLayout description={description} keywords={keywords}>
   <!-- Hero Section -->
   <section class="py-20 md:py-32">
     <div class="max-w-6xl mx-auto px-4 text-center">

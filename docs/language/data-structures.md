@@ -1,3 +1,9 @@
+---
+title: "Data Structures in Pixel"
+description: "Work with lists, structs, and vectors in Pixel. Learn to create, modify, and iterate over collections for managing game entities and state."
+keywords: ["Pixel lists", "structs", "vec2", "game data structures", "arrays in Pixel"]
+---
+
 # Data Structures
 
 ## Lists

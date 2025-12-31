@@ -1,3 +1,9 @@
+---
+title: "Audio API Reference"
+description: "Add sound effects and music to Pixel games. Load and play audio files, control volume, loop background music, and implement audio patterns."
+keywords: ["Pixel audio", "game sound effects", "background music", "audio API", "game audio programming"]
+---
+
 # Audio API Reference
 
 ## Sound Effects

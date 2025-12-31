@@ -1,0 +1,89 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  canonicalURL?: URL | string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
+  keywords?: string[];
+}
+
+const {
+  title,
+  description,
+  canonicalURL = Astro.url,
+  image = '/pixel/og-image.png',
+  type = 'website',
+  publishedTime,
+  modifiedTime,
+  keywords = [],
+} = Astro.props;
+
+const siteTitle = 'Pixel';
+const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
+const absoluteImageURL = new URL(image, Astro.site).href;
+const canonicalURLString = canonicalURL instanceof URL ? canonicalURL.href : canonicalURL;
+
+// Default keywords for the programming language
+const defaultKeywords = [
+  'Pixel programming language',
+  'beginner game development',
+  '2D game engine',
+  'learn game programming',
+  'educational programming',
+  'game development for beginners',
+  'simple game engine',
+  'kids coding',
+  'bytecode VM',
+];
+
+const allKeywords = [...new Set([...defaultKeywords, ...keywords])];
+---
+
+<!-- Primary Meta Tags -->
+<title>{fullTitle}</title>
+<meta name="title" content={fullTitle} />
+<meta name="description" content={description} />
+<meta name="keywords" content={allKeywords.join(', ')} />
+<meta name="author" content="Pixel Language Team" />
+<meta name="robots" content="index, follow" />
+<meta name="language" content="English" />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURLString} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonicalURLString} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={absoluteImageURL} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content={siteTitle} />
+<meta property="og:locale" content="en_US" />
+
+{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content={canonicalURLString} />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={absoluteImageURL} />
+
+<!-- Additional SEO -->
+<meta name="theme-color" content="#18181b" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+<!-- OG Image Alt Text -->
+<meta property="og:image:alt" content="Pixel - A beginner-friendly programming language for making 2D games" />
+
+<!-- Search Engine Verification -->
+<!-- Uncomment and add your verification codes when ready:
+<meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE" />
+<meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" />
+-->

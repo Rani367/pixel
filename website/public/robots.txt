@@ -1,0 +1,21 @@
+# Robots.txt for Pixel Programming Language
+# https://rani367.github.io/pixel
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://rani367.github.io/pixel/sitemap-index.xml
+
+# Disallow playground API endpoints (if any)
+Disallow: /api/
+
+# Allow all crawlers to index documentation
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /

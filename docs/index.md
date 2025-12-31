@@ -1,3 +1,9 @@
+---
+title: "Pixel Documentation"
+description: "Official documentation for Pixel, a beginner-friendly programming language for making 2D games. Learn to create games with simple syntax and built-in game engine features."
+keywords: ["Pixel documentation", "game programming tutorial", "beginner game development", "2D game engine docs", "learn game programming"]
+---
+
 # Pixel Documentation
 
 Pixel is a beginner-friendly programming language designed for making 2D games. Write simple code, see immediate results.

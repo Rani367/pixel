@@ -1,3 +1,9 @@
+---
+title: "Physics and Collision API Reference"
+description: "Implement physics and collision detection in Pixel games. Use velocity, gravity, friction, and collision functions for platformers, shooters, and more."
+keywords: ["Pixel physics", "collision detection", "game physics", "platformer physics", "sprite velocity"]
+---
+
 # Physics & Collision API Reference
 
 ## Collision Detection

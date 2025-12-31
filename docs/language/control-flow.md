@@ -1,3 +1,9 @@
+---
+title: "Control Flow in Pixel"
+description: "Master if statements, while loops, break, and continue in Pixel. Learn conditional logic and iteration patterns for game programming."
+keywords: ["if statements", "while loops", "control flow", "conditionals", "game logic programming"]
+---
+
 # Control Flow
 
 ## If Statements

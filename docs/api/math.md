@@ -1,3 +1,9 @@
+---
+title: "Math API Reference"
+description: "Mathematical functions in Pixel: trigonometry, random numbers, vectors, interpolation, and common game math patterns for movement and physics."
+keywords: ["Pixel math", "game math", "trigonometry", "random numbers", "vector math", "lerp"]
+---
+
 # Math API Reference
 
 ## Basic Math
