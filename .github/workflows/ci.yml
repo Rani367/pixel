@@ -44,11 +44,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install lcov
-        run: sudo apt-get update && sudo apt-get install -y lcov
+      - name: Install lcov and clang
+        run: sudo apt-get update && sudo apt-get install -y lcov clang
 
       - name: Configure with coverage
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON -DCMAKE_C_COMPILER=clang
 
       - name: Build
         run: cmake --build build
@@ -61,17 +61,10 @@ jobs:
           cd build
           COVERAGE=$(lcov --summary coverage.info 2>&1 | grep "lines" | sed 's/.*: *\([0-9.]*\)%.*/\1/')
           echo "Line coverage: $COVERAGE%"
-          # GCC 13 instruments multi-line statements differently than Clang,
-          # causing ~0.3% difference. Require 99.5% on CI; verify 100% locally.
-          if [ $(echo "$COVERAGE < 99.5" | bc -l) -eq 1 ]; then
-            echo "ERROR: Coverage is $COVERAGE%, but at least 99.5% is required"
-            echo "New code must have tests, or use LCOV_EXCL markers for untestable code"
-            echo "Note: Run 'make coverage' locally to verify 100% with Clang"
-            exit 1
-          fi
           if [ $(echo "$COVERAGE < 100" | bc -l) -eq 1 ]; then
-            echo "WARNING: Coverage is $COVERAGE% (GCC instrumentation differs from Clang)"
-            echo "Verify 100% locally with 'make coverage'"
+            echo "ERROR: Coverage is $COVERAGE%, but 100% is required"
+            echo "New code must have tests, or use LCOV_EXCL markers for untestable code"
+            exit 1
           fi
 
       - name: Upload coverage report
