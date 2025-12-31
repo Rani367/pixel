@@ -1,5 +1,7 @@
 # Pixel
 
+[![Coverage](https://img.shields.io/badge/coverage-84%25-brightgreen.svg)](https://github.com/Rani367/pixel/actions)
+
 A beginner-friendly programming language for making 2D games.
 
 ```pixel

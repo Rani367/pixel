@@ -44,7 +44,7 @@ target_link_libraries(test_codegen pixel_compiler)
 add_test(NAME test_codegen COMMAND test_codegen)
 
 add_executable(test_vm unit/test_vm.c)
-target_link_libraries(test_vm pixel_compiler)
+target_link_libraries(test_vm pixel_compiler pixel_runtime)
 add_test(NAME test_vm COMMAND test_vm)
 
 add_executable(test_gc unit/test_gc.c)
@@ -63,6 +63,68 @@ add_executable(test_engine unit/test_engine.c)
 target_link_libraries(test_engine pixel_engine pixel_compiler)
 add_test(NAME test_engine COMMAND test_engine)
 
+add_executable(test_engine_game_loop unit/test_engine_game_loop.c)
+target_link_libraries(test_engine_game_loop pixel_core pixel_compiler pixel_vm pixel_runtime pixel_engine pixel_pal)
+add_test(NAME test_engine_game_loop COMMAND test_engine_game_loop)
+
 add_executable(test_physics unit/test_physics.c)
 target_link_libraries(test_physics pixel_engine pixel_compiler)
 add_test(NAME test_physics COMMAND test_physics)
+
+# New unit tests for 100% coverage
+add_executable(test_error unit/test_error.c)
+target_link_libraries(test_error pixel_core)
+add_test(NAME test_error COMMAND test_error)
+
+add_executable(test_log unit/test_log.c)
+target_link_libraries(test_log pixel_core)
+add_test(NAME test_log COMMAND test_log)
+
+add_executable(test_token unit/test_token.c)
+target_link_libraries(test_token pixel_compiler)
+add_test(NAME test_token COMMAND test_token)
+
+add_executable(test_symbols unit/test_symbols.c)
+target_link_libraries(test_symbols pixel_compiler)
+add_test(NAME test_symbols COMMAND test_symbols)
+
+add_executable(test_object unit/test_object.c)
+target_link_libraries(test_object pixel_vm)
+add_test(NAME test_object COMMAND test_object)
+
+add_executable(test_opcodes unit/test_opcodes.c)
+target_link_libraries(test_opcodes pixel_vm)
+add_test(NAME test_opcodes COMMAND test_opcodes)
+
+add_executable(test_debug unit/test_debug.c)
+target_link_libraries(test_debug pixel_vm)
+add_test(NAME test_debug COMMAND test_debug)
+
+add_executable(test_main unit/test_main.c)
+target_link_libraries(test_main pixel_core pixel_compiler pixel_vm pixel_runtime pixel_engine)
+add_test(NAME test_main COMMAND test_main)
+
+add_executable(test_engine_natives unit/test_engine_natives.c)
+target_link_libraries(test_engine_natives pixel_core pixel_compiler pixel_vm pixel_runtime pixel_engine pixel_pal)
+add_test(NAME test_engine_natives COMMAND test_engine_natives)
+
+# Integration tests
+add_executable(test_e2e integration/test_e2e.c)
+target_link_libraries(test_e2e pixel_core pixel_compiler pixel_vm pixel_runtime pixel_engine)
+add_test(NAME test_e2e COMMAND test_e2e)
+
+add_executable(test_examples integration/test_examples.c)
+target_link_libraries(test_examples pixel_core pixel_compiler pixel_vm pixel_runtime pixel_engine)
+add_test(NAME test_examples COMMAND test_examples)
+
+# SDL2 headless tests (only if SDL2 is available)
+if(SDL2_FOUND AND SDL2_image_FOUND AND SDL2_mixer_FOUND AND SDL2_ttf_FOUND)
+    add_executable(test_pal_sdl integration/test_pal_sdl.c)
+    target_compile_definitions(test_pal_sdl PRIVATE PAL_USE_SDL2)
+    target_link_libraries(test_pal_sdl pixel_pal SDL2::SDL2 SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf)
+    target_include_directories(test_pal_sdl PRIVATE ${SDL2_INCLUDE_DIRS})
+    add_test(NAME test_pal_sdl COMMAND test_pal_sdl)
+    set_tests_properties(test_pal_sdl PROPERTIES
+        ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_AUDIODRIVER=dummy"
+    )
+endif()

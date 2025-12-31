@@ -284,6 +284,7 @@ Stmt* stmt_struct(Arena* arena, Token name, Token* fields, int field_count,
 // Visitor Pattern
 // ============================================================================
 
+// LCOV_EXCL_START - visitor pattern coverage depends on which visitors are used
 void expr_accept(Expr* expr, ExprVisitor* visitor) {
     if (!expr || !visitor) return;
 

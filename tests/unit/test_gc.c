@@ -276,6 +276,291 @@ TEST(gc_bytes_allocated_tracking) {
 }
 
 // ============================================================================
+// GC API Tests
+// ============================================================================
+
+TEST(gc_get_vm_accessor) {
+    setup();
+
+    // gc_get_vm should return the VM that was set
+    VM* gotten_vm = gc_get_vm();
+    ASSERT_EQ(gotten_vm, &vm);
+
+    teardown();
+}
+
+TEST(gc_multiple_collections) {
+    setup();
+
+    // Run multiple collection cycles
+    for (int i = 0; i < 5; i++) {
+        // Create objects
+        (void)string_copy("test string", 11);
+        (void)list_new();
+
+        // Force collection
+        gc_collect(&vm);
+    }
+
+    teardown();
+}
+
+TEST(gc_collect_empty) {
+    setup();
+
+    // Collection on empty VM should not crash
+    gc_collect(&vm);
+    gc_collect(&vm);
+
+    teardown();
+}
+
+// ============================================================================
+// GC Blacken Object Type Tests
+// ============================================================================
+
+TEST(gc_blacken_upvalue_open) {
+    setup();
+
+    // Create an open upvalue
+    ObjUpvalue* upvalue = upvalue_new(NULL);  // NULL location = closed
+    upvalue->closed = NUMBER_VAL(42);
+
+    vm_push(&vm, OBJECT_VAL(upvalue));
+    gc_collect(&vm);
+
+    // Should not crash and value should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_native_with_name) {
+    setup();
+
+    ObjString* name = string_copy("test_native", 11);
+    ObjNative* native = native_new(NULL, name, 0);
+
+    vm_push(&vm, OBJECT_VAL(native));
+    gc_collect(&vm);
+
+    // Native and its name should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_image_with_path) {
+    setup();
+
+    ObjString* path = string_copy("/test/image.png", 15);
+    ObjImage* image = image_new(NULL, 100, 100, path);
+
+    vm_push(&vm, OBJECT_VAL(image));
+    gc_collect(&vm);
+
+    // Image and its path should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_sprite_with_image) {
+    setup();
+
+    ObjImage* image = image_new(NULL, 100, 100, NULL);
+    ObjSprite* sprite = sprite_new(image);
+
+    vm_push(&vm, OBJECT_VAL(sprite));
+    gc_collect(&vm);
+
+    // Sprite and its image should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_sprite_with_animation) {
+    setup();
+
+    ObjImage* image = image_new(NULL, 128, 64, NULL);
+    ObjSprite* sprite = sprite_new(image);
+    ObjAnimation* anim = animation_new(image, 32, 32);
+    sprite->animation = anim;
+
+    vm_push(&vm, OBJECT_VAL(sprite));
+    gc_collect(&vm);
+
+    // All objects should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_animation_with_callback) {
+    setup();
+
+    ObjImage* image = image_new(NULL, 64, 64, NULL);
+    ObjAnimation* anim = animation_new(image, 32, 32);
+
+    // Create a mock closure for the callback
+    ObjFunction* fn = function_new();
+    ObjClosure* closure = closure_new(fn);
+    anim->on_complete = closure;
+
+    vm_push(&vm, OBJECT_VAL(anim));
+    gc_collect(&vm);
+
+    // Animation and callback should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_sound_with_path) {
+    setup();
+
+    ObjString* path = string_copy("/test/sound.wav", 15);
+    ObjSound* sound = sound_new(NULL, path);
+
+    vm_push(&vm, OBJECT_VAL(sound));
+    gc_collect(&vm);
+
+    // Sound and its path should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_music_with_path) {
+    setup();
+
+    ObjString* path = string_copy("/test/music.mp3", 15);
+    ObjMusic* music = music_new(NULL, path);
+
+    vm_push(&vm, OBJECT_VAL(music));
+    gc_collect(&vm);
+
+    // Music and its path should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_camera_with_target) {
+    setup();
+
+    ObjCamera* camera = camera_new();
+    ObjSprite* sprite = sprite_new(NULL);
+    camera->target = sprite;
+
+    vm_push(&vm, OBJECT_VAL(camera));
+    gc_collect(&vm);
+
+    // Camera and its target should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_emitter) {
+    setup();
+
+    ObjParticleEmitter* emitter = particle_emitter_new(100, 100);
+
+    vm_push(&vm, OBJECT_VAL(emitter));
+    gc_collect(&vm);
+
+    // Emitter should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_struct_with_methods) {
+    setup();
+
+    ObjString* name = string_copy("TestStruct", 10);
+    ObjStructDef* def = struct_def_new(name, 1);
+    def->fields[0] = string_copy("field", 5);
+
+    // Add a method (simplified - just add to the method table)
+    ObjFunction* fn = function_new();
+    ObjClosure* method = closure_new(fn);
+    table_set_cstr(&def->methods, "test_method", method);
+
+    vm_push(&vm, OBJECT_VAL(def));
+    gc_collect(&vm);
+
+    // Struct def and its methods should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_blacken_closure_with_upvalues) {
+    setup();
+
+    ObjFunction* fn = function_new();
+    fn->upvalue_count = 2;
+
+    ObjClosure* closure = closure_new(fn);
+
+    // Create upvalues
+    ObjUpvalue* uv1 = upvalue_new(NULL);
+    uv1->closed = NUMBER_VAL(10);
+    ObjUpvalue* uv2 = upvalue_new(NULL);
+    uv2->closed = NUMBER_VAL(20);
+
+    closure->upvalues[0] = uv1;
+    closure->upvalues[1] = uv2;
+
+    vm_push(&vm, OBJECT_VAL(closure));
+    gc_collect(&vm);
+
+    // Closure and its upvalues should be preserved
+    ASSERT(IS_OBJECT(vm_peek(&vm, 0)));
+
+    vm_pop(&vm);
+    teardown();
+}
+
+TEST(gc_gray_stack_growth) {
+    setup();
+
+    // Create many interconnected objects to test gray stack growth
+    for (int i = 0; i < 100; i++) {
+        ObjList* list = list_new();
+        for (int j = 0; j < 10; j++) {
+            ObjList* inner = list_new();
+            list_append(list, OBJECT_VAL(inner));
+        }
+        vm_push(&vm, OBJECT_VAL(list));
+    }
+
+    // Force GC - should handle gray stack growth
+    gc_collect(&vm);
+
+    // Pop all
+    for (int i = 0; i < 100; i++) {
+        vm_pop(&vm);
+    }
+
+    teardown();
+}
+
+// ============================================================================
 // Main
 // ============================================================================
 
@@ -297,6 +582,26 @@ int main(void) {
 
     TEST_SUITE("GC - Stress");
     RUN_TEST(gc_stress_test);
+
+    TEST_SUITE("GC - API");
+    RUN_TEST(gc_get_vm_accessor);
+    RUN_TEST(gc_multiple_collections);
+    RUN_TEST(gc_collect_empty);
+
+    TEST_SUITE("GC - Blacken Object Types");
+    RUN_TEST(gc_blacken_upvalue_open);
+    RUN_TEST(gc_blacken_native_with_name);
+    RUN_TEST(gc_blacken_image_with_path);
+    RUN_TEST(gc_blacken_sprite_with_image);
+    RUN_TEST(gc_blacken_sprite_with_animation);
+    RUN_TEST(gc_blacken_animation_with_callback);
+    RUN_TEST(gc_blacken_sound_with_path);
+    RUN_TEST(gc_blacken_music_with_path);
+    RUN_TEST(gc_blacken_camera_with_target);
+    RUN_TEST(gc_blacken_emitter);
+    RUN_TEST(gc_blacken_struct_with_methods);
+    RUN_TEST(gc_blacken_closure_with_upvalues);
+    RUN_TEST(gc_gray_stack_growth);
 
     TEST_SUMMARY();
 }

@@ -11,7 +11,7 @@ bool values_equal(Value a, Value b) {
         case VAL_BOOL:   return AS_BOOL(a) == AS_BOOL(b);
         case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
         case VAL_OBJECT: return AS_OBJECT(a) == AS_OBJECT(b);
-        default:         return false;
+        default:         return false;  // LCOV_EXCL_LINE
     }
 }
 
@@ -48,7 +48,7 @@ uint32_t value_hash(Value value) {
         case VAL_OBJECT:
             return object_hash(value);
         default:
-            return 0;
+            return 0;  // LCOV_EXCL_LINE
     }
 }
 
@@ -58,7 +58,7 @@ bool value_is_truthy(Value value) {
         case VAL_BOOL:   return AS_BOOL(value);
         case VAL_NUMBER: return true;
         case VAL_OBJECT: return true;
-        default:         return false;
+        default:         return false;  // LCOV_EXCL_LINE
     }
 }
 

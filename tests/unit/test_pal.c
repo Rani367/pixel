@@ -295,6 +295,126 @@ TEST(music) {
     pal_quit();
 }
 
+TEST(master_volume) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+    pal_mock_clear_calls();
+
+    // Set master volume (affects all audio)
+    pal_set_master_volume(0.5f);
+
+    int count;
+    const PalMockCall* calls = pal_mock_get_calls(&count);
+    bool found = false;
+    for (int i = 0; i < count; i++) {
+        if (strcmp(calls[i].function, "pal_set_master_volume") == 0) {
+            found = true;
+            break;
+        }
+    }
+    ASSERT(found);
+
+    // Test edge cases
+    pal_set_master_volume(0.0f);  // Mute
+    pal_set_master_volume(1.0f);  // Full volume
+
+    pal_quit();
+}
+
+// -----------------------------------------------------------------------------
+// Font tests
+// -----------------------------------------------------------------------------
+
+TEST(font_load_destroy) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+    pal_mock_clear_calls();
+
+    PalFont* font = pal_font_load("test.ttf", 16);
+    ASSERT_NOT_NULL(font);
+
+    int count;
+    const PalMockCall* calls = pal_mock_get_calls(&count);
+    bool found = false;
+    for (int i = 0; i < count; i++) {
+        if (strcmp(calls[i].function, "pal_font_load") == 0) {
+            found = true;
+            break;
+        }
+    }
+    ASSERT(found);
+
+    pal_font_destroy(font);
+    pal_quit();
+}
+
+TEST(font_default) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+    pal_mock_clear_calls();
+
+    PalFont* font = pal_font_default(16);
+    ASSERT_NOT_NULL(font);
+
+    int count;
+    const PalMockCall* calls = pal_mock_get_calls(&count);
+    bool found = false;
+    for (int i = 0; i < count; i++) {
+        if (strcmp(calls[i].function, "pal_font_default") == 0) {
+            found = true;
+            break;
+        }
+    }
+    ASSERT(found);
+
+    pal_font_destroy(font);
+    pal_quit();
+}
+
+TEST(draw_text) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+    PalWindow* window = pal_window_create("Test", 800, 600);
+    PalFont* font = pal_font_default(16);
+    pal_mock_clear_calls();
+
+    pal_draw_text(window, font, "Hello World", 100, 100, 255, 255, 255, 255);
+
+    int count;
+    const PalMockCall* calls = pal_mock_get_calls(&count);
+    bool found = false;
+    for (int i = 0; i < count; i++) {
+        if (strcmp(calls[i].function, "pal_draw_text") == 0) {
+            found = true;
+            break;
+        }
+    }
+    ASSERT(found);
+
+    pal_font_destroy(font);
+    pal_window_destroy(window);
+    pal_quit();
+}
+
+TEST(text_size) {
+    ASSERT(pal_init(PAL_BACKEND_MOCK));
+    PalFont* font = pal_font_default(16);
+
+    int width, height;
+    pal_text_size(font, "Test", &width, &height);
+
+    // Mock returns reasonable values based on text length and font size
+    // "Test" has 4 characters, font size 16 means char_width=8, so width=32
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT_EQ(width, 32);   // 4 chars * 8 pixels
+    ASSERT_EQ(height, 16);  // font size
+
+    // Test with empty string
+    pal_text_size(font, "", &width, &height);
+    ASSERT_EQ(width, 0);
+    ASSERT_EQ(height, 16);
+
+    pal_font_destroy(font);
+    pal_quit();
+}
+
 // -----------------------------------------------------------------------------
 // Time tests
 // -----------------------------------------------------------------------------
@@ -383,6 +503,13 @@ int main(void) {
     TEST_SUITE("PAL Audio");
     RUN_TEST(sound_effects);
     RUN_TEST(music);
+    RUN_TEST(master_volume);
+
+    TEST_SUITE("PAL Fonts");
+    RUN_TEST(font_load_destroy);
+    RUN_TEST(font_default);
+    RUN_TEST(draw_text);
+    RUN_TEST(text_size);
 
     TEST_SUITE("PAL Time");
     RUN_TEST(time_functions);

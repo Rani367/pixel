@@ -26,6 +26,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT EMSCRIPTEN)
     add_link_options(-fsanitize=address,undefined)
 endif()
 
+# Coverage configuration
+option(ENABLE_COVERAGE "Enable code coverage" OFF)
+
+if(ENABLE_COVERAGE AND NOT EMSCRIPTEN)
+    message(STATUS "Code coverage enabled")
+    add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
+    add_link_options(--coverage -fprofile-arcs -ftest-coverage)
+endif()
+
 # Core library
 add_library(pixel_core
     src/core/arena.c
@@ -160,6 +169,34 @@ if(EMSCRIPTEN)
         "
     )
     message(STATUS "Emscripten build configured - output will be pixel.html")
+endif()
+
+# Coverage targets
+if(ENABLE_COVERAGE AND NOT EMSCRIPTEN)
+    find_program(LCOV lcov)
+    find_program(GENHTML genhtml)
+
+    if(LCOV AND GENHTML)
+        add_custom_target(coverage
+            COMMAND ${LCOV} --zerocounters --directory . --ignore-errors unused,unsupported
+            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+            COMMAND ${LCOV} --capture --directory . --output-file coverage.info
+                    --exclude '*/tests/*' --exclude '*/build/*'
+                    --ignore-errors unused,unsupported
+            COMMAND ${GENHTML} coverage.info --output-directory coverage_report
+                    --ignore-errors unused,unsupported
+            COMMAND ${LCOV} --summary coverage.info --ignore-errors unused,unsupported
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Generating code coverage report"
+        )
+
+        add_custom_target(coverage-check
+            COMMAND sh -c "COVERAGE=$$(${LCOV} --summary coverage.info 2>&1 | grep lines | sed 's/.*: *\\([0-9.]*\\)%.*/\\1/'); test $$(echo \"$$COVERAGE >= 100\" | bc) -eq 1"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Checking coverage threshold (100% required)"
+            DEPENDS coverage
+        )
+    endif()
 endif()
 
 # Tests (skip for Emscripten builds)

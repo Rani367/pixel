@@ -460,6 +460,94 @@ TEST(object_type_names) {
 }
 
 // ============================================================================
+// Value Hash Tests
+// ============================================================================
+
+TEST(value_hash_none) {
+    uint32_t hash = value_hash(NONE_VAL);
+    ASSERT_EQ(hash, 0);
+}
+
+TEST(value_hash_bool) {
+    uint32_t hash_true = value_hash(BOOL_VAL(true));
+    uint32_t hash_false = value_hash(BOOL_VAL(false));
+    ASSERT_EQ(hash_true, 1);
+    ASSERT_EQ(hash_false, 0);
+}
+
+TEST(value_hash_number) {
+    uint32_t hash1 = value_hash(NUMBER_VAL(42.0));
+    uint32_t hash2 = value_hash(NUMBER_VAL(42.0));
+    uint32_t hash3 = value_hash(NUMBER_VAL(43.0));
+
+    // Same number = same hash
+    ASSERT_EQ(hash1, hash2);
+    // Different numbers usually have different hashes
+    ASSERT(hash1 != hash3);
+
+    // Test zero
+    uint32_t hash_zero = value_hash(NUMBER_VAL(0.0));
+    ASSERT(hash_zero == value_hash(NUMBER_VAL(0.0)));
+}
+
+TEST(value_hash_string) {
+    setup();
+
+    ObjString* s = string_copy("hello", 5);
+    uint32_t hash = value_hash(OBJECT_VAL(s));
+    // String hash uses the pre-computed hash field
+    ASSERT_EQ(hash, s->hash);
+
+    teardown();
+}
+
+TEST(value_hash_vec2) {
+    setup();
+
+    ObjVec2* v = vec2_new(3.0, 4.0);
+    uint32_t hash = value_hash(OBJECT_VAL(v));
+    // Just verify it returns something reasonable
+    ASSERT(hash != 0 || (v->x == 0 && v->y == 0));
+
+    teardown();
+}
+
+TEST(value_hash_list) {
+    setup();
+
+    ObjList* list = list_new();
+    uint32_t hash = value_hash(OBJECT_VAL(list));
+    // List uses pointer-based hash (default object hash)
+    ASSERT(hash != 0);
+
+    teardown();
+}
+
+// ============================================================================
+// Value Print Tests (for coverage)
+// ============================================================================
+
+TEST(value_print_all_types) {
+    setup();
+
+    // These just exercise the print paths - don't crash
+    value_print(NONE_VAL);
+    printf(" ");
+    value_print(BOOL_VAL(true));
+    printf(" ");
+    value_print(BOOL_VAL(false));
+    printf(" ");
+    value_print(NUMBER_VAL(42.5));
+    printf(" ");
+
+    ObjString* s = string_copy("test", 4);
+    value_print(OBJECT_VAL(s));
+    printf("\n");
+
+    teardown();
+}
+
+// ============================================================================
 // Main
 // ============================================================================
 
@@ -510,6 +598,17 @@ int main(void) {
 
     TEST_SUITE("Value - Utilities");
     RUN_TEST(object_type_names);
+
+    TEST_SUITE("Value - Hash");
+    RUN_TEST(value_hash_none);
+    RUN_TEST(value_hash_bool);
+    RUN_TEST(value_hash_number);
+    RUN_TEST(value_hash_string);
+    RUN_TEST(value_hash_vec2);
+    RUN_TEST(value_hash_list);
+
+    TEST_SUITE("Value - Print");
+    RUN_TEST(value_print_all_types);
 
     TEST_SUMMARY();
 }

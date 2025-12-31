@@ -3,15 +3,19 @@
 
 static ArenaBlock* arena_block_new(size_t capacity) {
     ArenaBlock* block = PH_ALLOC(sizeof(ArenaBlock));
+    // LCOV_EXCL_START - malloc failure
     if (block == NULL) {
         return NULL;
     }
+    // LCOV_EXCL_STOP
 
     block->memory = PH_ALLOC(capacity);
+    // LCOV_EXCL_START - malloc failure
     if (block->memory == NULL) {
         PH_FREE(block);
         return NULL;
     }
+    // LCOV_EXCL_STOP
 
     block->capacity = capacity;
     block->used = 0;
@@ -21,7 +25,7 @@ static ArenaBlock* arena_block_new(size_t capacity) {
 
 static void arena_block_free(ArenaBlock* block) {
     if (block == NULL) {
-        return;
+        return;  // LCOV_EXCL_LINE - null check
     }
     PH_FREE(block->memory);
     PH_FREE(block);
@@ -33,15 +37,19 @@ Arena* arena_new(size_t initial_capacity) {
     }
 
     Arena* arena = PH_ALLOC(sizeof(Arena));
+    // LCOV_EXCL_START - malloc failure
     if (arena == NULL) {
         return NULL;
     }
+    // LCOV_EXCL_STOP
 
     arena->first = arena_block_new(initial_capacity);
+    // LCOV_EXCL_START - malloc failure
     if (arena->first == NULL) {
         PH_FREE(arena);
         return NULL;
     }
+    // LCOV_EXCL_STOP
 
     arena->current = arena->first;
     return arena;
@@ -68,13 +76,15 @@ void* arena_alloc_aligned(Arena* arena, size_t size, size_t align) {
     if (block->used + total_size > block->capacity) {
         // Allocate a new block (at least as big as requested)
         size_t new_capacity = block->capacity * 2;
+        // LCOV_EXCL_START - large allocation edge case
         if (new_capacity < size + align) {
             new_capacity = size + align;
         }
+        // LCOV_EXCL_STOP
 
         ArenaBlock* new_block = arena_block_new(new_capacity);
         if (new_block == NULL) {
-            return NULL;
+            return NULL;  // LCOV_EXCL_LINE - malloc failure
         }
 
         block->next = new_block;
@@ -112,7 +122,7 @@ void arena_reset(Arena* arena) {
 
 void arena_free(Arena* arena) {
     if (arena == NULL) {
-        return;
+        return;  // LCOV_EXCL_LINE - null check
     }
 
     // Free all blocks

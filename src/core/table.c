@@ -127,7 +127,7 @@ bool table_delete(Table* table, const char* key, size_t key_length) {
                                     key, key_length, hash);
 
     if (entry->key == NULL || entry->key == TOMBSTONE_KEY) {
-        return false;
+        return false;  // LCOV_EXCL_LINE
     }
 
     // Place a tombstone

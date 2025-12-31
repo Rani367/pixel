@@ -11,7 +11,7 @@
 
 // Helper to compile source code and return the function
 static ObjFunction* compile_source(const char* source) {
-    Arena* arena = arena_new(1024 * 64);
+    Arena* arena = arena_new(1024 * 256);  // 256KB for large tests
 
     Parser parser;
     parser_init(&parser, source, arena);
@@ -561,6 +561,232 @@ TEST(compile_struct) {
     teardown();
 }
 
+TEST(compile_struct_with_methods) {
+    setup();
+    ObjFunction* fn = compile_source(
+        "struct Vector {\n"
+        "    x, y,\n"
+        "    function length() {\n"
+        "        return this.x * this.x + this.y * this.y\n"
+        "    }\n"
+        "}"
+    );
+    ASSERT_NOT_NULL(fn);
+
+    Chunk* chunk = fn->chunk;
+    Value constant = chunk->constants.values[chunk->code[1]];
+    ASSERT(IS_STRUCT_DEF(constant));
+
+    ObjStructDef* def = AS_STRUCT_DEF(constant);
+    ASSERT_EQ(def->field_count, 2);
+    ASSERT_STR_EQ(def->name->chars, "Vector");
+
+    // Methods are bound at runtime via OP_METHOD, not stored in struct_def at compile time
+    // Check that OP_METHOD is emitted in the bytecode
+    bool found_method_op = false;
+    for (int i = 0; i < chunk->count; i++) {
+        if (chunk->code[i] == OP_METHOD) {
+            found_method_op = true;
+            break;
+        }
+    }
+    ASSERT(found_method_op);
+
+    teardown();
+}
+
+TEST(compile_method_this) {
+    setup();
+    ObjFunction* fn = compile_source(
+        "struct Point {\n"
+        "    x, y,\n"
+        "    function get_x() {\n"
+        "        return this.x\n"
+        "    }\n"
+        "}"
+    );
+    ASSERT_NOT_NULL(fn);
+
+    // The method should have OP_GET_LOCAL 0 (this) followed by OP_GET_PROPERTY
+    Chunk* chunk = fn->chunk;
+    for (int i = 0; i < chunk->constants.count; i++) {
+        Value val = chunk->constants.values[i];
+        if (IS_FUNCTION(val)) {
+            ObjFunction* method = AS_FUNCTION(val);
+            if (method->name && strcmp(method->name->chars, "get_x") == 0) {
+                // Check for OP_GET_LOCAL 0 (this)
+                bool found = false;
+                for (int j = 0; j < method->chunk->count; j++) {
+                    if (method->chunk->code[j] == OP_GET_LOCAL &&
+                        method->chunk->code[j + 1] == 0) {
+                        found = true;
+                        break;
+                    }
+                }
+                ASSERT(found);
+            }
+        }
+    }
+
+    teardown();
+}
+
+// ============================================================================
+// For Loop Compilation Tests
+// ============================================================================
+
+TEST(compile_for_loop) {
+    setup();
+    // Need to declare len for analyzer
+    Arena* arena = arena_new(1024 * 64);
+    Parser parser;
+    parser_init(&parser, "for x in [1, 2, 3] { x }", arena);
+
+    int count = 0;
+    Stmt** statements = parser_parse(&parser, &count);
+    ASSERT_NOT_NULL(statements);
+
+    Analyzer analyzer;
+    analyzer_init(&analyzer, "test", "for x in [1, 2, 3] { x }");
+    analyzer_declare_global(&analyzer, "len");
+    bool analyze_ok = analyzer_analyze(&analyzer, statements, count);
+    ASSERT(analyze_ok);
+
+    Codegen codegen;
+    codegen_init(&codegen, "test", "for x in [1, 2, 3] { x }");
+    ObjFunction* fn = codegen_compile(&codegen, statements, count);
+    ASSERT_NOT_NULL(fn);
+
+    // Check for OP_LOOP (back jump) and OP_INDEX_GET
+    bool found_loop = false;
+    bool found_index = false;
+    for (int i = 0; i < fn->chunk->count; i++) {
+        if (fn->chunk->code[i] == OP_LOOP) found_loop = true;
+        if (fn->chunk->code[i] == OP_INDEX_GET) found_index = true;
+    }
+    ASSERT(found_loop);
+    ASSERT(found_index);
+
+    codegen_free(&codegen);
+    analyzer_free(&analyzer);
+    arena_free(arena);
+    teardown();
+}
+
+TEST(compile_for_with_break) {
+    setup();
+    Arena* arena = arena_new(1024 * 64);
+    Parser parser;
+    const char* source = "for x in [1, 2, 3] { break }";
+    parser_init(&parser, source, arena);
+
+    int count = 0;
+    Stmt** statements = parser_parse(&parser, &count);
+    ASSERT_NOT_NULL(statements);
+
+    Analyzer analyzer;
+    analyzer_init(&analyzer, "test", source);
+    analyzer_declare_global(&analyzer, "len");
+    bool analyze_ok = analyzer_analyze(&analyzer, statements, count);
+    ASSERT(analyze_ok);
+
+    Codegen codegen;
+    codegen_init(&codegen, "test", source);
+    ObjFunction* fn = codegen_compile(&codegen, statements, count);
+    ASSERT_NOT_NULL(fn);
+
+    // Check for OP_JUMP (break jumps)
+    bool found_jump = false;
+    for (int i = 0; i < fn->chunk->count; i++) {
+        if (fn->chunk->code[i] == OP_JUMP) {
+            found_jump = true;
+            break;
+        }
+    }
+    ASSERT(found_jump);
+
+    codegen_free(&codegen);
+    analyzer_free(&analyzer);
+    arena_free(arena);
+    teardown();
+}
+
+// ============================================================================
+// Postfix Operator Compilation Tests
+// ============================================================================
+
+TEST(compile_postfix_increment) {
+    setup();
+    ObjFunction* fn = compile_source("x = 0\nx++");
+    ASSERT_NOT_NULL(fn);
+
+    // Should have OP_GET_GLOBAL, OP_CONSTANT (1), OP_ADD, OP_SET_GLOBAL
+    Chunk* chunk = fn->chunk;
+    bool found_add = false;
+    for (int i = 0; i < chunk->count; i++) {
+        if (chunk->code[i] == OP_ADD) {
+            found_add = true;
+            break;
+        }
+    }
+    ASSERT(found_add);
+
+    teardown();
+}
+
+TEST(compile_postfix_decrement) {
+    setup();
+    ObjFunction* fn = compile_source("x = 10\nx--");
+    ASSERT_NOT_NULL(fn);
+
+    // Should have OP_SUBTRACT for decrement
+    Chunk* chunk = fn->chunk;
+    bool found_sub = false;
+    for (int i = 0; i < chunk->count; i++) {
+        if (chunk->code[i] == OP_SUBTRACT) {
+            found_sub = true;
+            break;
+        }
+    }
+    ASSERT(found_sub);
+
+    teardown();
+}
+
+TEST(compile_postfix_in_expression) {
+    setup();
+    // Postfix returns the old value
+    ObjFunction* fn = compile_source("x = 5\ny = x++");
+    ASSERT_NOT_NULL(fn);
+
+    Chunk* chunk = fn->chunk;
+    // Should have two SET_GLOBAL ops (one for y, one for x)
+    int set_count = 0;
+    for (int i = 0; i < chunk->count; i++) {
+        if (chunk->code[i] == OP_SET_GLOBAL) {
+            set_count++;
+        }
+    }
+    ASSERT(set_count >= 2);
+
+    teardown();
+}
+
+TEST(compile_postfix_on_property) {
+    setup();
+    // Property postfix (obj.x++) is not currently implemented in codegen
+    // This test verifies the error is correctly raised
+    const char* source =
+        "function inc_x(obj) {\n"
+        "    obj.x++\n"
+        "}";
+    ObjFunction* fn = compile_source(source);
+    // Should fail with "Increment/decrement requires a variable" error
+    ASSERT_NULL(fn);
+
+    teardown();
+}
+
 // ============================================================================
 // Disassembly Tests (visual verification)
 // ============================================================================
@@ -597,6 +823,191 @@ TEST(disassemble_compiled_code) {
 
     teardown();
 }
+
+// ============================================================================
+// Error API Tests
+// ============================================================================
+
+TEST(codegen_error_count_zero) {
+    setup();
+
+    // Successful compilation should have 0 errors
+    Arena* arena = arena_new(1024 * 64);
+    Parser parser;
+    parser_init(&parser, "x = 42", arena);
+    int count = 0;
+    Stmt** statements = parser_parse(&parser, &count);
+    ASSERT_NOT_NULL(statements);
+
+    Analyzer analyzer;
+    analyzer_init(&analyzer, "test", "x = 42");
+    bool ok = analyzer_analyze(&analyzer, statements, count);
+    ASSERT(ok);
+
+    Codegen codegen;
+    codegen_init(&codegen, "test", "x = 42");
+    ObjFunction* fn = codegen_compile(&codegen, statements, count);
+    ASSERT_NOT_NULL(fn);
+
+    // Error count should be 0
+    ASSERT_EQ(codegen_error_count(&codegen), 0);
+
+    codegen_free(&codegen);
+    analyzer_free(&analyzer);
+    arena_free(arena);
+    teardown();
+}
+
+TEST(codegen_get_error_bounds) {
+    setup();
+
+    Codegen codegen;
+    codegen_init(&codegen, "test", "x = 42");
+
+    // Getting error at invalid index should return NULL
+    ASSERT(codegen_get_error(&codegen, -1) == NULL);
+    ASSERT(codegen_get_error(&codegen, 0) == NULL);  // No errors
+    ASSERT(codegen_get_error(&codegen, 100) == NULL);
+
+    codegen_free(&codegen);
+    teardown();
+}
+
+TEST(codegen_print_errors_output) {
+    setup();
+
+    Codegen codegen;
+    codegen_init(&codegen, "test", "x = 42");
+
+    // Print errors to /dev/null (just exercise the code path)
+    FILE* null_file = fopen("/dev/null", "w");
+    if (null_file) {
+        codegen_print_errors(&codegen, null_file);
+        fclose(null_file);
+    }
+
+    codegen_free(&codegen);
+    teardown();
+}
+
+// ============================================================================
+// Edge Cases
+// ============================================================================
+
+TEST(compile_many_locals) {
+    setup();
+    // Test function with many local variables
+    char source[4096] = "function many() {\n";
+    for (int i = 0; i < 50; i++) {
+        char line[64];
+        snprintf(line, sizeof(line), "    x%d = %d\n", i, i);
+        strcat(source, line);
+    }
+    strcat(source, "    return x0 + x49\n}\n");
+
+    ObjFunction* fn = compile_source(source);
+    ASSERT_NOT_NULL(fn);
+
+    teardown();
+}
+
+TEST(compile_nested_closures) {
+    setup();
+    const char* source =
+        "function outer() {\n"
+        "    x = 1\n"
+        "    function middle() {\n"
+        "        y = 2\n"
+        "        function inner() {\n"
+        "            return x + y\n"
+        "        }\n"
+        "        return inner\n"
+        "    }\n"
+        "    return middle\n"
+        "}\n";
+
+    ObjFunction* fn = compile_source(source);
+    ASSERT_NOT_NULL(fn);
+
+    // Should have closure ops
+    Chunk* chunk = fn->chunk;
+    bool found_closure = false;
+    for (int i = 0; i < chunk->count; i++) {
+        if (chunk->code[i] == OP_CLOSURE) {
+            found_closure = true;
+            break;
+        }
+    }
+    ASSERT(found_closure);
+
+    teardown();
+}
+
+TEST(compile_variable_redeclaration_error) {
+    setup();
+    // Same variable declared twice in same scope should error
+    const char* source =
+        "function test() {\n"
+        "    x = 1\n"
+        "    x = 2\n"  // This is assignment, not redeclaration - should be OK
+        "    return x\n"
+        "}\n";
+
+    ObjFunction* fn = compile_source(source);
+    // Assignment to same variable is allowed
+    ASSERT_NOT_NULL(fn);
+
+    teardown();
+}
+
+TEST(compile_break_in_while) {
+    setup();
+    const char* source =
+        "i = 0\n"
+        "while i < 10 {\n"
+        "    i = i + 1\n"
+        "    if i == 5 {\n"
+        "        break\n"
+        "    }\n"
+        "}\n";
+
+    ObjFunction* fn = compile_source(source);
+    ASSERT_NOT_NULL(fn);
+
+    // Should have OP_JUMP for break
+    Chunk* chunk = fn->chunk;
+    bool found_jump = false;
+    for (int i = 0; i < chunk->count; i++) {
+        if (chunk->code[i] == OP_JUMP) {
+            found_jump = true;
+            break;
+        }
+    }
+    ASSERT(found_jump);
+
+    teardown();
+}
+
+TEST(compile_continue_in_while) {
+    setup();
+    const char* source =
+        "i = 0\n"
+        "while i < 10 {\n"
+        "    i = i + 1\n"
+        "    if i == 5 {\n"
+        "        continue\n"
+        "    }\n"
+        "}\n";
+
+    ObjFunction* fn = compile_source(source);
+    ASSERT_NOT_NULL(fn);
+
+    teardown();
+}
+
+// NOTE: OP_CONSTANT_LONG is triggered when there are >256 constants in a chunk.
+// This is hard to test in unit tests due to parser/analyzer memory limits.
+// In practice, this path is used by large programs.
 
 // ============================================================================
 // Main
@@ -645,9 +1056,33 @@ int main(void) {
 
     TEST_SUITE("Codegen - Structs");
     RUN_TEST(compile_struct);
+    RUN_TEST(compile_struct_with_methods);
+    RUN_TEST(compile_method_this);
+
+    TEST_SUITE("Codegen - For Loops");
+    RUN_TEST(compile_for_loop);
+    RUN_TEST(compile_for_with_break);
+
+    TEST_SUITE("Codegen - Postfix Operators");
+    RUN_TEST(compile_postfix_increment);
+    RUN_TEST(compile_postfix_decrement);
+    RUN_TEST(compile_postfix_in_expression);
+    RUN_TEST(compile_postfix_on_property);
 
     TEST_SUITE("Codegen - Disassembly");
     RUN_TEST(disassemble_compiled_code);
+
+    TEST_SUITE("Codegen - Error API");
+    RUN_TEST(codegen_error_count_zero);
+    RUN_TEST(codegen_get_error_bounds);
+    RUN_TEST(codegen_print_errors_output);
+
+    TEST_SUITE("Codegen - Edge Cases");
+    RUN_TEST(compile_many_locals);
+    RUN_TEST(compile_nested_closures);
+    RUN_TEST(compile_variable_redeclaration_error);
+    RUN_TEST(compile_break_in_while);
+    RUN_TEST(compile_continue_in_while);
 
     TEST_SUMMARY();
 }

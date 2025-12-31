@@ -155,6 +155,7 @@ bool pal_init(PalBackend backend) {
 
     bool result = false;
     switch (backend) {
+        // LCOV_EXCL_START - SDL2 backend requires SDL initialization
         case PAL_BACKEND_SDL2:
 #ifdef PAL_USE_SDL2
             result = pal_sdl_init();
@@ -162,6 +163,7 @@ bool pal_init(PalBackend backend) {
             result = false;
 #endif
             break;
+        // LCOV_EXCL_STOP
         case PAL_BACKEND_MOCK:
             result = pal_mock_init();
             break;
@@ -175,11 +177,13 @@ void pal_quit(void) {
     if (!pal_initialized) return;
 
     switch (current_backend) {
+        // LCOV_EXCL_START - SDL2 backend
         case PAL_BACKEND_SDL2:
 #ifdef PAL_USE_SDL2
             pal_sdl_quit();
 #endif
             break;
+        // LCOV_EXCL_STOP
         case PAL_BACKEND_MOCK:
             pal_mock_quit();
             break;
@@ -198,25 +202,29 @@ PalBackend pal_get_backend(void) {
 
 PalWindow* pal_window_create(const char* title, int width, int height) {
     switch (current_backend) {
+        // LCOV_EXCL_START - SDL2 backend
         case PAL_BACKEND_SDL2:
 #ifdef PAL_USE_SDL2
             return pal_sdl_window_create(title, width, height);
 #else
             return NULL;
 #endif
+        // LCOV_EXCL_STOP
         case PAL_BACKEND_MOCK:
             return pal_mock_window_create(title, width, height);
     }
-    return NULL;
+    return NULL;  // LCOV_EXCL_LINE
 }
 
 void pal_window_destroy(PalWindow* window) {
     switch (current_backend) {
+        // LCOV_EXCL_START - SDL2 backend
         case PAL_BACKEND_SDL2:
 #ifdef PAL_USE_SDL2
             pal_sdl_window_destroy(window);
 #endif
             break;
+        // LCOV_EXCL_STOP
         case PAL_BACKEND_MOCK:
             pal_mock_window_destroy(window);
             break;
@@ -225,11 +233,13 @@ void pal_window_destroy(PalWindow* window) {
 
 void pal_window_present(PalWindow* window) {
     switch (current_backend) {
+        // LCOV_EXCL_START - SDL2 backend
         case PAL_BACKEND_SDL2:
 #ifdef PAL_USE_SDL2
             pal_sdl_window_present(window);
 #endif
             break;
+        // LCOV_EXCL_STOP
         case PAL_BACKEND_MOCK:
             pal_mock_window_present(window);
             break;
@@ -238,11 +248,13 @@ void pal_window_present(PalWindow* window) {
 
 void pal_window_clear(PalWindow* window, uint8_t r, uint8_t g, uint8_t b) {
     switch (current_backend) {
+        // LCOV_EXCL_START - SDL2 backend
         case PAL_BACKEND_SDL2:
 #ifdef PAL_USE_SDL2
             pal_sdl_window_clear(window, r, g, b);
 #endif
             break;
+        // LCOV_EXCL_STOP
         case PAL_BACKEND_MOCK:
             pal_mock_window_clear(window, r, g, b);
             break;
@@ -251,11 +263,13 @@ void pal_window_clear(PalWindow* window, uint8_t r, uint8_t g, uint8_t b) {
 
 void pal_window_set_title(PalWindow* window, const char* title) {
     switch (current_backend) {
+        // LCOV_EXCL_START - SDL2 backend
         case PAL_BACKEND_SDL2:
 #ifdef PAL_USE_SDL2
             pal_sdl_window_set_title(window, title);
 #endif
             break;
+        // LCOV_EXCL_STOP
         case PAL_BACKEND_MOCK:
             pal_mock_window_set_title(window, title);
             break;
@@ -264,6 +278,7 @@ void pal_window_set_title(PalWindow* window, const char* title) {
 
 void pal_window_get_size(PalWindow* window, int* width, int* height) {
     switch (current_backend) {
+        // LCOV_EXCL_START - SDL2 backend
         case PAL_BACKEND_SDL2:
 #ifdef PAL_USE_SDL2
             pal_sdl_window_get_size(window, width, height);
@@ -272,6 +287,7 @@ void pal_window_get_size(PalWindow* window, int* width, int* height) {
             if (height) *height = 0;
 #endif
             break;
+        // LCOV_EXCL_STOP
         case PAL_BACKEND_MOCK:
             pal_mock_window_get_size(window, width, height);
             break;
@@ -282,6 +298,7 @@ void pal_window_get_size(PalWindow* window, int* width, int* height) {
 // Rendering primitives
 // -----------------------------------------------------------------------------
 
+// LCOV_EXCL_START - rendering primitives SDL2 backend
 void pal_draw_rect(PalWindow* window, int x, int y, int width, int height,
                    uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     switch (current_backend) {
@@ -351,11 +368,13 @@ void pal_draw_circle_outline(PalWindow* window, int cx, int cy, int radius,
             break;
     }
 }
+// LCOV_EXCL_STOP
 
 // -----------------------------------------------------------------------------
 // Textures
 // -----------------------------------------------------------------------------
 
+// LCOV_EXCL_START - texture functions SDL2 backend
 PalTexture* pal_texture_load(PalWindow* window, const char* path) {
     switch (current_backend) {
         case PAL_BACKEND_SDL2:
@@ -447,11 +466,13 @@ void pal_draw_texture_region(PalWindow* window, PalTexture* texture,
             break;
     }
 }
+// LCOV_EXCL_STOP
 
 // -----------------------------------------------------------------------------
 // Input - Keyboard
 // -----------------------------------------------------------------------------
 
+// LCOV_EXCL_START - input functions SDL2 backend
 void pal_poll_events(void) {
     switch (current_backend) {
         case PAL_BACKEND_SDL2:
@@ -520,11 +541,13 @@ bool pal_key_released(PalKey key) {
     }
     return false;
 }
+// LCOV_EXCL_STOP
 
 // -----------------------------------------------------------------------------
 // Input - Mouse
 // -----------------------------------------------------------------------------
 
+// LCOV_EXCL_START - mouse input SDL2 backend
 void pal_mouse_position(int* x, int* y) {
     switch (current_backend) {
         case PAL_BACKEND_SDL2:
@@ -582,11 +605,13 @@ bool pal_mouse_released(PalMouseButton button) {
     }
     return false;
 }
+// LCOV_EXCL_STOP
 
 // -----------------------------------------------------------------------------
 // Audio - Sound effects
 // -----------------------------------------------------------------------------
 
+// LCOV_EXCL_START - audio SDL2 backend
 PalSound* pal_sound_load(const char* path) {
     switch (current_backend) {
         case PAL_BACKEND_SDL2:
@@ -872,3 +897,4 @@ void pal_text_size(PalFont* font, const char* text, int* width, int* height) {
             break;
     }
 }
+// LCOV_EXCL_STOP

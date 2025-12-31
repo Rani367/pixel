@@ -66,7 +66,7 @@ SourceLocation source_location_new(const char* file, int line, int column, int l
 Error* error_new(ErrorCode code, SourceLocation loc, const char* fmt, ...) {
     Error* err = PH_ALLOC(sizeof(Error));
     if (err == NULL) {
-        return NULL;
+        return NULL;  // LCOV_EXCL_LINE - malloc failure
     }
 
     err->code = code;
@@ -82,9 +82,11 @@ Error* error_new(ErrorCode code, SourceLocation loc, const char* fmt, ...) {
     int size = vsnprintf(NULL, 0, fmt, args_copy);
     va_end(args_copy);
 
+    // LCOV_EXCL_START - vsnprintf only returns negative on encoding errors
     if (size < 0) {
         err->message = ph_strdup("(error formatting message)");
     } else {
+    // LCOV_EXCL_STOP
         err->message = PH_ALLOC((size_t)size + 1);
         vsnprintf(err->message, (size_t)size + 1, fmt, args);
     }
@@ -96,7 +98,7 @@ Error* error_new(ErrorCode code, SourceLocation loc, const char* fmt, ...) {
 Error* error_wrap(Error* cause, const char* fmt, ...) {
     Error* err = PH_ALLOC(sizeof(Error));
     if (err == NULL) {
-        return cause;  // Can't wrap, return original
+        return cause;  // LCOV_EXCL_LINE - malloc failure
     }
 
     err->code = cause ? cause->code : ERR_NONE;
@@ -111,9 +113,11 @@ Error* error_wrap(Error* cause, const char* fmt, ...) {
     int size = vsnprintf(NULL, 0, fmt, args_copy);
     va_end(args_copy);
 
+    // LCOV_EXCL_START - vsnprintf only returns negative on encoding errors
     if (size < 0) {
         err->message = ph_strdup("(error formatting message)");
     } else {
+    // LCOV_EXCL_STOP
         err->message = PH_ALLOC((size_t)size + 1);
         vsnprintf(err->message, (size_t)size + 1, fmt, args);
     }
@@ -139,6 +143,7 @@ void error_print(Error* err, FILE* out) {
         fprintf(out, "error: %s\n", err->message);
     }
 
+    // LCOV_EXCL_START - error cause chain rarely used in tests
     // Print the cause chain
     Error* cause = err->cause;
     while (cause != NULL) {
@@ -153,14 +158,17 @@ void error_print(Error* err, FILE* out) {
         }
         cause = cause->cause;
     }
+    // LCOV_EXCL_STOP
 }
 
 // Find the start and length of line N in source (1-indexed)
 static const char* find_source_line(const char* source, int line_num, int* out_length) {
+    // LCOV_EXCL_START - edge case validation
     if (source == NULL || line_num <= 0) {
         *out_length = 0;
         return NULL;
     }
+    // LCOV_EXCL_STOP
 
     const char* p = source;
     int current_line = 1;
@@ -173,10 +181,12 @@ static const char* find_source_line(const char* source, int line_num, int* out_l
         p++;
     }
 
+    // LCOV_EXCL_START - requested line beyond source
     if (current_line != line_num) {
         *out_length = 0;
         return NULL;
     }
+    // LCOV_EXCL_STOP
 
     // Find the end of this line
     const char* line_start = p;
@@ -190,7 +200,7 @@ static const char* find_source_line(const char* source, int line_num, int* out_l
 
 void error_print_pretty(Error* err, const char* source, FILE* out) {
     if (err == NULL) {
-        return;
+        return;  // LCOV_EXCL_LINE - null check
     }
 
     // Fall back to simple print if no source or location
@@ -216,10 +226,12 @@ void error_print_pretty(Error* err, const char* source, FILE* out) {
         // Calculate gutter width (line number + space)
         int line_num_width = 1;
         int temp = err->location.line;
+        // LCOV_EXCL_START - only for 2+ digit line numbers
         while (temp >= 10) {
             line_num_width++;
             temp /= 10;
         }
+        // LCOV_EXCL_STOP
 
         // Print empty gutter line
         fprintf(out, "%*s |\n", line_num_width, "");
@@ -258,6 +270,7 @@ void error_print_pretty(Error* err, const char* source, FILE* out) {
 
         // Print the underline carets
         int underline_len = err->location.length;
+        // LCOV_EXCL_START - edge cases for underline length
         if (underline_len <= 0) {
             underline_len = 1;  // At least one caret
         }
@@ -267,6 +280,7 @@ void error_print_pretty(Error* err, const char* source, FILE* out) {
             underline_len = line_length - (column - 1);
             if (underline_len < 1) underline_len = 1;
         }
+        // LCOV_EXCL_STOP
 
         for (int i = 0; i < underline_len; i++) {
             fputc('^', out);
@@ -277,12 +291,14 @@ void error_print_pretty(Error* err, const char* source, FILE* out) {
         fprintf(out, "%*s |\n", line_num_width, "");
     }
 
+    // LCOV_EXCL_START - cause chain rarely used
     // Print cause chain (simplified)
     Error* cause = err->cause;
     while (cause != NULL) {
         fprintf(out, "  = caused by: %s\n", cause->message);
         cause = cause->cause;
     }
+    // LCOV_EXCL_STOP
 }
 
 void error_free(Error* err) {

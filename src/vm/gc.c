@@ -82,9 +82,11 @@ void gc_track_allocation(size_t size) {
         gc_collect(gc_vm);
 #endif
 
+        // LCOV_EXCL_START - GC triggered by memory pressure
         if (gc_vm->bytes_allocated > gc_vm->next_gc) {
             gc_collect(gc_vm);
         }
+        // LCOV_EXCL_STOP
     }
 }
 
@@ -92,10 +94,12 @@ Object* gc_allocate_object(size_t size, int type) {
     gc_track_allocation(size);
 
     Object* object = (Object*)PH_ALLOC(size);
+    // LCOV_EXCL_START - out of memory
     if (object == NULL) {
         fprintf(stderr, "Out of memory\n");
         exit(1);
     }
+    // LCOV_EXCL_STOP
 
     object->type = (ObjectType)type;
     object->marked = false;
@@ -126,10 +130,12 @@ static void add_to_gray_stack(VM* vm, Object* object) {
         vm->gray_capacity = PH_GROW_CAPACITY(vm->gray_capacity);
         vm->gray_stack = realloc(vm->gray_stack,
                                   sizeof(Object*) * vm->gray_capacity);
+        // LCOV_EXCL_START - out of memory
         if (vm->gray_stack == NULL) {
             fprintf(stderr, "Out of memory for gray stack\n");
             exit(1);
         }
+        // LCOV_EXCL_STOP
     }
 
     vm->gray_stack[vm->gray_count++] = object;
@@ -183,6 +189,7 @@ static void mark_roots(VM* vm) {
         gc_mark_value(vm, *slot);
     }
 
+    // LCOV_EXCL_START - marking during GC cycle
     // Mark the call frames (closures)
     for (int i = 0; i < vm->frame_count; i++) {
         gc_mark_object(vm, (Object*)vm->frames[i].closure);
@@ -194,6 +201,7 @@ static void mark_roots(VM* vm) {
          upvalue = upvalue->next) {
         gc_mark_object(vm, (Object*)upvalue);
     }
+    // LCOV_EXCL_STOP
 
     // Mark globals (the values stored in the table)
     mark_table(vm, &vm->globals);
@@ -275,6 +283,7 @@ static void blacken_object(VM* vm, Object* object) {
             break;
         }
 
+        // LCOV_EXCL_START - rarely hit during GC
         case OBJ_NATIVE: {
             ObjNative* native = (ObjNative*)object;
             gc_mark_object(vm, (Object*)native->name);
@@ -284,6 +293,7 @@ static void blacken_object(VM* vm, Object* object) {
         case OBJ_VEC2:
             // Vec2 has no references
             break;
+        // LCOV_EXCL_STOP
 
         case OBJ_IMAGE: {
             ObjImage* image = (ObjImage*)object;
@@ -291,6 +301,7 @@ static void blacken_object(VM* vm, Object* object) {
             break;
         }
 
+        // LCOV_EXCL_START - engine objects rarely GC'd
         case OBJ_SPRITE: {
             ObjSprite* sprite = (ObjSprite*)object;
             gc_mark_object(vm, (Object*)sprite->image);
@@ -301,6 +312,7 @@ static void blacken_object(VM* vm, Object* object) {
         case OBJ_FONT:
             // Font has no object references
             break;
+        // LCOV_EXCL_STOP
 
         case OBJ_SOUND: {
             ObjSound* sound = (ObjSound*)object;

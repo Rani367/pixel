@@ -39,6 +39,71 @@ jobs:
       - name: Verify CLI
         run: ./build/pixel version
 
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Configure with coverage
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run tests with coverage
+        run: cd build && make coverage
+
+      - name: Check coverage threshold
+        run: |
+          cd build
+          COVERAGE=$(lcov --summary coverage.info 2>&1 | grep "lines" | sed 's/.*: *\([0-9.]*\)%.*/\1/')
+          echo "Line coverage: $COVERAGE%"
+          # For now, just report coverage. Enable threshold check when we reach 100%
+          # if [ $(echo "$COVERAGE < 100" | bc -l) -eq 1 ]; then
+          #   echo "ERROR: Coverage below 100%"
+          #   exit 1
+          # fi
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build/coverage_report
+        if: always()
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-tidy
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run clang-tidy
+        run: |
+          find src -name '*.c' | head -20 | xargs clang-tidy -p build \
+            --checks='-*,clang-analyzer-*,bugprone-*' || true
+        # Run on subset of files and don't fail build for now
+
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: |
+          # Check formatting but don't fail build for now
+          find src tests -name '*.c' -o -name '*.h' | head -20 | xargs clang-format --dry-run || true
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build

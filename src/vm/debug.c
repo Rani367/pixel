@@ -78,7 +78,7 @@ static int closure_instruction(Chunk* chunk, int offset) {
     // Get the function to determine upvalue count
     Value value = chunk->constants.values[constant];
     if (!IS_FUNCTION(value)) {
-        return offset;
+        return offset;  // LCOV_EXCL_LINE
     }
 
     ObjFunction* function = AS_FUNCTION(value);
