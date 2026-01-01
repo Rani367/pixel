@@ -60,7 +60,57 @@ if is_paused or game_over {
 }
 ```
 
+## For Loops
+
+The `for` loop iterates over items in a list or range.
+
+### Basic For Loop
+
+```pixel
+items = ["sword", "shield", "potion"]
+for item in items {
+    println(item)
+}
+```
+
+### For Loop with Range
+
+Use `range()` to generate a sequence of numbers:
+
+```pixel
+// 0 to 9
+for i in range(10) {
+    println(i)
+}
+
+// 5 to 9
+for i in range(5, 10) {
+    println(i)
+}
+
+// 10 down to 1 (step of -1)
+for i in range(10, 0, -1) {
+    println(i)
+}
+
+// Even numbers: 0, 2, 4, 6, 8
+for i in range(0, 10, 2) {
+    println(i)
+}
+```
+
+### Iterating with Index
+
+```pixel
+enemies = [enemy1, enemy2, enemy3]
+for i in range(len(enemies)) {
+    enemies[i].update()
+}
+```
+
 ## While Loops
+
+Use `while` for loops that depend on a condition rather than iteration count.
 
 ```pixel
 i = 0
@@ -115,6 +165,12 @@ while i < 10 {
 ### Counting Loop
 
 ```pixel
+// Preferred: use a for loop with range
+for i in range(10) {
+    // Do something with i (0 to 9)
+}
+
+// When you need more control
 i = 0
 while i < 10 {
     // Do something with i
@@ -125,11 +181,15 @@ while i < 10 {
 ### Iterating a List
 
 ```pixel
+// Preferred: use a for loop
 items = ["sword", "shield", "potion"]
-i = 0
-while i < len(items) {
+for item in items {
+    println(item)
+}
+
+// With index access
+for i in range(len(items)) {
     println(items[i])
-    i = i + 1
 }
 ```
 
@@ -166,6 +226,13 @@ while i < len(enemies) and not found {
 ### Countdown
 
 ```pixel
+// Using for loop with negative step
+for i in range(10, 0, -1) {
+    println(i)
+}
+println("Go!")
+
+// Using while loop
 countdown = 10
 while countdown > 0 {
     println(countdown)

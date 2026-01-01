@@ -1,10 +1,17 @@
 ---
 title: "Engine API Reference"
-description: "Pixel game engine API: window management, drawing primitives, sprites, animations, fonts, camera control, particles, and scene management."
-keywords: ["Pixel engine", "sprite API", "drawing functions", "game camera", "particle effects", "scene management"]
+description: "Pixel game engine API: window management, drawing primitives, sprites, images, fonts, and text rendering."
+keywords: ["Pixel engine", "sprite API", "drawing functions", "game graphics", "text rendering"]
 ---
 
 # Engine API Reference
+
+This page covers window management, drawing, sprites, and text. For other engine features, see:
+
+- [Animation API](/pixel/docs/api/animation) - Sprite sheet animations
+- [Camera API](/pixel/docs/api/camera) - Camera position, zoom, shake, and follow
+- [Particles API](/pixel/docs/api/particles) - Particle effects and emitters
+- [Scenes API](/pixel/docs/api/scenes) - Scene management and transitions
 
 ## Window Management
 
@@ -41,8 +48,15 @@ function on_update(dt) {
 }
 ```
 
+Note: The `dt` parameter passed to `on_update(dt)` is the same as `delta_time()`.
+
 ### game_time()
 Returns total time since game start in seconds.
+
+```pixel
+// Animate based on time
+offset = sin(game_time() * 2) * 10
+```
 
 ## Colors
 
@@ -51,13 +65,15 @@ Creates a color from red, green, blue values (0-255).
 
 ```pixel
 sky_blue = rgb(135, 206, 235)
+dark_gray = rgb(50, 50, 50)
 ```
 
 ### rgba(r, g, b, a)
 Creates a color with alpha transparency (0-255).
 
 ```pixel
-semi_transparent = rgba(255, 0, 0, 128)
+semi_transparent = rgba(255, 0, 0, 128)  // 50% transparent red
+invisible = rgba(0, 0, 0, 0)             // Fully transparent
 ```
 
 ### Color Constants
@@ -96,11 +112,25 @@ Draws a filled rectangle.
 draw_rect(100, 100, 50, 30, RED)
 ```
 
+### draw_rect_outline(x, y, width, height, color)
+Draws a rectangle outline (not filled).
+
+```pixel
+draw_rect_outline(100, 100, 50, 30, WHITE)
+```
+
 ### draw_circle(x, y, radius, color)
 Draws a filled circle centered at (x, y).
 
 ```pixel
 draw_circle(400, 300, 25, YELLOW)
+```
+
+### draw_circle_outline(x, y, radius, color)
+Draws a circle outline (not filled).
+
+```pixel
+draw_circle_outline(400, 300, 25, WHITE)
 ```
 
 ### draw_line(x1, y1, x2, y2, color)
@@ -113,24 +143,37 @@ draw_line(0, 0, 800, 600, WHITE)
 ## Images
 
 ### load_image(path)
-Loads an image from file. Returns an image object.
+Loads an image from file. Returns an image object. Supports PNG, JPG, BMP.
 
 ```pixel
 player_image = load_image("assets/player.png")
+background = load_image("assets/bg.jpg")
 ```
 
 ### draw_image(image, x, y)
-Draws an image at the specified position.
+Draws an image at the specified position (top-left corner).
 
 ```pixel
 draw_image(player_image, 100, 100)
 ```
 
 ### draw_image_ex(image, x, y, width, height, rotation, flip_x, flip_y)
-Draws an image with size, rotation, and flip transformations.
+Draws an image with transformations.
+
+| Parameter | Description |
+|-----------|-------------|
+| `x`, `y` | Position (top-left corner) |
+| `width`, `height` | Size in pixels (0 = original size) |
+| `rotation` | Rotation in degrees |
+| `flip_x` | Flip horizontally (true/false) |
+| `flip_y` | Flip vertically (true/false) |
 
 ```pixel
+// Draw at double size, rotated 45 degrees
 draw_image_ex(player_image, 100, 100, 64, 64, 45, false, false)
+
+// Draw flipped horizontally
+draw_image_ex(player_image, 100, 100, 0, 0, 0, true, false)
 ```
 
 ### image_width(image)
@@ -139,17 +182,27 @@ Returns the width of an image in pixels.
 ### image_height(image)
 Returns the height of an image in pixels.
 
+```pixel
+img = load_image("player.png")
+println("Size: " + to_string(image_width(img)) + "x" + to_string(image_height(img)))
+```
+
 ## Sprites
 
-Sprites are game objects with position, rotation, and other properties.
+Sprites are game objects with position, rotation, and other properties. They're ideal for game entities like players, enemies, and items.
 
 ### create_sprite(image)
-Creates a sprite from an image.
+Creates a sprite from an image. Pass `none` for a sprite without an image (useful for collision boxes).
 
 ```pixel
 player = create_sprite(load_image("player.png"))
 player.x = 400
 player.y = 300
+
+// Collision-only sprite (no image)
+hitbox = create_sprite(none)
+hitbox.width = 50
+hitbox.height = 50
 ```
 
 ### draw_sprite(sprite)
@@ -159,40 +212,52 @@ Draws a sprite at its current position with all transformations.
 function on_draw() {
     clear(BLACK)
     draw_sprite(player)
+    draw_sprite(enemy)
 }
 ```
 
 ### Sprite Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `x` | Number | X position |
-| `y` | Number | Y position |
-| `width` | Number | Sprite width (0 = use image size) |
-| `height` | Number | Sprite height (0 = use image size) |
-| `rotation` | Number | Rotation in degrees |
-| `scale_x` | Number | Horizontal scale (1.0 = normal) |
-| `scale_y` | Number | Vertical scale (1.0 = normal) |
-| `origin_x` | Number | X origin for rotation (0-1, 0.5 = center) |
-| `origin_y` | Number | Y origin for rotation (0-1, 0.5 = center) |
-| `flip_x` | Boolean | Flip horizontally |
-| `flip_y` | Boolean | Flip vertically |
-| `visible` | Boolean | Whether to draw |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `x` | Number | 0 | X position |
+| `y` | Number | 0 | Y position |
+| `width` | Number | 0 | Sprite width (0 = use image size) |
+| `height` | Number | 0 | Sprite height (0 = use image size) |
+| `rotation` | Number | 0 | Rotation in degrees |
+| `scale_x` | Number | 1 | Horizontal scale (1.0 = normal) |
+| `scale_y` | Number | 1 | Vertical scale (1.0 = normal) |
+| `origin_x` | Number | 0.5 | X origin for rotation (0-1, 0.5 = center) |
+| `origin_y` | Number | 0.5 | Y origin for rotation (0-1, 0.5 = center) |
+| `flip_x` | Boolean | false | Flip horizontally |
+| `flip_y` | Boolean | false | Flip vertically |
+| `visible` | Boolean | true | Whether to draw |
+
+```pixel
+player = create_sprite(load_image("player.png"))
+player.x = 400
+player.y = 300
+player.rotation = 45           // Rotate 45 degrees
+player.scale_x = 2             // Double width
+player.flip_x = true           // Face left
+```
 
 ### Sprite Physics Properties
 
-See [Physics API](physics.md) for physics-related sprite properties like `velocity_x`, `velocity_y`, `friction`, and `gravity_scale`.
+For physics-related properties like `velocity_x`, `velocity_y`, `friction`, and `gravity_scale`, see the [Physics API](/pixel/docs/api/physics).
 
-### Sprite Sheets
+### Sprite Sheet Properties
 
-For animated sprites using sprite sheets:
+For animated sprites using sprite sheets, you can set these properties directly:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `frame_x` | Number | X offset in sheet |
-| `frame_y` | Number | Y offset in sheet |
-| `frame_width` | Number | Frame width |
-| `frame_height` | Number | Frame height |
+| `frame_x` | Number | X offset in sheet (pixels) |
+| `frame_y` | Number | Y offset in sheet (pixels) |
+| `frame_width` | Number | Frame width (pixels) |
+| `frame_height` | Number | Frame height (pixels) |
+
+For animation playback, see the [Animation API](/pixel/docs/api/animation).
 
 ### set_sprite_frame(sprite, frame_index)
 Sets the current frame of a sprite sheet by index.
@@ -202,34 +267,6 @@ set_sprite_frame(player, 0)    // First frame
 set_sprite_frame(player, 1)    // Second frame
 ```
 
-## Animations
-
-### create_animation(image, frame_width, frame_height, frames, frame_time)
-Creates an animation from a sprite sheet image.
-
-- `image` - The sprite sheet image
-- `frame_width`, `frame_height` - Size of each frame in pixels
-- `frames` - List of frame indices to play
-- `frame_time` - Duration of each frame in seconds
-
-```pixel
-sheet = load_image("player_walk.png")
-walk_anim = create_animation(sheet, 32, 32, [0, 1, 2, 3], 0.15)
-```
-
-### sprite_set_animation(sprite, animation)
-Assigns an animation to a sprite.
-
-```pixel
-sprite_set_animation(player, walk_anim)
-```
-
-### sprite_play(sprite)
-Starts playing the sprite's animation.
-
-### sprite_stop(sprite)
-Stops the animation.
-
 ## Fonts and Text
 
 ### default_font(size)
@@ -238,10 +275,11 @@ Gets the built-in font at the specified size.
 ```pixel
 title_font = default_font(48)
 ui_font = default_font(24)
+small_font = default_font(16)
 ```
 
 ### load_font(path, size)
-Loads a custom TrueType font.
+Loads a custom TrueType font (.ttf file).
 
 ```pixel
 custom_font = load_font("fonts/arcade.ttf", 32)
@@ -252,133 +290,28 @@ Draws text at the specified position.
 
 ```pixel
 draw_text("Score: 100", 20, 20, ui_font, WHITE)
+draw_text("GAME OVER", 300, 280, title_font, RED)
 ```
 
 ### text_width(text, font)
-Returns the pixel width of the text.
+Returns the pixel width of the text. Useful for centering.
 
 ```pixel
-width = text_width("Hello", font)
-centered_x = window_width() / 2 - width / 2
+title = "Welcome!"
+width = text_width(title, title_font)
+x = window_width() / 2 - width / 2
+draw_text(title, x, 200, title_font, WHITE)
 ```
 
 ### text_height(text, font)
 Returns the pixel height of the text.
 
-## Camera
+## See Also
 
-### camera_x()
-Returns the current camera X position.
-
-### camera_y()
-Returns the current camera Y position.
-
-### camera_zoom()
-Returns the current camera zoom level.
-
-### camera_set_position(x, y)
-Sets the camera position (affects all drawing).
-
-```pixel
-camera_set_position(player.x - 400, player.y - 300)
-```
-
-### camera_set_zoom(zoom)
-Sets the camera zoom level (1.0 = normal).
-
-### camera_follow(sprite, smoothing)
-Makes the camera follow a sprite with optional smoothing (0-1).
-
-```pixel
-camera_follow(player, 0.1)  // Smooth follow
-```
-
-### camera_shake(intensity, duration)
-Adds screen shake effect.
-
-```pixel
-camera_shake(5, 0.3)  // 5 pixel shake for 0.3 seconds
-```
-
-### screen_to_world_x(x)
-Converts a screen X coordinate to world X coordinate.
-
-### screen_to_world_y(y)
-Converts a screen Y coordinate to world Y coordinate.
-
-```pixel
-// Get world position of mouse click
-world_x = screen_to_world_x(mouse_x())
-world_y = screen_to_world_y(mouse_y())
-```
-
-### world_to_screen_x(x)
-Converts a world X coordinate to screen X coordinate.
-
-### world_to_screen_y(y)
-Converts a world Y coordinate to screen Y coordinate.
-
-## Particles
-
-### create_emitter(x, y)
-Creates a particle emitter at position.
-
-```pixel
-emitter = create_emitter(400, 300)
-```
-
-### emitter_emit(emitter, count)
-Emits particles from the emitter.
-
-```pixel
-emitter_emit(explosion, 50)
-```
-
-### Emitter Configuration
-
-| Function | Description |
-|----------|-------------|
-| `emitter_set_color(e, color)` | Particle color |
-| `emitter_set_size(e, min, max)` | Size range |
-| `emitter_set_speed(e, min, max)` | Speed range |
-| `emitter_set_lifetime(e, min, max)` | Lifetime range (seconds) |
-| `emitter_set_angle(e, min, max)` | Emission angle range (degrees) |
-| `emitter_set_gravity(e, gravity)` | Gravity applied to particles |
-| `emitter_set_rate(e, rate)` | Emission rate (particles/second) |
-| `emitter_set_position(e, x, y)` | Emitter position |
-| `emitter_set_active(e, active)` | Enable/disable emission |
-| `emitter_count(e)` | Get current particle count |
-
-### draw_particles(emitter)
-Draws all particles from an emitter.
-
-## Scene Management
-
-### load_scene(name)
-Loads a new scene. Calls `{name}_on_start()` if it exists.
-
-```pixel
-load_scene("menu")     // Calls menu_on_start()
-load_scene("level1")   // Calls level1_on_start()
-```
-
-### get_scene()
-Returns the current scene name.
-
-### Scene Callbacks
-
-Define scene-specific callbacks:
-
-```pixel
-function menu_on_start() {
-    // Initialize menu
-}
-
-function menu_on_update(dt) {
-    // Update menu
-}
-
-function menu_on_draw() {
-    // Draw menu
-}
-```
+- [Animation API](/pixel/docs/api/animation) - Sprite sheet animations
+- [Camera API](/pixel/docs/api/camera) - Camera control and screen shake
+- [Particles API](/pixel/docs/api/particles) - Particle effects
+- [Scenes API](/pixel/docs/api/scenes) - Scene management
+- [Input API](/pixel/docs/api/input) - Keyboard and mouse
+- [Audio API](/pixel/docs/api/audio) - Sound and music
+- [Physics API](/pixel/docs/api/physics) - Collision and movement

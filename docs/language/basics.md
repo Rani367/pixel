@@ -110,6 +110,38 @@ if player == none {
 | `or` | Logical OR | `true or false` → `true` |
 | `not` | Logical NOT | `not true` → `false` |
 
+### Compound Assignment
+
+Combine an operation with assignment:
+
+| Operator | Equivalent | Example |
+|----------|------------|---------|
+| `+=` | `x = x + y` | `score += 10` |
+| `-=` | `x = x - y` | `health -= damage` |
+| `*=` | `x = x * y` | `speed *= 2` |
+| `/=` | `x = x / y` | `value /= 2` |
+
+```pixel
+score = 0
+score += 10    // score is now 10
+score += 5     // score is now 15
+score *= 2     // score is now 30
+```
+
+### Increment and Decrement
+
+| Operator | Equivalent | Description |
+|----------|------------|-------------|
+| `++` | `x = x + 1` | Increment by 1 |
+| `--` | `x = x - 1` | Decrement by 1 |
+
+```pixel
+count = 0
+count++     // count is now 1
+count++     // count is now 2
+count--     // count is now 1
+```
+
 ## Type Checking
 
 Use `type()` to check a value's type:

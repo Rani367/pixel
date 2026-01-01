@@ -5,19 +5,21 @@
 A beginner-friendly programming language for making 2D games.
 
 ```pixel
+player_x = 400
+
 function on_start() {
     create_window(800, 600, "My Game")
 }
 
 function on_update(dt) {
     if key_down(KEY_RIGHT) {
-        player_x = player_x + 200 * dt
+        player_x += 200 * dt
     }
 }
 
 function on_draw() {
     clear(rgb(20, 20, 40))
-    draw_rect(player_x, 300, 40, 40, CYAN)
+    draw_rect(player_x - 20, 280, 40, 40, CYAN)
 }
 ```
 
@@ -46,10 +48,10 @@ function on_start() {
 
 function on_update(dt) {
     if key_down(KEY_LEFT) {
-        player_x = player_x - speed * dt
+        player_x -= speed * dt
     }
     if key_down(KEY_RIGHT) {
-        player_x = player_x + speed * dt
+        player_x += speed * dt
     }
 }
 
@@ -68,6 +70,7 @@ pixel game.pixel
 
 - **Simple syntax** - No semicolons, no type declarations
 - **Built-in game loop** - Just define `on_start`, `on_update`, `on_draw`
+- **For loops** - Iterate with `for item in list` or `for i in range(10)`
 - **Graphics** - Shapes, images, sprites, text, animations
 - **Input** - Keyboard, mouse with event callbacks
 - **Audio** - Sound effects and background music
@@ -79,8 +82,8 @@ pixel game.pixel
 - [Getting Started](docs/getting-started.md) - Your first Pixel game
 - [Installation](docs/installation.md) - Download and setup
 - [Language Guide](docs/language/) - Learn Pixel syntax
-  - [Basics](docs/language/basics.md) - Variables and operators
-  - [Control Flow](docs/language/control-flow.md) - If statements and loops
+  - [Basics](docs/language/basics.md) - Variables, types, and operators
+  - [Control Flow](docs/language/control-flow.md) - If statements, for/while loops
   - [Functions](docs/language/functions.md) - Defining functions
   - [Data Structures](docs/language/data-structures.md) - Lists and structs
 - [API Reference](docs/api/) - All built-in functions
@@ -90,6 +93,14 @@ pixel game.pixel
   - [Input](docs/api/input.md) - Keyboard and mouse
   - [Audio](docs/api/audio.md) - Sound and music
   - [Physics](docs/api/physics.md) - Collision and movement
+  - [Animation](docs/api/animation.md) - Sprite animations
+  - [Camera](docs/api/camera.md) - Camera control
+  - [Particles](docs/api/particles.md) - Particle effects
+  - [Scenes](docs/api/scenes.md) - Scene management
+- [Guides](docs/guides/) - In-depth tutorials
+  - [Game Loop](docs/guides/game-loop.md) - Understanding on_start, on_update, on_draw
+  - [Debugging](docs/guides/debugging.md) - Finding and fixing problems
+  - [Structuring Games](docs/guides/structuring-games.md) - Organizing larger projects
 
 ## Examples
 
