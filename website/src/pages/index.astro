@@ -109,18 +109,44 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
   </section>
 
   <!-- Install Section -->
-  <section class="py-16">
+  <section class="py-16 bg-zinc-100 dark:bg-zinc-900 relative overflow-hidden noise-bg">
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-2xl font-bold text-center mb-8">Quick Start</h2>
-      <div class="max-w-xl mx-auto">
-        <div class="bg-zinc-900 rounded-lg p-4 sm:p-6 overflow-x-auto">
-          <div class="space-y-2 font-mono text-xs sm:text-sm">
-            <p class="text-zinc-400"># Install Pixel (one command)</p>
-            <p class="text-zinc-100 break-all sm:whitespace-nowrap">$ <span class="text-green-400">curl -fsSL https://raw.githubusercontent.com/Rani367/pixel/main/scripts/install.sh | bash</span></p>
-            <p class="text-zinc-400 mt-4"># Run your first game</p>
+      <div class="max-w-2xl mx-auto space-y-4">
+        <!-- Curl Command Block -->
+        <div class="relative">
+          <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-2 font-medium">Install Pixel (one command)</p>
+          <div class="curl-command-block bg-zinc-900 rounded-xl p-4 flex items-center gap-3">
+            <div class="flex-1 min-w-0 overflow-x-auto scrollbar-hide">
+              <code id="curl-command" class="text-green-400 font-mono text-xs sm:text-sm whitespace-nowrap block">curl -fsSL https://raw.githubusercontent.com/Rani367/pixel/main/scripts/install.sh | bash</code>
+            </div>
+            <button
+              id="copy-btn"
+              class="copy-button flex-shrink-0 relative w-10 h-10 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-cyan-500/50 transition-all duration-200 flex items-center justify-center group"
+              aria-label="Copy to clipboard"
+            >
+              <!-- Copy Icon -->
+              <svg id="copy-icon" class="w-5 h-5 text-zinc-400 group-hover:text-cyan-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <!-- Checkmark Icon (hidden by default) -->
+              <svg id="check-icon" class="w-5 h-5 text-green-400 absolute opacity-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <!-- 3D Burst Effect Container -->
+              <div id="burst-container" class="absolute inset-0 pointer-events-none overflow-visible"></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Run Command Block -->
+        <div class="bg-zinc-900 rounded-xl p-4">
+          <div class="space-y-2 font-mono text-sm">
+            <p class="text-zinc-400"># Run your first game</p>
             <p class="text-zinc-100">$ <span class="text-green-400">pixel game.pixel</span></p>
           </div>
         </div>
+
         <p class="text-center mt-4 text-sm text-zinc-600 dark:text-zinc-400">
           See <a href="/pixel/docs/installation" class="text-[--color-accent] hover:underline">installation guide</a> for all options.
         </p>
@@ -318,10 +344,165 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
     })();
   </script>
 
+  <!-- Copy Button 3D Animation Script -->
+  <script is:inline>
+    (function() {
+      const copyBtn = document.getElementById('copy-btn');
+      const curlCommand = document.getElementById('curl-command');
+      const copyIcon = document.getElementById('copy-icon');
+      const checkIcon = document.getElementById('check-icon');
+      const burstContainer = document.getElementById('burst-container');
+
+      if (!copyBtn || !curlCommand) return;
+
+      // Create 3D particle burst effect
+      function createBurstEffect() {
+        const colors = ['#22d3ee', '#06b6d4', '#0891b2', '#67e8f9', '#a5f3fc', '#22c55e', '#4ade80'];
+        const particleCount = 16;
+
+        for (let i = 0; i < particleCount; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'burst-particle';
+
+          // Calculate angle and positions with JavaScript
+          const angleRad = (i / particleCount) * Math.PI * 2;
+          const distance = 35 + Math.random() * 25;
+          const endX = Math.cos(angleRad) * distance;
+          const endY = Math.sin(angleRad) * distance;
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          const size = 5 + Math.random() * 5;
+          const delay = Math.random() * 0.05;
+          const duration = 0.5 + Math.random() * 0.2;
+
+          particle.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${color};
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: none;
+            opacity: 1;
+            transition: transform ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity ${duration}s ease-out;
+          `;
+
+          burstContainer.appendChild(particle);
+
+          // Trigger animation after a tiny delay for the initial styles to apply
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              particle.style.transform = `translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)) scale(0)`;
+              particle.style.opacity = '0';
+            }, delay * 1000);
+          });
+
+          // Remove particle after animation
+          setTimeout(() => particle.remove(), (delay + duration + 0.1) * 1000);
+        }
+
+      }
+
+      // Button 3D press effect
+      function animateButtonPress() {
+        copyBtn.style.transform = 'scale(0.9) rotateX(10deg) translateY(2px)';
+
+        setTimeout(() => {
+          copyBtn.style.transform = 'scale(1.05) rotateX(-5deg) translateY(-2px)';
+
+          setTimeout(() => {
+            copyBtn.style.transform = '';
+          }, 200);
+        }, 100);
+      }
+
+      // Icon swap animation
+      function swapIcons() {
+        copyIcon.style.transform = 'scale(0) rotateY(180deg)';
+        copyIcon.style.opacity = '0';
+
+        setTimeout(() => {
+          checkIcon.style.transform = 'scale(1.2) rotateY(0deg)';
+          checkIcon.style.opacity = '1';
+
+          setTimeout(() => {
+            checkIcon.style.transform = 'scale(1)';
+          }, 100);
+        }, 150);
+
+        // Revert after 2 seconds
+        setTimeout(() => {
+          checkIcon.style.transform = 'scale(0) rotateY(-180deg)';
+          checkIcon.style.opacity = '0';
+
+          setTimeout(() => {
+            copyIcon.style.transform = '';
+            copyIcon.style.opacity = '';
+          }, 150);
+        }, 2000);
+      }
+
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(curlCommand.textContent);
+
+          // Trigger all animations
+          animateButtonPress();
+          createBurstEffect();
+          swapIcons();
+
+        } catch (err) {
+          console.error('Failed to copy:', err);
+        }
+      });
+
+      // Add smooth transition styles
+      copyIcon.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.2s ease';
+      checkIcon.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.2s ease';
+      copyBtn.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, border-color 0.2s ease';
+    })();
+  </script>
+
   <style>
     /* Add glow effect to canvas */
     #pixel-bg {
       filter: blur(0px);
+    }
+
+    /* Curl command block styles */
+    .curl-command-block {
+      border: 1px solid transparent;
+      perspective: 1000px;
+    }
+
+    /* Copy button 3D styles */
+    .copy-button {
+      transform-style: preserve-3d;
+      perspective: 500px;
+    }
+
+    .copy-button:hover {
+      transform: translateY(-2px) rotateX(-5deg);
+    }
+
+    .copy-button:active {
+      transform: scale(0.95) translateY(1px);
+    }
+
+    /* Hide scrollbar but allow scrolling */
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Icon container perspective */
+    #copy-icon, #check-icon {
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
     }
   </style>
 </BaseLayout>
