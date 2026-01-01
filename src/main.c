@@ -113,6 +113,8 @@ static void declare_builtins(Analyzer* analyzer) {
     analyzer_declare_global(analyzer, "mouse_x");
     analyzer_declare_global(analyzer, "mouse_y");
     analyzer_declare_global(analyzer, "mouse_down");
+    analyzer_declare_global(analyzer, "mouse_pressed");
+    analyzer_declare_global(analyzer, "mouse_released");
     analyzer_declare_global(analyzer, "delta_time");
     analyzer_declare_global(analyzer, "game_time");
 

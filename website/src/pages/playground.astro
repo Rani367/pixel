@@ -51,9 +51,11 @@ function on_draw() {
     code: `x = 400
 y = 300
 speed = 200
+font = null
 
 function on_start() {
     create_window(800, 600, "Move with Arrow Keys")
+    font = default_font(20)
 }
 
 function on_update(dt) {
@@ -74,41 +76,51 @@ function on_update(dt) {
 function on_draw() {
     clear(rgb(20, 20, 40))
     draw_rect(x - 25, y - 25, 50, 50, YELLOW)
-    draw_text("Use arrow keys to move", 280, 550, default_font(20), WHITE)
+    draw_text("Use arrow keys to move", 280, 550, font, WHITE)
 }`
   },
   {
     name: 'Particles',
-    code: `particles = []
+    code: `// Parallel arrays for particle data
+px = []
+py = []
+pvx = []
+pvy = []
+plife = []
+font = null
 
 function on_start() {
     create_window(800, 600, "Click to spawn particles")
+    font = default_font(20)
 }
 
 function on_update(dt) {
-    if mouse_pressed(MOUSE_LEFT) {
+    // Spawn particles while clicking
+    if mouse_down(MOUSE_LEFT) {
         i = 0
         while i < 10 {
-            p = {}
-            p.x = mouse_x()
-            p.y = mouse_y()
-            p.vx = random_range(-100, 100)
-            p.vy = random_range(-200, -50)
-            p.life = 1.0
-            list_add(particles, p)
+            push(px, mouse_x())
+            push(py, mouse_y())
+            push(pvx, random_range(-100, 100))
+            push(pvy, random_range(-200, -50))
+            push(plife, 1.0)
             i = i + 1
         }
     }
 
+    // Update particles
     i = 0
-    while i < list_length(particles) {
-        p = particles[i]
-        p.x = p.x + p.vx * dt
-        p.y = p.y + p.vy * dt
-        p.vy = p.vy + 400 * dt
-        p.life = p.life - dt
-        if p.life <= 0 {
-            list_remove(particles, i)
+    while i < len(px) {
+        px[i] = px[i] + pvx[i] * dt
+        py[i] = py[i] + pvy[i] * dt
+        pvy[i] = pvy[i] + 400 * dt
+        plife[i] = plife[i] - dt
+        if plife[i] <= 0 {
+            remove(px, i)
+            remove(py, i)
+            remove(pvx, i)
+            remove(pvy, i)
+            remove(plife, i)
         } else {
             i = i + 1
         }
@@ -118,13 +130,12 @@ function on_update(dt) {
 function on_draw() {
     clear(rgb(20, 20, 40))
     i = 0
-    while i < list_length(particles) {
-        p = particles[i]
-        alpha = floor(p.life * 255)
-        draw_circle(p.x, p.y, 5, rgba(255, 100, 50, alpha))
+    while i < len(px) {
+        alpha = floor(plife[i] * 255)
+        draw_circle(px[i], py[i], 5, rgba(255, 100, 50, alpha))
         i = i + 1
     }
-    draw_text("Click to spawn particles", 280, 550, default_font(20), WHITE)
+    draw_text("Click to spawn particles", 280, 550, font, WHITE)
 }`
   }
 ];
