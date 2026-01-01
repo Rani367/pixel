@@ -443,6 +443,7 @@ function on_draw() {
       // Configure Module before script loads
       (window as any).Module = {
         canvas: canvas,
+        keyboardListeningElement: canvas,  // Only capture keyboard when canvas is focused
         arguments: [],
         noInitialRun: true,
 
