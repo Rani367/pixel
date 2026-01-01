@@ -233,6 +233,17 @@ function on_draw() {
   import { oneDark } from '@codemirror/theme-one-dark';
   import { Compartment } from '@codemirror/state';
 
+  // Suppress ScriptProcessorNode deprecation warning from Emscripten SDL audio
+  // This warning is expected until Emscripten SDL2 ports support AudioWorklet
+  const originalWarn = console.warn.bind(console);
+  console.warn = (...args: any[]) => {
+    const msg = args[0]?.toString() || '';
+    if (msg.includes('ScriptProcessorNode') && msg.includes('deprecated')) {
+      return; // Suppress this specific warning
+    }
+    originalWarn(...args);
+  };
+
   // Get examples from window
   const examples = (window as any).pixelExamples;
 
