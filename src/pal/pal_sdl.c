@@ -73,8 +73,7 @@ bool pal_sdl_init(void) {
 
 #ifdef __EMSCRIPTEN__
     // For Emscripten, rely on Module.canvas set in JavaScript
-    // Don't set SDL_EMSCRIPTEN_CANVAS_SELECTOR as it may conflict
-    SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
+    // Use default keyboard capture (window) for broader compatibility
 #endif
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
@@ -443,13 +442,25 @@ void pal_sdl_draw_texture_region(PalWindow* window, PalTexture* texture,
 
 void pal_sdl_poll_events(void) {
 #ifdef __EMSCRIPTEN__
-    // Minimal event polling for Emscripten
+    // Save previous state for pressed/released detection
+    if (sdl_keyboard_state) {
+        for (int i = 0; i < PAL_KEY_COUNT; i++) {
+            sdl_keys_prev[i] = sdl_keyboard_state[i];
+        }
+    }
+    sdl_mouse_prev = sdl_mouse_state;
+
+    // Process events
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             sdl_quit_requested = true;
         }
     }
+
+    // Update keyboard and mouse state
+    sdl_keyboard_state = SDL_GetKeyboardState(NULL);
+    sdl_mouse_state = SDL_GetMouseState(&sdl_mouse_x, &sdl_mouse_y);
 #else
     // Refresh keyboard state pointer
     sdl_keyboard_state = SDL_GetKeyboardState(NULL);
