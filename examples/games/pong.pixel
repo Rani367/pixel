@@ -1,151 +1,113 @@
-// Pong - Classic two-player game
-// Left player: W/S keys
-// Right player: Up/Down arrow keys
-// First to 10 points wins!
+// Pong - Two Player Game
+// Left player uses W and S keys
+// Right player uses Up and Down arrows
+// First to 5 wins!
 
-// Game constants
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 600
-PADDLE_WIDTH = 15
-PADDLE_HEIGHT = 100
-PADDLE_SPEED = 400
-BALL_SIZE = 15
-BALL_SPEED = 350
-WINNING_SCORE = 10
+// Paddle positions (just need Y since X is fixed)
+left_y = 250
+right_y = 250
 
-// Game state
-left_paddle_y = 0
-right_paddle_y = 0
-ball_x = 0
-ball_y = 0
-ball_vel_x = 0
-ball_vel_y = 0
+// Ball position and speed
+ball_x = 400
+ball_y = 300
+ball_dx = 300
+ball_dy = 200
+
+// Scores
 left_score = 0
 right_score = 0
 game_over = false
 winner = ""
 
-// Font for score display
 font = null
 
-function reset_ball() {
-    // Center ball
-    ball_x = WINDOW_WIDTH / 2 - BALL_SIZE / 2
-    ball_y = WINDOW_HEIGHT / 2 - BALL_SIZE / 2
-
-    // Random direction
-    if random() > 0.5 {
-        ball_vel_x = BALL_SPEED
-    } else {
-        ball_vel_x = -BALL_SPEED
-    }
-
-    // Random vertical angle
-    ball_vel_y = random_range(-BALL_SPEED / 2, BALL_SPEED / 2)
-}
-
-function reset_game() {
-    // Center paddles
-    left_paddle_y = WINDOW_HEIGHT / 2 - PADDLE_HEIGHT / 2
-    right_paddle_y = WINDOW_HEIGHT / 2 - PADDLE_HEIGHT / 2
-
-    // Reset scores
-    left_score = 0
-    right_score = 0
-    game_over = false
-    winner = ""
-
+function on_start() {
+    create_window(800, 600, "Pong")
+    font = default_font(48)
     reset_ball()
 }
 
-function on_start() {
-    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Pong")
-    font = default_font(48)
-    reset_game()
+function reset_ball() {
+    ball_x = 400
+    ball_y = 300
+    // Send ball toward a random side
+    if random() > 0.5 {
+        ball_dx = 300
+    } else {
+        ball_dx = -300
+    }
+    ball_dy = random_range(-200, 200)
 }
 
 function on_update(dt) {
     if game_over {
-        // Press space to restart
         if key_pressed(KEY_SPACE) {
-            reset_game()
+            // Reset everything
+            left_score = 0
+            right_score = 0
+            left_y = 250
+            right_y = 250
+            game_over = false
+            reset_ball()
         }
         return
     }
 
-    // Left paddle movement (W/S)
-    if key_down(KEY_W) {
-        left_paddle_y = left_paddle_y - PADDLE_SPEED * dt
-    }
-    if key_down(KEY_S) {
-        left_paddle_y = left_paddle_y + PADDLE_SPEED * dt
-    }
+    // Move left paddle with W/S
+    if key_down(KEY_W) { left_y = left_y - 400 * dt }
+    if key_down(KEY_S) { left_y = left_y + 400 * dt }
 
-    // Right paddle movement (Up/Down)
-    if key_down(KEY_UP) {
-        right_paddle_y = right_paddle_y - PADDLE_SPEED * dt
-    }
-    if key_down(KEY_DOWN) {
-        right_paddle_y = right_paddle_y + PADDLE_SPEED * dt
-    }
+    // Move right paddle with arrows
+    if key_down(KEY_UP)   { right_y = right_y - 400 * dt }
+    if key_down(KEY_DOWN) { right_y = right_y + 400 * dt }
 
     // Keep paddles on screen
-    left_paddle_y = clamp(left_paddle_y, 0, WINDOW_HEIGHT - PADDLE_HEIGHT)
-    right_paddle_y = clamp(right_paddle_y, 0, WINDOW_HEIGHT - PADDLE_HEIGHT)
+    left_y = clamp(left_y, 0, 500)
+    right_y = clamp(right_y, 0, 500)
 
     // Move ball
-    ball_x = ball_x + ball_vel_x * dt
-    ball_y = ball_y + ball_vel_y * dt
+    ball_x = ball_x + ball_dx * dt
+    ball_y = ball_y + ball_dy * dt
 
-    // Ball collision with top/bottom walls
-    if ball_y <= 0 {
-        ball_y = 0
-        ball_vel_y = -ball_vel_y
-    }
-    if ball_y >= WINDOW_HEIGHT - BALL_SIZE {
-        ball_y = WINDOW_HEIGHT - BALL_SIZE
-        ball_vel_y = -ball_vel_y
+    // Bounce off top and bottom
+    if ball_y < 0 or ball_y > 585 {
+        ball_dy = -ball_dy
     }
 
-    // Ball collision with left paddle
-    if ball_x <= 30 + PADDLE_WIDTH {
-        if ball_y + BALL_SIZE >= left_paddle_y and ball_y <= left_paddle_y + PADDLE_HEIGHT {
-            ball_x = 30 + PADDLE_WIDTH
-            ball_vel_x = -ball_vel_x
-
-            // Add spin based on where ball hits paddle
-            hit_pos = (ball_y + BALL_SIZE / 2) - (left_paddle_y + PADDLE_HEIGHT / 2)
-            ball_vel_y = ball_vel_y + hit_pos * 3
+    // Check left paddle hit
+    if ball_x < 45 and ball_x > 30 {
+        if ball_y > left_y and ball_y < left_y + 100 {
+            ball_dx = abs(ball_dx)  // go right
+            // Add spin based on where it hit the paddle
+            hit_spot = ball_y - (left_y + 50)
+            ball_dy = ball_dy + hit_spot * 3
         }
     }
 
-    // Ball collision with right paddle
-    if ball_x + BALL_SIZE >= WINDOW_WIDTH - 30 - PADDLE_WIDTH {
-        if ball_y + BALL_SIZE >= right_paddle_y and ball_y <= right_paddle_y + PADDLE_HEIGHT {
-            ball_x = WINDOW_WIDTH - 30 - PADDLE_WIDTH - BALL_SIZE
-            ball_vel_x = -ball_vel_x
-
-            // Add spin based on where ball hits paddle
-            hit_pos = (ball_y + BALL_SIZE / 2) - (right_paddle_y + PADDLE_HEIGHT / 2)
-            ball_vel_y = ball_vel_y + hit_pos * 3
+    // Check right paddle hit
+    if ball_x > 755 and ball_x < 770 {
+        if ball_y > right_y and ball_y < right_y + 100 {
+            ball_dx = -abs(ball_dx)  // go left
+            hit_spot = ball_y - (right_y + 50)
+            ball_dy = ball_dy + hit_spot * 3
         }
     }
 
-    // Scoring
+    // Score when ball goes off screen
     if ball_x < 0 {
         right_score = right_score + 1
-        if right_score >= WINNING_SCORE {
+        if right_score >= 5 {
             game_over = true
-            winner = "Right Player"
+            winner = "Right"
         } else {
             reset_ball()
         }
     }
-    if ball_x > WINDOW_WIDTH {
+    if ball_x > 800 {
         left_score = left_score + 1
-        if left_score >= WINNING_SCORE {
+        if left_score >= 5 {
             game_over = true
-            winner = "Left Player"
+            winner = "Left"
         } else {
             reset_ball()
         }
@@ -153,39 +115,31 @@ function on_update(dt) {
 }
 
 function on_draw() {
-    // Clear screen
     clear(rgb(20, 20, 40))
 
     // Draw center line
     y = 0
-    while y < WINDOW_HEIGHT {
-        draw_rect(WINDOW_WIDTH / 2 - 2, y, 4, 20, GRAY)
+    while y < 600 {
+        draw_rect(398, y, 4, 20, GRAY)
         y = y + 40
     }
 
     // Draw paddles
-    draw_rect(30, left_paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE)
-    draw_rect(WINDOW_WIDTH - 30 - PADDLE_WIDTH, right_paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE)
+    draw_rect(30, left_y, 15, 100, WHITE)
+    draw_rect(755, right_y, 15, 100, WHITE)
 
     // Draw ball
-    draw_rect(ball_x, ball_y, BALL_SIZE, BALL_SIZE, WHITE)
+    draw_circle(ball_x, ball_y, 10, WHITE)
 
     // Draw scores
-    left_text = to_string(left_score)
-    right_text = to_string(right_score)
+    draw_text(to_string(left_score), 200, 30, font, WHITE)
+    draw_text(to_string(right_score), 580, 30, font, WHITE)
 
-    draw_text(left_text, WINDOW_WIDTH / 4 - text_width(left_text, font) / 2, 30, font, WHITE)
-    draw_text(right_text, WINDOW_WIDTH * 3 / 4 - text_width(right_text, font) / 2, 30, font, WHITE)
-
-    // Draw game over message
+    // Show winner
     if game_over {
         msg = winner + " Wins!"
-        msg_width = text_width(msg, font)
-        draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 24, font, YELLOW)
-
-        restart_font = default_font(24)
-        restart_msg = "Press SPACE to restart"
-        restart_width = text_width(restart_msg, restart_font)
-        draw_text(restart_msg, WINDOW_WIDTH / 2 - restart_width / 2, WINDOW_HEIGHT / 2 + 40, restart_font, WHITE)
+        draw_text(msg, 300, 280, font, YELLOW)
+        small = default_font(24)
+        draw_text("Press SPACE to play again", 260, 340, small, WHITE)
     }
 }

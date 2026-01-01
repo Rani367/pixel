@@ -4,123 +4,102 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 const examples = [
   {
     name: 'Bouncing Ball',
-    code: `// DVD-style bouncing ball - changes color on bounce
+    code: `// A ball that bounces around the screen
+// Changes color each time it hits a wall
+
 x = 400
 y = 300
-dx = 200
-dy = 150
-color_r = 0
-color_g = 255
-color_b = 255
-
-function random_color() {
-    color_r = random_range(50, 255)
-    color_g = random_range(50, 255)
-    color_b = random_range(50, 255)
-}
+speed_x = 200
+speed_y = 150
+color = CYAN
 
 function on_start() {
     create_window(800, 600, "Bouncing Ball")
-    x = random_range(100, 700)
-    y = random_range(100, 500)
-    dx = random_range(150, 250)
-    dy = random_range(100, 200)
 }
 
 function on_update(dt) {
-    x = x + dx * dt
-    y = y + dy * dt
+    // Move the ball
+    x = x + speed_x * dt
+    y = y + speed_y * dt
 
+    // Bounce off walls and pick a new color
     if x < 20 or x > 780 {
-        dx = -dx
-        random_color()
+        speed_x = -speed_x
+        color = rgb(random_range(50, 255), random_range(50, 255), random_range(50, 255))
     }
     if y < 20 or y > 580 {
-        dy = -dy
-        random_color()
+        speed_y = -speed_y
+        color = rgb(random_range(50, 255), random_range(50, 255), random_range(50, 255))
     }
 }
 
 function on_draw() {
     clear(rgb(20, 20, 40))
-    draw_circle(x, y, 20, rgb(color_r, color_g, color_b))
+    draw_circle(x, y, 20, color)
 }`
   },
   {
     name: 'Keyboard Movement',
-    code: `x = 400
+    code: `// Move a square with the arrow keys
+
+x = 400
 y = 300
 speed = 200
-font = null
 
 function on_start() {
-    create_window(800, 600, "Move with Arrow Keys")
-    font = default_font(20)
+    create_window(800, 600, "Arrow Keys to Move")
 }
 
 function on_update(dt) {
-    if key_down(KEY_LEFT) {
-        x = x - speed * dt
-    }
-    if key_down(KEY_RIGHT) {
-        x = x + speed * dt
-    }
-    if key_down(KEY_UP) {
-        y = y - speed * dt
-    }
-    if key_down(KEY_DOWN) {
-        y = y + speed * dt
-    }
+    // Move in the direction of pressed keys
+    if key_down(KEY_LEFT)  { x = x - speed * dt }
+    if key_down(KEY_RIGHT) { x = x + speed * dt }
+    if key_down(KEY_UP)    { y = y - speed * dt }
+    if key_down(KEY_DOWN)  { y = y + speed * dt }
 }
 
 function on_draw() {
     clear(rgb(20, 20, 40))
     draw_rect(x - 25, y - 25, 50, 50, YELLOW)
-    draw_text("Use arrow keys to move", 280, 550, font, WHITE)
 }`
   },
   {
     name: 'Particles',
-    code: `// Parallel arrays for particle data
-px = []
-py = []
-pvx = []
-pvy = []
-plife = []
-font = null
+    code: `// Click anywhere to create particles that fall with gravity
+
+particles = []
 
 function on_start() {
-    create_window(800, 600, "Click to spawn particles")
-    font = default_font(20)
+    create_window(800, 600, "Click to Spawn Particles")
 }
 
 function on_update(dt) {
-    // Spawn particles while clicking
+    // Create particles when mouse is pressed
     if mouse_down(MOUSE_LEFT) {
         i = 0
-        while i < 10 {
-            push(px, mouse_x())
-            push(py, mouse_y())
-            push(pvx, random_range(-100, 100))
-            push(pvy, random_range(-200, -50))
-            push(plife, 1.0)
+        while i < 5 {
+            p = {}
+            p.x = mouse_x()
+            p.y = mouse_y()
+            p.vx = random_range(-100, 100)
+            p.vy = random_range(-200, -50)
+            p.life = 1.0
+            push(particles, p)
             i = i + 1
         }
     }
 
-    // Update particles
+    // Update each particle
     i = 0
-    while i < len(px) {
-        px[i] = px[i] + pvx[i] * dt
-        py[i] = py[i] + pvy[i] * dt
-        pvy[i] = pvy[i] + 400 * dt
-        plife[i] = plife[i] - dt
-        if plife[i] <= 0 {
-            remove(px, i)
-            remove(py, i)
-            remove(pvx, i)
-            remove(pvy, i)
-            remove(plife, i)
+    while i < len(particles) {
+        p = particles[i]
+        p.x = p.x + p.vx * dt
+        p.y = p.y + p.vy * dt
+        p.vy = p.vy + 400 * dt  // gravity
+        p.life = p.life - dt
+
+        if p.life <= 0 {
+            remove(particles, i)
         } else {
             i = i + 1
         }
@@ -129,13 +108,14 @@ function on_update(dt) {
 
 function on_draw() {
     clear(rgb(20, 20, 40))
+
     i = 0
-    while i < len(px) {
-        alpha = floor(plife[i] * 255)
-        draw_circle(px[i], py[i], 5, rgba(255, 100, 50, alpha))
+    while i < len(particles) {
+        p = particles[i]
+        alpha = floor(p.life * 255)
+        draw_circle(p.x, p.y, 5, rgba(255, 100, 50, alpha))
         i = i + 1
     }
-    draw_text("Click to spawn particles", 280, 550, font, WHITE)
 }`
   }
 ];
@@ -292,32 +272,12 @@ function on_draw() {
     return isDarkMode() ? darkTheme : lightTheme;
   }
 
-  // Code persistence
-  const STORAGE_KEY = 'pixel-playground-code';
-
-  function saveCode(code: string) {
-    try {
-      localStorage.setItem(STORAGE_KEY, code);
-    } catch (e) {
-      // localStorage might be full or disabled
-    }
-  }
-
-  function loadSavedCode(): string | null {
-    try {
-      return localStorage.getItem(STORAGE_KEY);
-    } catch (e) {
-      return null;
-    }
-  }
-
   // Initialize CodeMirror
   const editorContainer = document.getElementById('editor');
   let editor: EditorView;
 
-  // Load saved code or use first example
-  const savedCode = loadSavedCode();
-  const initialCode = savedCode || examples[0].code;
+  // Always start with the first example
+  const initialCode = examples[0].code;
 
   if (editorContainer) {
     editor = new EditorView({
@@ -325,13 +285,7 @@ function on_draw() {
       extensions: [
         basicSetup,
         javascript(),
-        themeCompartment.of(getThemeExtensions()),
-        // Save code on change
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            saveCode(update.state.doc.toString());
-          }
-        })
+        themeCompartment.of(getThemeExtensions())
       ],
       parent: editorContainer
     });
@@ -350,29 +304,19 @@ function on_draw() {
     observer.observe(document.documentElement, { attributes: true });
   }
 
-  // Example selector
+  // Example selector - load selected example into editor
   const exampleSelect = document.getElementById('example-select') as HTMLSelectElement;
-
-  // Sync dropdown with loaded code
-  if (exampleSelect && savedCode) {
-    const matchingIdx = examples.findIndex((ex: any) => ex.code === savedCode);
-    if (matchingIdx >= 0) {
-      exampleSelect.value = matchingIdx.toString();
-    }
-  }
 
   exampleSelect?.addEventListener('change', () => {
     const idx = parseInt(exampleSelect.value);
     if (editor && examples[idx]) {
-      const newCode = examples[idx].code;
       editor.dispatch({
         changes: {
           from: 0,
           to: editor.state.doc.length,
-          insert: newCode
+          insert: examples[idx].code
         }
       });
-      saveCode(newCode);
     }
   });
 

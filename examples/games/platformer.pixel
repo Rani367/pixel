@@ -1,359 +1,229 @@
-// Platformer - Side-scrolling platform game
-// Move with Left/Right arrow keys or A/D
-// Jump with SPACE or W
-// Collect coins and reach the flag!
+// Platformer - Jump and Collect Coins!
+// Move with Left/Right arrows or A/D
+// Jump with SPACE, W, or Up arrow
+// Collect all coins and reach the flag to win!
 
-// Game constants
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 600
-GRAVITY = 1200
-PLAYER_WIDTH = 30
-PLAYER_HEIGHT = 40
-PLAYER_SPEED = 250
-JUMP_FORCE = 500
-COIN_SIZE = 20
-ENEMY_WIDTH = 30
-ENEMY_HEIGHT = 30
-ENEMY_SPEED = 80
+// Player state
+player_x = 50
+player_y = 400
+player_vy = 0
+on_ground = false
+facing_right = true
 
-// Game state
-player_x = 0
-player_y = 0
-player_vel_x = 0
-player_vel_y = 0
-player_grounded = false
-player_facing_right = true
-
+// World
 platforms = []
 coins = []
-enemies = []
-flag_x = 0
-flag_y = 0
-
-score = 0
-game_won = false
-game_over = false
-
-// Camera
 camera_x = 0
-LEVEL_WIDTH = 2000
+score = 0
+game_over = false
+you_win = false
 
-// Fonts
-font = none
-small_font = none
+font = null
 
 function on_start() {
-    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer")
-    font = default_font(36)
-    small_font = default_font(24)
-    create_level()
+    create_window(800, 600, "Platformer")
+    font = default_font(24)
+    build_level()
 }
 
-function create_level() {
-    // Reset state
+function build_level() {
     platforms = []
     coins = []
-    enemies = []
     score = 0
-    game_won = false
     game_over = false
-    camera_x = 0
-
-    // Player start position
+    you_win = false
     player_x = 50
     player_y = 400
-    player_vel_x = 0
-    player_vel_y = 0
-    player_grounded = false
+    player_vy = 0
+    camera_x = 0
 
-    // Ground
-    add_platform(0, 550, 400, 50)
-    add_platform(500, 550, 300, 50)
-    add_platform(900, 550, 400, 50)
-    add_platform(1400, 550, 600, 50)
+    // Ground sections
+    add_platform(0, 550, 400)
+    add_platform(500, 550, 300)
+    add_platform(900, 550, 500)
+    add_platform(1500, 550, 500)
 
     // Floating platforms
-    add_platform(300, 450, 150, 20)
-    add_platform(550, 380, 150, 20)
-    add_platform(150, 320, 100, 20)
-    add_platform(400, 280, 120, 20)
-    add_platform(700, 350, 150, 20)
-    add_platform(950, 420, 120, 20)
-    add_platform(1100, 350, 150, 20)
-    add_platform(1300, 280, 100, 20)
-    add_platform(1500, 350, 150, 20)
-    add_platform(1700, 420, 150, 20)
+    add_platform(300, 450, 120)
+    add_platform(500, 380, 120)
+    add_platform(200, 300, 100)
+    add_platform(700, 350, 150)
+    add_platform(1000, 400, 120)
+    add_platform(1200, 320, 150)
+    add_platform(1500, 380, 120)
+    add_platform(1750, 450, 150)
 
-    // Coins
-    add_coin(350, 410)
-    add_coin(600, 340)
-    add_coin(180, 280)
-    add_coin(440, 240)
+    // Coins to collect
+    add_coin(340, 410)
+    add_coin(540, 340)
+    add_coin(230, 260)
     add_coin(750, 310)
-    add_coin(1000, 380)
-    add_coin(1150, 310)
-    add_coin(1350, 240)
-    add_coin(1550, 310)
-    add_coin(1750, 380)
-
-    // Enemies
-    add_enemy(550, 520, 500, 750)
-    add_enemy(950, 520, 900, 1200)
-    add_enemy(1500, 520, 1400, 1900)
-
-    // Flag at the end
-    flag_x = 1900
-    flag_y = 470
+    add_coin(1050, 360)
+    add_coin(1260, 280)
+    add_coin(1550, 340)
+    add_coin(1800, 410)
 }
 
-function add_platform(x, y, w, h) {
-    plat = {}
-    plat.x = x
-    plat.y = y
-    plat.width = w
-    plat.height = h
-    push(platforms, plat)
+function add_platform(x, y, width) {
+    p = {}
+    p.x = x
+    p.y = y
+    p.w = width
+    push(platforms, p)
 }
 
 function add_coin(x, y) {
-    coin = {}
-    coin.x = x
-    coin.y = y
-    coin.collected = false
-    push(coins, coin)
-}
-
-function add_enemy(x, y, min_x, max_x) {
-    enemy = {}
-    enemy.x = x
-    enemy.y = y
-    enemy.min_x = min_x
-    enemy.max_x = max_x
-    enemy.vel_x = ENEMY_SPEED
-    push(enemies, enemy)
+    c = {}
+    c.x = x
+    c.y = y
+    c.collected = false
+    push(coins, c)
 }
 
 function on_update(dt) {
-    if game_won or game_over {
+    if game_over or you_win {
         if key_pressed(KEY_SPACE) {
-            create_level()
+            build_level()
         }
         return
     }
 
     // Horizontal movement
-    player_vel_x = 0
     if key_down(KEY_LEFT) or key_down(KEY_A) {
-        player_vel_x = -PLAYER_SPEED
-        player_facing_right = false
+        player_x = player_x - 250 * dt
+        facing_right = false
     }
     if key_down(KEY_RIGHT) or key_down(KEY_D) {
-        player_vel_x = PLAYER_SPEED
-        player_facing_right = true
+        player_x = player_x + 250 * dt
+        facing_right = true
     }
 
     // Jumping
-    if (key_pressed(KEY_SPACE) or key_pressed(KEY_W) or key_pressed(KEY_UP)) and player_grounded {
-        player_vel_y = -JUMP_FORCE
-        player_grounded = false
+    if on_ground {
+        if key_pressed(KEY_SPACE) or key_pressed(KEY_W) or key_pressed(KEY_UP) {
+            player_vy = -500
+            on_ground = false
+        }
     }
 
-    // Apply gravity
-    player_vel_y = player_vel_y + GRAVITY * dt
+    // Gravity
+    player_vy = player_vy + 1200 * dt
+    player_y = player_y + player_vy * dt
 
-    // Move player
-    player_x = player_x + player_vel_x * dt
-    player_y = player_y + player_vel_y * dt
-
-    // Keep player in level bounds
-    if player_x < 0 {
-        player_x = 0
-    }
-    if player_x > LEVEL_WIDTH - PLAYER_WIDTH {
-        player_x = LEVEL_WIDTH - PLAYER_WIDTH
-    }
-
-    // Platform collision
-    player_grounded = false
+    // Check platform collisions
+    on_ground = false
     i = 0
     while i < len(platforms) {
-        plat = platforms[i]
-        if check_platform_collision(plat) {
-            // Only land on top
-            if player_vel_y > 0 {
-                player_y = plat.y - PLAYER_HEIGHT
-                player_vel_y = 0
-                player_grounded = true
-            }
-        }
-        i = i + 1
-    }
-
-    // Fall death
-    if player_y > WINDOW_HEIGHT + 100 {
-        game_over = true
-    }
-
-    // Coin collection
-    i = 0
-    while i < len(coins) {
-        coin = coins[i]
-        if not coin.collected {
-            if abs(player_x + PLAYER_WIDTH / 2 - coin.x - COIN_SIZE / 2) < 25 {
-                if abs(player_y + PLAYER_HEIGHT / 2 - coin.y - COIN_SIZE / 2) < 25 {
-                    coin.collected = true
-                    score = score + 100
+        p = platforms[i]
+        // Only land if falling down onto platform
+        if player_vy > 0 {
+            if player_x + 15 > p.x and player_x - 15 < p.x + p.w {
+                if player_y + 40 > p.y and player_y + 40 < p.y + 30 {
+                    player_y = p.y - 40
+                    player_vy = 0
+                    on_ground = true
                 }
             }
         }
         i = i + 1
     }
 
-    // Enemy movement and collision
+    // Fell off the world?
+    if player_y > 700 {
+        game_over = true
+    }
+
+    // Collect coins
     i = 0
-    while i < len(enemies) {
-        enemy = enemies[i]
-
-        // Move enemy
-        enemy.x = enemy.x + enemy.vel_x * dt
-
-        // Reverse at boundaries
-        if enemy.x <= enemy.min_x {
-            enemy.x = enemy.min_x
-            enemy.vel_x = ENEMY_SPEED
-        }
-        if enemy.x >= enemy.max_x {
-            enemy.x = enemy.max_x
-            enemy.vel_x = -ENEMY_SPEED
-        }
-
-        // Player collision with enemy
-        if player_x + PLAYER_WIDTH > enemy.x and player_x < enemy.x + ENEMY_WIDTH {
-            if player_y + PLAYER_HEIGHT > enemy.y and player_y < enemy.y + ENEMY_HEIGHT {
-                game_over = true
+    while i < len(coins) {
+        c = coins[i]
+        if not c.collected {
+            dx = (player_x) - (c.x + 10)
+            dy = (player_y + 20) - (c.y + 10)
+            if dx * dx + dy * dy < 900 {
+                c.collected = true
+                score = score + 100
             }
         }
-
         i = i + 1
     }
 
-    // Flag collision (win)
-    if player_x + PLAYER_WIDTH > flag_x and player_x < flag_x + 30 {
-        if player_y + PLAYER_HEIGHT > flag_y {
-            game_won = true
+    // Check win - reach the right side after collecting all coins
+    if player_x > 1900 {
+        all_collected = true
+        i = 0
+        while i < len(coins) {
+            if not coins[i].collected {
+                all_collected = false
+            }
+            i = i + 1
+        }
+        if all_collected {
+            you_win = true
         }
     }
 
-    // Update camera
-    target_x = player_x - WINDOW_WIDTH / 2 + PLAYER_WIDTH / 2
-    camera_x = clamp(target_x, 0, LEVEL_WIDTH - WINDOW_WIDTH)
-}
-
-function check_platform_collision(plat) {
-    // Check if player is above platform and falling onto it
-    if player_x + PLAYER_WIDTH > plat.x and player_x < plat.x + plat.width {
-        prev_bottom = player_y + PLAYER_HEIGHT - player_vel_y * delta_time()
-        if prev_bottom <= plat.y and player_y + PLAYER_HEIGHT >= plat.y {
-            return true
-        }
-    }
-    return false
+    // Move camera to follow player
+    target = player_x - 400
+    camera_x = clamp(target, 0, 1200)
 }
 
 function on_draw() {
-    // Clear screen with sky color
+    // Sky
     clear(rgb(135, 206, 235))
 
-    // Draw platforms (relative to camera)
+    // Draw platforms
     i = 0
     while i < len(platforms) {
-        plat = platforms[i]
-        draw_x = plat.x - camera_x
-        if draw_x + plat.width > 0 and draw_x < WINDOW_WIDTH {
-            draw_rect(draw_x, plat.y, plat.width, plat.height, rgb(100, 80, 60))
-            // Grass on top
-            draw_rect(draw_x, plat.y, plat.width, 5, rgb(50, 180, 50))
-        }
+        p = platforms[i]
+        x = p.x - camera_x
+        // Ground (brown with grass on top)
+        draw_rect(x, p.y, p.w, 50, rgb(100, 80, 60))
+        draw_rect(x, p.y, p.w, 8, rgb(50, 180, 50))
         i = i + 1
     }
 
     // Draw coins
     i = 0
     while i < len(coins) {
-        coin = coins[i]
-        if not coin.collected {
-            draw_x = coin.x - camera_x
-            if draw_x + COIN_SIZE > 0 and draw_x < WINDOW_WIDTH {
-                draw_circle(draw_x + COIN_SIZE / 2, coin.y + COIN_SIZE / 2, COIN_SIZE / 2, YELLOW)
-            }
+        c = coins[i]
+        if not c.collected {
+            x = c.x - camera_x
+            draw_circle(x + 10, c.y + 10, 12, YELLOW)
         }
         i = i + 1
     }
 
-    // Draw enemies
-    i = 0
-    while i < len(enemies) {
-        enemy = enemies[i]
-        draw_x = enemy.x - camera_x
-        if draw_x + ENEMY_WIDTH > 0 and draw_x < WINDOW_WIDTH {
-            draw_rect(draw_x, enemy.y, ENEMY_WIDTH, ENEMY_HEIGHT, RED)
-            // Eyes
-            eye_offset = 5
-            if enemy.vel_x < 0 {
-                eye_offset = -5
-            }
-            draw_circle(draw_x + ENEMY_WIDTH / 2 - 5 + eye_offset, enemy.y + 10, 4, WHITE)
-            draw_circle(draw_x + ENEMY_WIDTH / 2 + 5 + eye_offset, enemy.y + 10, 4, WHITE)
-        }
-        i = i + 1
-    }
-
-    // Draw flag
-    draw_x = flag_x - camera_x
-    if draw_x + 30 > 0 and draw_x < WINDOW_WIDTH {
-        // Flag pole
-        draw_rect(draw_x + 10, flag_y - 80, 5, 130, rgb(139, 69, 19))
-        // Flag
-        draw_rect(draw_x + 15, flag_y - 80, 40, 30, GREEN)
-    }
+    // Draw flag at the end
+    flag_x = 1900 - camera_x
+    draw_rect(flag_x + 10, 470, 5, 80, rgb(100, 50, 20))
+    draw_rect(flag_x + 15, 470, 40, 25, GREEN)
 
     // Draw player
-    player_draw_x = player_x - camera_x
-    draw_rect(player_draw_x, player_y, PLAYER_WIDTH, PLAYER_HEIGHT, BLUE)
-    // Eyes
-    eye_x = player_draw_x + 8
-    if player_facing_right {
-        eye_x = player_draw_x + PLAYER_WIDTH - 12
+    px = player_x - camera_x
+    draw_rect(px - 15, player_y, 30, 40, BLUE)
+    // Eye
+    eye_x = px + 5
+    if not facing_right {
+        eye_x = px - 10
     }
-    draw_circle(eye_x, player_y + 12, 4, WHITE)
+    draw_circle(eye_x, player_y + 12, 5, WHITE)
 
     // Draw score
-    score_text = "Score: " + to_string(score)
-    draw_text(score_text, 20, 20, small_font, WHITE)
+    draw_text("Score: " + to_string(score), 20, 20, font, WHITE)
 
-    // Draw game over
+    // Game over
     if game_over {
-        msg = "GAME OVER"
-        msg_width = text_width(msg, font)
-        draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 18, font, RED)
-
-        restart_msg = "Press SPACE to restart"
-        restart_width = text_width(restart_msg, small_font)
-        draw_text(restart_msg, WINDOW_WIDTH / 2 - restart_width / 2, WINDOW_HEIGHT / 2 + 30, small_font, WHITE)
+        big = default_font(48)
+        draw_text("GAME OVER", 280, 280, big, RED)
+        draw_text("Press SPACE to retry", 290, 340, font, WHITE)
     }
 
-    // Draw win message
-    if game_won {
-        msg = "YOU WIN!"
-        msg_width = text_width(msg, font)
-        draw_text(msg, WINDOW_WIDTH / 2 - msg_width / 2, WINDOW_HEIGHT / 2 - 18, font, GREEN)
-
-        score_msg = "Final Score: " + to_string(score)
-        score_width = text_width(score_msg, small_font)
-        draw_text(score_msg, WINDOW_WIDTH / 2 - score_width / 2, WINDOW_HEIGHT / 2 + 30, small_font, WHITE)
-
-        restart_msg = "Press SPACE to play again"
-        restart_width = text_width(restart_msg, small_font)
-        draw_text(restart_msg, WINDOW_WIDTH / 2 - restart_width / 2, WINDOW_HEIGHT / 2 + 70, small_font, GRAY)
+    // Win!
+    if you_win {
+        big = default_font(48)
+        draw_text("YOU WIN!", 300, 280, big, GREEN)
+        draw_text("Score: " + to_string(score), 340, 340, font, WHITE)
+        draw_text("Press SPACE to play again", 260, 380, font, WHITE)
     }
 }
