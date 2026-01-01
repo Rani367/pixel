@@ -23,9 +23,10 @@ code {
   font-family: var(--font-mono);
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling and disable overscroll bounce */
 html {
   scroll-behavior: smooth;
+  overscroll-behavior: none;
 }
 
 /* Focus styles */
