@@ -464,6 +464,10 @@ function on_draw() {
       Module._emscripten_cancel_main_loop();
     }
 
+    // Release focus from canvas so editor can receive input again
+    const canvas = document.getElementById('canvas');
+    if (canvas) canvas.blur();
+
     isRunning = false;
     setRunningState(false);
     logToConsole('Stopped', 'text-yellow-400');
