@@ -464,7 +464,21 @@ function on_draw() {
       Module._emscripten_cancel_main_loop();
     }
 
-    // Release focus from canvas so editor can receive input again
+    // Remove SDL's keyboard event handlers from window
+    // Emscripten registers these globally even with keyboardListeningElement set
+    const JSEvents = (window as any).JSEvents;
+    if (JSEvents && JSEvents.eventHandlers) {
+      const keyboardEvents = ['keydown', 'keyup', 'keypress'];
+      for (let i = JSEvents.eventHandlers.length - 1; i >= 0; i--) {
+        const h = JSEvents.eventHandlers[i];
+        if (keyboardEvents.includes(h.eventTypeString) && h.target === window) {
+          h.target.removeEventListener(h.eventTypeString, h.eventListenerFunc, h.useCapture);
+          JSEvents.eventHandlers.splice(i, 1);
+        }
+      }
+    }
+
+    // Release focus from canvas
     const canvas = document.getElementById('canvas');
     if (canvas) canvas.blur();
 
