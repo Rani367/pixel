@@ -26,12 +26,22 @@ game_over = false
 winner = ""
 
 // Font for score display
-font = none
+font = null
 
-function on_start() {
-    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Pong")
-    font = default_font(48)
-    reset_game()
+function reset_ball() {
+    // Center ball
+    ball_x = WINDOW_WIDTH / 2 - BALL_SIZE / 2
+    ball_y = WINDOW_HEIGHT / 2 - BALL_SIZE / 2
+
+    // Random direction
+    if random() > 0.5 {
+        ball_vel_x = BALL_SPEED
+    } else {
+        ball_vel_x = -BALL_SPEED
+    }
+
+    // Random vertical angle
+    ball_vel_y = random_range(-BALL_SPEED / 2, BALL_SPEED / 2)
 }
 
 function reset_game() {
@@ -48,20 +58,10 @@ function reset_game() {
     reset_ball()
 }
 
-function reset_ball() {
-    // Center ball
-    ball_x = WINDOW_WIDTH / 2 - BALL_SIZE / 2
-    ball_y = WINDOW_HEIGHT / 2 - BALL_SIZE / 2
-
-    // Random direction
-    if random() > 0.5 {
-        ball_vel_x = BALL_SPEED
-    } else {
-        ball_vel_x = -BALL_SPEED
-    }
-
-    // Random vertical angle
-    ball_vel_y = random_range(-BALL_SPEED / 2, BALL_SPEED / 2)
+function on_start() {
+    create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Pong")
+    font = default_font(48)
+    reset_game()
 }
 
 function on_update(dt) {

@@ -13,114 +13,8 @@ player_x = 400
 player_y = 300
 player_speed = 200
 
-function on_start() {
-    create_window(800, 600, "Input Demo - Press keys and click!")
-}
-
-function on_update(dt) {
-    // Movement using key_down (continuous movement while held)
-    if key_down(KEY_W) or key_down(KEY_UP) {
-        player_y = player_y - player_speed * dt
-    }
-    if key_down(KEY_S) or key_down(KEY_DOWN) {
-        player_y = player_y + player_speed * dt
-    }
-    if key_down(KEY_A) or key_down(KEY_LEFT) {
-        player_x = player_x - player_speed * dt
-    }
-    if key_down(KEY_D) or key_down(KEY_RIGHT) {
-        player_x = player_x + player_speed * dt
-    }
-
-    // Speed boost with shift
-    if key_down(KEY_SHIFT) {
-        player_speed = 400
-    } else {
-        player_speed = 200
-    }
-
-    // Keep player in bounds
-    if player_x < 25 { player_x = 25 }
-    if player_x > 775 { player_x = 775 }
-    if player_y < 25 { player_y = 25 }
-    if player_y > 575 { player_y = 575 }
-
-    // Escape to quit
-    if key_pressed(KEY_ESCAPE) {
-        // In the future, this could call a quit() function
-    }
-}
-
-function on_draw() {
-    clear(rgb(30, 30, 50))
-
-    // Draw player (circle that changes color based on mouse button state)
-    player_color = WHITE
-    if mouse_down(MOUSE_LEFT) {
-        player_color = RED
-    }
-    if mouse_down(MOUSE_RIGHT) {
-        player_color = BLUE
-    }
-    if mouse_down(MOUSE_MIDDLE) {
-        player_color = GREEN
-    }
-    draw_circle(player_x, player_y, 25, player_color)
-
-    // Draw crosshair at mouse position
-    mx = mouse_x()
-    my = mouse_y()
-    draw_line(mx - 10, my, mx + 10, my, YELLOW)
-    draw_line(mx, my - 10, mx, my + 10, YELLOW)
-
-    // Draw last click position
-    if last_click_button != "none" {
-        draw_circle(last_click_x, last_click_y, 5, ORANGE)
-    }
-
-    // Draw instructions
-    draw_rect(10, 10, 350, 120, rgba(0, 0, 0, 180))
-    // Note: draw_text would require a font, which may not be available
-    // Instructions are in this comment:
-    // - WASD or Arrow keys: Move player
-    // - Hold Shift: Move faster
-    // - Left/Right/Middle click: Changes player color
-    // - Last key down/up and click shown via console
-}
-
-// Input callbacks
-function on_key_down(key) {
-    last_key_down = key_name(key)
-    println("Key down: " + last_key_down)
-}
-
-function on_key_up(key) {
-    last_key_up = key_name(key)
-    println("Key up: " + last_key_up)
-}
-
-function on_mouse_click(x, y, button) {
-    last_click_x = x
-    last_click_y = y
-    if button == MOUSE_LEFT {
-        last_click_button = "left"
-    }
-    if button == MOUSE_RIGHT {
-        last_click_button = "right"
-    }
-    if button == MOUSE_MIDDLE {
-        last_click_button = "middle"
-    }
-    println("Mouse click at (" + to_string(x) + ", " + to_string(y) + ") button: " + last_click_button)
-}
-
-function on_mouse_move(x, y) {
-    // Commented out to avoid console spam
-    // println("Mouse move: " + to_string(x) + ", " + to_string(y))
-}
-
-// Helper to convert key code to name
-function key_name(key) {
+// Helper to convert key code to name (defined before use)
+function get_key_name(key) {
     if key == KEY_A { return "A" }
     if key == KEY_B { return "B" }
     if key == KEY_C { return "C" }
@@ -182,4 +76,105 @@ function key_name(key) {
     if key == KEY_F11 { return "F11" }
     if key == KEY_F12 { return "F12" }
     return "Unknown (" + to_string(key) + ")"
+}
+
+function on_start() {
+    create_window(800, 600, "Input Demo - Press keys and click!")
+}
+
+function on_update(dt) {
+    // Movement using key_down (continuous movement while held)
+    if key_down(KEY_W) or key_down(KEY_UP) {
+        player_y = player_y - player_speed * dt
+    }
+    if key_down(KEY_S) or key_down(KEY_DOWN) {
+        player_y = player_y + player_speed * dt
+    }
+    if key_down(KEY_A) or key_down(KEY_LEFT) {
+        player_x = player_x - player_speed * dt
+    }
+    if key_down(KEY_D) or key_down(KEY_RIGHT) {
+        player_x = player_x + player_speed * dt
+    }
+
+    // Speed boost with shift
+    if key_down(KEY_SHIFT) {
+        player_speed = 400
+    } else {
+        player_speed = 200
+    }
+
+    // Keep player in bounds
+    if player_x < 25 { player_x = 25 }
+    if player_x > 775 { player_x = 775 }
+    if player_y < 25 { player_y = 25 }
+    if player_y > 575 { player_y = 575 }
+}
+
+function on_draw() {
+    clear(rgb(30, 30, 50))
+
+    // Draw player (circle that changes color based on mouse button state)
+    player_color = WHITE
+    if mouse_down(MOUSE_LEFT) {
+        player_color = RED
+    }
+    if mouse_down(MOUSE_RIGHT) {
+        player_color = BLUE
+    }
+    if mouse_down(MOUSE_MIDDLE) {
+        player_color = GREEN
+    }
+    draw_circle(player_x, player_y, 25, player_color)
+
+    // Draw crosshair at mouse position
+    mx = mouse_x()
+    my = mouse_y()
+    draw_line(mx - 10, my, mx + 10, my, YELLOW)
+    draw_line(mx, my - 10, mx, my + 10, YELLOW)
+
+    // Draw last click position
+    if last_click_button != "none" {
+        draw_circle(last_click_x, last_click_y, 5, ORANGE)
+    }
+
+    // Draw instructions
+    draw_rect(10, 10, 350, 120, rgba(0, 0, 0, 180))
+
+    inst_font = default_font(16)
+    draw_text("WASD or Arrow keys: Move player", 20, 20, inst_font, WHITE)
+    draw_text("Hold Shift: Move faster", 20, 45, inst_font, WHITE)
+    draw_text("Left/Right/Middle click: Change color", 20, 70, inst_font, WHITE)
+    draw_text("Last key: " + last_key_down, 20, 95, inst_font, CYAN)
+}
+
+// Input callbacks
+function on_key_down(key) {
+    last_key_down = get_key_name(key)
+    println("Key down: " + last_key_down)
+}
+
+function on_key_up(key) {
+    last_key_up = get_key_name(key)
+    println("Key up: " + last_key_up)
+}
+
+function on_mouse_click(x, y, button) {
+    last_click_x = x
+    last_click_y = y
+    if button == MOUSE_LEFT {
+        last_click_button = "left"
+    }
+    if button == MOUSE_RIGHT {
+        last_click_button = "right"
+    }
+    if button == MOUSE_MIDDLE {
+        last_click_button = "middle"
+    }
+    println("Mouse click at (" + to_string(x) + ", " + to_string(y) + ") button: " + last_click_button)
+}
+
+function on_mouse_move(x, y) {
+    // Commented out to avoid console spam
+    // println("Mouse move: " + to_string(x) + ", " + to_string(y))
 }

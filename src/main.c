@@ -193,6 +193,32 @@ static void declare_builtins(Analyzer* analyzer) {
     analyzer_declare_global(analyzer, "KEY_8");
     analyzer_declare_global(analyzer, "KEY_9");
 
+    // Modifier keys
+    analyzer_declare_global(analyzer, "KEY_SHIFT");
+    analyzer_declare_global(analyzer, "KEY_CTRL");
+    analyzer_declare_global(analyzer, "KEY_ALT");
+    analyzer_declare_global(analyzer, "KEY_LSHIFT");
+    analyzer_declare_global(analyzer, "KEY_RSHIFT");
+    analyzer_declare_global(analyzer, "KEY_LCTRL");
+    analyzer_declare_global(analyzer, "KEY_RCTRL");
+    analyzer_declare_global(analyzer, "KEY_LALT");
+    analyzer_declare_global(analyzer, "KEY_RALT");
+    analyzer_declare_global(analyzer, "KEY_BACKSPACE");
+
+    // Function keys
+    analyzer_declare_global(analyzer, "KEY_F1");
+    analyzer_declare_global(analyzer, "KEY_F2");
+    analyzer_declare_global(analyzer, "KEY_F3");
+    analyzer_declare_global(analyzer, "KEY_F4");
+    analyzer_declare_global(analyzer, "KEY_F5");
+    analyzer_declare_global(analyzer, "KEY_F6");
+    analyzer_declare_global(analyzer, "KEY_F7");
+    analyzer_declare_global(analyzer, "KEY_F8");
+    analyzer_declare_global(analyzer, "KEY_F9");
+    analyzer_declare_global(analyzer, "KEY_F10");
+    analyzer_declare_global(analyzer, "KEY_F11");
+    analyzer_declare_global(analyzer, "KEY_F12");
+
     // Mouse button constants
     analyzer_declare_global(analyzer, "MOUSE_LEFT");
     analyzer_declare_global(analyzer, "MOUSE_MIDDLE");
@@ -285,9 +311,13 @@ static int cmd_run(const char* filename) {
     }
 
     // 9. Cleanup
+    // NOTE: vm_free must happen BEFORE engine_shutdown because:
+    // - vm_free frees all objects including fonts, which call TTF_CloseFont
+    // - engine_shutdown calls pal_quit which calls TTF_Quit
+    // - TTF_CloseFont will crash if called after TTF_Quit
+    vm_free(&vm);
     engine_shutdown(engine);
     engine_free(engine);
-    vm_free(&vm);
     arena_free(arena);
     free(source);
 
