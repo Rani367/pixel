@@ -341,6 +341,15 @@ function on_draw() {
 
   // Example selector
   const exampleSelect = document.getElementById('example-select') as HTMLSelectElement;
+
+  // Sync dropdown with loaded code
+  if (exampleSelect && savedCode) {
+    const matchingIdx = examples.findIndex((ex: any) => ex.code === savedCode);
+    if (matchingIdx >= 0) {
+      exampleSelect.value = matchingIdx.toString();
+    }
+  }
+
   exampleSelect?.addEventListener('change', () => {
     const idx = parseInt(exampleSelect.value);
     if (editor && examples[idx]) {
