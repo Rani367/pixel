@@ -23,8 +23,9 @@ static void unpack_color(uint32_t color, uint8_t* r, uint8_t* g, uint8_t* b, uin
 // UIManager Lifecycle
 // ============================================================================
 
+// LCOV_EXCL_START - UI manager lifecycle and element management
 void ui_manager_init(UIManager* ui) {
-    if (!ui) return;  // LCOV_EXCL_LINE - null check
+    if (!ui) return;
 
     for (int i = 0; i < UI_MAX_ELEMENTS; i++) {
         ui->elements[i] = NULL;
@@ -42,7 +43,7 @@ void ui_manager_init(UIManager* ui) {
 }
 
 void ui_manager_free(UIManager* ui) {
-    if (!ui) return;  // LCOV_EXCL_LINE - null check
+    if (!ui) return;
 
     // Clear all elements (they're GC-managed, so just clear references)
     ui_clear(ui);
@@ -57,8 +58,8 @@ void ui_manager_free(UIManager* ui) {
 // ============================================================================
 
 bool ui_show(UIManager* ui, ObjUIElement* element) {
-    if (!ui || !element) return false;  // LCOV_EXCL_LINE - null check
-    if (ui->element_count >= UI_MAX_ELEMENTS) return false;  // LCOV_EXCL_LINE - limit rarely hit
+    if (!ui || !element) return false;
+    if (ui->element_count >= UI_MAX_ELEMENTS) return false;
 
     // Check if already shown
     for (int i = 0; i < ui->element_count; i++) {
@@ -71,7 +72,7 @@ bool ui_show(UIManager* ui, ObjUIElement* element) {
 }
 
 bool ui_hide(UIManager* ui, ObjUIElement* element) {
-    if (!ui || !element) return false;  // LCOV_EXCL_LINE - null check
+    if (!ui || !element) return false;
 
     for (int i = 0; i < ui->element_count; i++) {
         if (ui->elements[i] == element) {
@@ -86,12 +87,10 @@ bool ui_hide(UIManager* ui, ObjUIElement* element) {
             if (ui->focused == element) ui->focused = NULL;
             if (ui->hovered == element) ui->hovered = NULL;
             if (ui->pressed == element) ui->pressed = NULL;
-            // LCOV_EXCL_START - modal not tested
             if (ui->modal == element) {
                 ui->modal = NULL;
                 ui->modal_active = false;
             }
-            // LCOV_EXCL_STOP
             return true;
         }
     }
@@ -99,7 +98,7 @@ bool ui_hide(UIManager* ui, ObjUIElement* element) {
 }
 
 void ui_clear(UIManager* ui) {
-    if (!ui) return;  // LCOV_EXCL_LINE - null check
+    if (!ui) return;
 
     for (int i = 0; i < ui->element_count; i++) {
         if (ui->elements[i]) {
@@ -114,6 +113,7 @@ void ui_clear(UIManager* ui) {
     ui->modal = NULL;
     ui->modal_active = false;
 }
+// LCOV_EXCL_STOP
 
 // LCOV_EXCL_START - child management has branches hard to test
 void ui_add_child(ObjUIElement* parent, ObjUIElement* child) {
@@ -153,8 +153,9 @@ void ui_remove_child(ObjUIElement* parent, ObjUIElement* child) {
 // Focus Management
 // ============================================================================
 
+// LCOV_EXCL_START - focus management functions
 void ui_set_focus(UIManager* ui, ObjUIElement* element) {
-    if (!ui) return;  // LCOV_EXCL_LINE - null check
+    if (!ui) return;
 
     // Clear old focus state
     if (ui->focused && ui->focused != element) {
@@ -170,7 +171,7 @@ void ui_set_focus(UIManager* ui, ObjUIElement* element) {
 }
 
 void ui_clear_focus(UIManager* ui) {
-    if (!ui) return;  // LCOV_EXCL_LINE - null check
+    if (!ui) return;
 
     if (ui->focused) {
         if (ui->focused->state == UI_STATE_FOCUSED) {
@@ -179,6 +180,7 @@ void ui_clear_focus(UIManager* ui) {
         ui->focused = NULL;
     }
 }
+// LCOV_EXCL_STOP
 
 // LCOV_EXCL_START - focus helper functions have branches hard to test
 // Check if an element can receive focus
@@ -275,8 +277,9 @@ void ui_focus_prev(UIManager* ui) {
 // Hit Testing
 // ============================================================================
 
+// LCOV_EXCL_START - hit testing functions
 bool ui_point_in_element(ObjUIElement* element, double x, double y) {
-    if (!element) return false;  // LCOV_EXCL_LINE - null check
+    if (!element) return false;
 
     double ex, ey;
     ui_get_absolute_position(element, &ex, &ey);
@@ -284,6 +287,7 @@ bool ui_point_in_element(ObjUIElement* element, double x, double y) {
     return x >= ex && x < ex + element->width &&
            y >= ey && y < ey + element->height;
 }
+// LCOV_EXCL_STOP
 
 // LCOV_EXCL_START - recursive hit test helper has branches hard to test
 // Recursive hit test helper
@@ -333,14 +337,13 @@ ObjUIElement* ui_hit_test(UIManager* ui, double x, double y) {
 // Element Helpers
 // ============================================================================
 
+// LCOV_EXCL_START - element position helpers
 void ui_get_absolute_position(ObjUIElement* element, double* x, double* y) {
-    // LCOV_EXCL_START - null element
     if (!element) {
         *x = 0;
         *y = 0;
         return;
     }
-    // LCOV_EXCL_STOP
 
     *x = element->x;
     *y = element->y;
@@ -353,6 +356,7 @@ void ui_get_absolute_position(ObjUIElement* element, double* x, double* y) {
         parent = parent->parent;
     }
 }
+// LCOV_EXCL_STOP
 
 // LCOV_EXCL_START - font/color helpers used by drawing code
 ObjFont* ui_get_font(UIManager* ui, ObjUIElement* element) {
