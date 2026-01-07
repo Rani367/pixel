@@ -42,11 +42,20 @@ const {
     />
     <StructuredData type="SoftwareApplication" />
     <script is:inline>
-      // Check for saved theme or system preference
-      const theme = localStorage.getItem('theme') ||
-        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.classList.toggle('dark', theme === 'dark');
+      // Check for saved theme or system preference - runs immediately before render
+      (function() {
+        const theme = localStorage.getItem('theme') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        // Set background color immediately to prevent flash
+        document.documentElement.style.backgroundColor = theme === 'dark' ? '#09090b' : '#ffffff';
+      })();
     </script>
+    <style>
+      /* Prevent flash of white - set background before CSS loads */
+      html { background-color: #09090b; }
+      html:not(.dark) { background-color: #ffffff; }
+    </style>
   </head>
   <body class="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans antialiased">
     <Header />
