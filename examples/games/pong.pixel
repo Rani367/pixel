@@ -21,12 +21,6 @@ winner = ""
 
 font = null
 
-function on_start() {
-    create_window(800, 600, "Pong")
-    font = default_font(48)
-    reset_ball()
-}
-
 function reset_ball() {
     ball_x = 400
     ball_y = 300
@@ -37,6 +31,12 @@ function reset_ball() {
         ball_dx = -300
     }
     ball_dy = random_range(-200, 200)
+}
+
+function on_start() {
+    create_window(800, 600, "Pong")
+    font = default_font(48)
+    reset_ball()
 }
 
 function on_update(dt) {

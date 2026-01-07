@@ -4,6 +4,10 @@
 // Click to shoot
 // Survive as long as you can!
 
+// Struct definitions
+struct Bullet { x, y, dx, dy }
+struct Enemy { x, y, speed }
+
 // Player
 player_x = 400
 player_y = 300
@@ -24,37 +28,7 @@ enemies_spawned = 0
 game_over = false
 font = null
 
-function on_start() {
-    create_window(800, 600, "Shooter")
-    font = default_font(24)
-}
-
-function on_update(dt) {
-    if game_over {
-        if key_pressed(KEY_SPACE) {
-            // Reset game
-            player_x = 400
-            player_y = 300
-            health = 100
-            bullets = []
-            enemies = []
-            score = 0
-            wave = 1
-            enemies_this_wave = 5
-            enemies_spawned = 0
-            spawn_timer = 0
-            game_over = false
-        }
-        return
-    }
-
-    move_player(dt)
-    update_bullets(dt)
-    update_enemies(dt)
-    spawn_enemies(dt)
-    check_wave_complete()
-}
-
+// Helper functions (must be defined before use)
 function move_player(dt) {
     // Move with WASD or arrows
     if key_down(KEY_W) or key_down(KEY_UP)    { player_y = player_y - 250 * dt }
@@ -71,12 +45,11 @@ function move_player(dt) {
 
     // Shoot on click
     if mouse_pressed(MOUSE_LEFT) {
-        b = {}
-        b.x = player_x + cos(player_angle) * 20
-        b.y = player_y + sin(player_angle) * 20
-        b.dx = cos(player_angle) * 600
-        b.dy = sin(player_angle) * 600
-        push(bullets, b)
+        bx = player_x + cos(player_angle) * 20
+        by = player_y + sin(player_angle) * 20
+        bdx = cos(player_angle) * 600
+        bdy = sin(player_angle) * 600
+        push(bullets, Bullet(bx, by, bdx, bdy))
     }
 }
 
@@ -152,16 +125,17 @@ function spawn_enemies(dt) {
         spawn_timer = 0
         enemies_spawned = enemies_spawned + 1
 
-        e = {}
         // Spawn at random edge
         side = floor(random() * 4)
-        if side == 0 { e.x = random_range(0, 800)  e.y = -20 }
-        if side == 1 { e.x = random_range(0, 800)  e.y = 620 }
-        if side == 2 { e.x = -20  e.y = random_range(0, 600) }
-        if side == 3 { e.x = 820  e.y = random_range(0, 600) }
+        ex = 0
+        ey = 0
+        if side == 0 { ex = random_range(0, 800)  ey = -20 }
+        if side == 1 { ex = random_range(0, 800)  ey = 620 }
+        if side == 2 { ex = -20  ey = random_range(0, 600) }
+        if side == 3 { ex = 820  ey = random_range(0, 600) }
 
-        e.speed = 80 + wave * 10
-        push(enemies, e)
+        espeed = 80 + wave * 10
+        push(enemies, Enemy(ex, ey, espeed))
     }
 }
 
@@ -173,6 +147,38 @@ function check_wave_complete() {
         spawn_timer = -1.0  // Brief pause before next wave
         health = min(health + 20, 100)  // Heal a bit between waves
     }
+}
+
+// Game lifecycle callbacks
+function on_start() {
+    create_window(800, 600, "Shooter")
+    font = default_font(24)
+}
+
+function on_update(dt) {
+    if game_over {
+        if key_pressed(KEY_SPACE) {
+            // Reset game
+            player_x = 400
+            player_y = 300
+            health = 100
+            bullets = []
+            enemies = []
+            score = 0
+            wave = 1
+            enemies_this_wave = 5
+            enemies_spawned = 0
+            spawn_timer = 0
+            game_over = false
+        }
+        return
+    }
+
+    move_player(dt)
+    update_bullets(dt)
+    update_enemies(dt)
+    spawn_enemies(dt)
+    check_wave_complete()
 }
 
 function on_draw() {

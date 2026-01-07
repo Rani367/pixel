@@ -106,19 +106,24 @@ while i >= 0 {
 
 ## Structs
 
-Structs are key-value objects for grouping related data.
+Structs are templates for creating objects with named fields.
 
-### Creating Structs
+### Defining Structs
+
+First, define a struct with its field names:
 
 ```pixel
-// Empty struct, add properties later
-player = {}
-player.x = 100
-player.y = 200
-player.health = 100
+struct Player { x, y, health }
+struct Enemy { x, y, health, speed }
+```
 
-// Inline creation
-enemy = {x: 300, y: 200, health: 50}
+### Creating Instances
+
+Create instances by calling the struct name like a function:
+
+```pixel
+player = Player(100, 200, 100)
+enemy = Enemy(300, 200, 50, 80)
 ```
 
 ### Accessing Properties
@@ -135,39 +140,31 @@ player.x = player.x + 10
 player.health = player.health - 25
 ```
 
-### Adding Properties
+### Structs with Methods
 
-Properties can be added at any time:
-
-```pixel
-player = {}
-player.name = "Hero"
-player.level = 1
-player.inventory = []  // Nested list
-```
-
-### Nested Structs
+Structs can include methods:
 
 ```pixel
-game = {}
-game.player = {x: 100, y: 200}
-game.settings = {volume: 0.8, fullscreen: false}
+struct Vector {
+    x, y,
+    function length() {
+        return sqrt(this.x * this.x + this.y * this.y)
+    }
+}
 
-// Access nested properties
-println(game.player.x)
-println(game.settings.volume)
+v = Vector(3, 4)
+println(v.length())  // 5
 ```
 
 ### Structs in Lists
 
 ```pixel
+struct Enemy { x, y, health }
+
 enemies = []
 
-enemy1 = {x: 100, y: 100, health: 30}
-enemy2 = {x: 200, y: 150, health: 30}
-
-push(enemies, enemy1)
-push(enemies, enemy2)
+push(enemies, Enemy(100, 100, 30))
+push(enemies, Enemy(200, 150, 30))
 
 // Update all enemies
 i = 0
@@ -220,16 +217,12 @@ normalized = vec2(a.x / length, a.y / length)
 ### Entity List
 
 ```pixel
+struct Bullet { x, y, vel_x, vel_y, active }
+
 bullets = []
 
 function spawn_bullet(x, y, dx, dy) {
-    b = {}
-    b.x = x
-    b.y = y
-    b.vel_x = dx
-    b.vel_y = dy
-    b.active = true
-    push(bullets, b)
+    push(bullets, Bullet(x, y, dx, dy, true))
 }
 
 function update_bullets(dt) {
@@ -247,24 +240,25 @@ function update_bullets(dt) {
 }
 ```
 
-### Game State Struct
+### Game State
+
+Use global variables to track game state:
 
 ```pixel
-game = {}
-game.score = 0
-game.lives = 3
-game.level = 1
-game.paused = false
-game.enemies = []
-game.bullets = []
+score = 0
+lives = 3
+level = 1
+paused = false
+enemies = []
+bullets = []
 
 function reset_game() {
-    game.score = 0
-    game.lives = 3
-    game.level = 1
-    game.paused = false
-    game.enemies = []
-    game.bullets = []
+    score = 0
+    lives = 3
+    level = 1
+    paused = false
+    enemies = []
+    bullets = []
 }
 ```
 

@@ -3,6 +3,10 @@
 // Jump with SPACE, W, or Up arrow
 // Collect all coins and reach the flag to win!
 
+// Struct definitions
+struct Platform { x, y, w }
+struct Coin { x, y, collected }
+
 // Player state
 player_x = 50
 player_y = 400
@@ -20,10 +24,13 @@ you_win = false
 
 font = null
 
-function on_start() {
-    create_window(800, 600, "Platformer")
-    font = default_font(24)
-    build_level()
+// Helper functions (must be defined before use)
+function add_platform(x, y, width) {
+    push(platforms, Platform(x, y, width))
+}
+
+function add_coin(x, y) {
+    push(coins, Coin(x, y, false))
 }
 
 function build_level() {
@@ -64,20 +71,10 @@ function build_level() {
     add_coin(1800, 410)
 }
 
-function add_platform(x, y, width) {
-    p = {}
-    p.x = x
-    p.y = y
-    p.w = width
-    push(platforms, p)
-}
-
-function add_coin(x, y) {
-    c = {}
-    c.x = x
-    c.y = y
-    c.collected = false
-    push(coins, c)
+function on_start() {
+    create_window(800, 600, "Platformer")
+    font = default_font(24)
+    build_level()
 }
 
 function on_update(dt) {

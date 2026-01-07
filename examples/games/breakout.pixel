@@ -3,6 +3,9 @@
 // Press SPACE to launch the ball
 // Break all the bricks to win!
 
+// Struct definition
+struct Brick { x, y, alive, color }
+
 paddle_x = 350
 ball_x = 400
 ball_y = 540
@@ -18,12 +21,6 @@ you_win = false
 
 font = null
 
-function on_start() {
-    create_window(800, 600, "Breakout")
-    font = default_font(24)
-    create_bricks()
-}
-
 function create_bricks() {
     bricks = []
     colors = [RED, ORANGE, YELLOW, GREEN, CYAN]
@@ -32,16 +29,31 @@ function create_bricks() {
     while row < 5 {
         col = 0
         while col < 10 {
-            brick = {}
-            brick.x = 50 + col * 72
-            brick.y = 60 + row * 28
-            brick.alive = true
-            brick.color = colors[row]
-            push(bricks, brick)
+            bx = 50 + col * 72
+            by = 60 + row * 28
+            bcolor = colors[row]
+            push(bricks, Brick(bx, by, true, bcolor))
             col = col + 1
         }
         row = row + 1
     }
+}
+
+function all_bricks_gone() {
+    i = 0
+    while i < len(bricks) {
+        if bricks[i].alive {
+            return false
+        }
+        i = i + 1
+    }
+    return true
+}
+
+function on_start() {
+    create_window(800, 600, "Breakout")
+    font = default_font(24)
+    create_bricks()
 }
 
 function on_update(dt) {
@@ -134,17 +146,6 @@ function on_update(dt) {
         }
         i = i + 1
     }
-}
-
-function all_bricks_gone() {
-    i = 0
-    while i < len(bricks) {
-        if bricks[i].alive {
-            return false
-        }
-        i = i + 1
-    }
-    return true
 }
 
 function on_draw() {
