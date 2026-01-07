@@ -67,6 +67,8 @@ function on_draw() {
     name: 'Particles',
     code: `// Click anywhere to create particles that fall with gravity
 
+struct Particle { x, y, vx, vy, life }
+
 particles = []
 
 function on_start() {
@@ -78,13 +80,11 @@ function on_update(dt) {
     if mouse_down(MOUSE_LEFT) {
         i = 0
         while i < 5 {
-            p = {}
-            p.x = mouse_x()
-            p.y = mouse_y()
-            p.vx = random_range(-100, 100)
-            p.vy = random_range(-200, -50)
-            p.life = 1.0
-            push(particles, p)
+            px = mouse_x()
+            py = mouse_y()
+            pvx = random_range(-100, 100)
+            pvy = random_range(-200, -50)
+            push(particles, Particle(px, py, pvx, pvy, 1.0))
             i = i + 1
         }
     }
