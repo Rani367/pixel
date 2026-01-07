@@ -27,6 +27,7 @@ typedef enum {
     OBJ_CAMERA,
     OBJ_ANIMATION,
     OBJ_PARTICLE_EMITTER,
+    OBJ_UI_ELEMENT,
 } ObjectType;
 
 // Common header for all heap-allocated objects
@@ -59,6 +60,7 @@ struct Object {
 #define IS_CAMERA(v)        (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_CAMERA)
 #define IS_ANIMATION(v)     (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_ANIMATION)
 #define IS_PARTICLE_EMITTER(v) (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_PARTICLE_EMITTER)
+#define IS_UI_ELEMENT(v)    (IS_OBJECT(v) && OBJ_TYPE(v) == OBJ_UI_ELEMENT)
 
 // ============================================================================
 // String Object
@@ -450,6 +452,141 @@ typedef struct {
 ObjParticleEmitter* particle_emitter_new(double x, double y);
 void particle_emitter_emit(ObjParticleEmitter* emitter, int count);
 void particle_emitter_update(ObjParticleEmitter* emitter, double dt);
+
+// ============================================================================
+// UI Element Object
+// ============================================================================
+
+// UI element kinds
+typedef enum {
+    UI_BUTTON,
+    UI_LABEL,
+    UI_PANEL,
+    UI_SLIDER,
+    UI_CHECKBOX,
+    UI_TEXT_INPUT,
+    UI_LIST,
+    UI_IMAGE_BOX,
+    UI_PROGRESS_BAR,
+} UIElementKind;
+
+// UI element state
+typedef enum {
+    UI_STATE_NORMAL,
+    UI_STATE_HOVERED,
+    UI_STATE_PRESSED,
+    UI_STATE_DISABLED,
+    UI_STATE_FOCUSED,
+} UIState;
+
+// Text alignment
+typedef enum {
+    UI_ALIGN_LEFT,
+    UI_ALIGN_CENTER,
+    UI_ALIGN_RIGHT,
+} UITextAlign;
+
+// Unified UI element object
+typedef struct ObjUIElement {
+    Object obj;
+    UIElementKind kind;
+
+    // Layout properties (shared by all)
+    double x, y;              // Position
+    double width, height;     // Size
+    bool visible;             // Whether to render
+    bool enabled;             // Whether to accept input
+    UIState state;            // Current interaction state
+
+    // Hierarchy
+    struct ObjUIElement* parent;
+    ObjList* children;        // List of child elements
+
+    // Styling
+    uint32_t bg_color;        // Background color
+    uint32_t fg_color;        // Foreground/text color
+    uint32_t border_color;    // Border color
+    uint32_t hover_color;     // Color when hovered
+    uint32_t pressed_color;   // Color when pressed
+    int border_width;         // Border thickness
+    int padding;              // Internal padding
+    ObjFont* font;            // Text font
+
+    // Callbacks
+    ObjClosure* on_click;     // Button click, checkbox toggle
+    ObjClosure* on_change;    // Slider/input value change
+
+    // Kind-specific data
+    union {
+        // Button
+        struct {
+            ObjString* text;
+        } button;
+
+        // Label
+        struct {
+            ObjString* text;
+            UITextAlign align;
+        } label;
+
+        // Panel (container)
+        struct {
+            bool scrollable;
+            double scroll_y;
+        } panel;
+
+        // Slider
+        struct {
+            double value;     // Current value
+            double min;
+            double max;
+            double step;      // Step increment (0 = smooth)
+        } slider;
+
+        // Checkbox
+        struct {
+            bool checked;
+            ObjString* label;
+        } checkbox;
+
+        // TextInput
+        struct {
+            ObjString* text;
+            ObjString* placeholder;
+            int max_length;
+            int cursor_pos;
+            bool password;    // Mask characters with *
+        } text_input;
+
+        // List
+        struct {
+            ObjList* items;      // List of ObjString*
+            int selected_index;  // -1 if none
+            int scroll_offset;
+            int visible_items;
+        } list;
+
+        // ImageBox
+        struct {
+            ObjImage* image;
+            bool scale_to_fit;
+        } image_box;
+
+        // ProgressBar
+        struct {
+            double value;     // 0.0-1.0
+            uint32_t fill_color;
+        } progress_bar;
+    } data;
+} ObjUIElement;
+
+#define AS_UI_ELEMENT(v)    ((ObjUIElement*)AS_OBJECT(v))
+
+// Create UI elements
+ObjUIElement* ui_element_new(UIElementKind kind);
+
+// UI element operations
+void ui_element_free(ObjUIElement* element);
 
 // ============================================================================
 // Object Utilities

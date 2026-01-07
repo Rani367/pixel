@@ -118,6 +118,9 @@ add_library(pixel_engine
     src/engine/engine.c
     src/engine/engine_natives.c
     src/engine/physics.c
+    src/engine/ui.c
+    src/engine/ui_natives.c
+    src/engine/ui_menus.c
 )
 target_link_libraries(pixel_engine
     pixel_core

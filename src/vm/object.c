@@ -659,6 +659,112 @@ void particle_emitter_update(ObjParticleEmitter* emitter, double dt) {
 // LCOV_EXCL_STOP
 
 // ============================================================================
+// UI Element Objects
+// ============================================================================
+
+// Default UI colors
+#define UI_DEFAULT_BG_COLOR      0xFF333333  // Dark gray
+#define UI_DEFAULT_FG_COLOR      0xFFFFFFFF  // White
+#define UI_DEFAULT_BORDER_COLOR  0xFF666666  // Medium gray
+#define UI_DEFAULT_HOVER_COLOR   0xFF444444  // Slightly lighter gray
+#define UI_DEFAULT_PRESSED_COLOR 0xFF222222  // Darker gray
+#define UI_DEFAULT_FILL_COLOR    0xFF4488FF  // Blue for progress bars
+
+ObjUIElement* ui_element_new(UIElementKind kind) {
+    ObjUIElement* element = ALLOCATE_OBJ(ObjUIElement, OBJ_UI_ELEMENT);
+    element->kind = kind;
+
+    // Layout defaults
+    element->x = 0;
+    element->y = 0;
+    element->width = 100;
+    element->height = 40;
+    element->visible = true;
+    element->enabled = true;
+    element->state = UI_STATE_NORMAL;
+
+    // Hierarchy
+    element->parent = NULL;
+    element->children = NULL;
+
+    // Styling defaults
+    element->bg_color = UI_DEFAULT_BG_COLOR;
+    element->fg_color = UI_DEFAULT_FG_COLOR;
+    element->border_color = UI_DEFAULT_BORDER_COLOR;
+    element->hover_color = UI_DEFAULT_HOVER_COLOR;
+    element->pressed_color = UI_DEFAULT_PRESSED_COLOR;
+    element->border_width = 1;
+    element->padding = 8;
+    element->font = NULL;
+
+    // Callbacks
+    element->on_click = NULL;
+    element->on_change = NULL;
+
+    // Kind-specific initialization
+    switch (kind) {
+        case UI_BUTTON:
+            element->data.button.text = NULL;
+            break;
+        case UI_LABEL:
+            element->data.label.text = NULL;
+            element->data.label.align = UI_ALIGN_LEFT;
+            element->height = 20;  // Labels are typically shorter
+            break;
+        case UI_PANEL:
+            element->data.panel.scrollable = false;
+            element->data.panel.scroll_y = 0;
+            element->children = list_new();
+            break;
+        case UI_SLIDER:
+            element->data.slider.value = 0.5;
+            element->data.slider.min = 0.0;
+            element->data.slider.max = 1.0;
+            element->data.slider.step = 0.0;  // Smooth by default
+            element->height = 20;
+            break;
+        case UI_CHECKBOX:
+            element->data.checkbox.checked = false;
+            element->data.checkbox.label = NULL;
+            element->width = 24;
+            element->height = 24;
+            break;
+        case UI_TEXT_INPUT:
+            element->data.text_input.text = string_copy("", 0);
+            element->data.text_input.placeholder = NULL;
+            element->data.text_input.max_length = 256;
+            element->data.text_input.cursor_pos = 0;
+            element->data.text_input.password = false;
+            break;
+        case UI_LIST:
+            element->data.list.items = list_new();
+            element->data.list.selected_index = -1;
+            element->data.list.scroll_offset = 0;
+            element->data.list.visible_items = 5;
+            element->height = 150;
+            break;
+        case UI_IMAGE_BOX:
+            element->data.image_box.image = NULL;
+            element->data.image_box.scale_to_fit = true;
+            break;
+        case UI_PROGRESS_BAR:
+            element->data.progress_bar.value = 0.0;
+            element->data.progress_bar.fill_color = UI_DEFAULT_FILL_COLOR;
+            element->height = 20;
+            break;
+    }
+
+    return element;
+}
+
+void ui_element_free(ObjUIElement* element) {
+    if (!element) return;
+
+    // Kind-specific cleanup (strings and lists are GC-managed, no manual free needed)
+    // The object itself is freed by the GC
+}
+
+// ============================================================================
 // Object Utilities
 // ============================================================================
 
@@ -779,6 +885,15 @@ void object_print(Value value) {
             printf("<particle_emitter at (%.1f, %.1f) %d particles>", emitter->x, emitter->y, emitter->particle_count);
             break;
         }
+        case OBJ_UI_ELEMENT: {
+            ObjUIElement* ui = AS_UI_ELEMENT(value);
+            const char* kind_names[] = {
+                "button", "label", "panel", "slider", "checkbox",
+                "text_input", "list", "image_box", "progress_bar"
+            };
+            printf("<ui_%s at (%.0f, %.0f)>", kind_names[ui->kind], ui->x, ui->y);
+            break;
+        }
         // LCOV_EXCL_STOP
     }
 }
@@ -822,6 +937,7 @@ const char* object_type_name(ObjectType type) {
         case OBJ_CAMERA:     return "camera";
         case OBJ_ANIMATION:  return "animation";
         case OBJ_PARTICLE_EMITTER: return "particle_emitter";
+        case OBJ_UI_ELEMENT: return "ui_element";
         default:             return "unknown";  // LCOV_EXCL_LINE
     }
 }
@@ -907,6 +1023,10 @@ void object_free(Object* object) {
         case OBJ_PARTICLE_EMITTER:
             // Particle emitter has no external resources to free
             // (particles are stored in fixed-size array inside the object)
+            break;
+        case OBJ_UI_ELEMENT:
+            // UI element has no external resources to free
+            // All contained objects (strings, lists, closures) are GC-managed
             break;
         // LCOV_EXCL_STOP
     }

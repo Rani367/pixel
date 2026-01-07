@@ -2,6 +2,7 @@
 
 #include "engine/engine.h"
 #include "engine/physics.h"
+#include "engine/ui.h"
 #include "core/table.h"
 #include <stdlib.h>
 #include <string.h>
@@ -60,11 +61,24 @@ Engine* engine_new(VM* vm) {
     engine->last_mouse_x = 0;
     engine->last_mouse_y = 0;
 
+    // Initialize UI system
+    engine->ui = (UIManager*)malloc(sizeof(UIManager));
+    if (engine->ui) {
+        ui_manager_init(engine->ui);
+    }
+
     return engine;
 }
 
 void engine_free(Engine* engine) {
     if (!engine) return;
+
+    // Free UI system
+    if (engine->ui) {
+        ui_manager_free(engine->ui);
+        free(engine->ui);
+        engine->ui = NULL;
+    }
 
     // LCOV_EXCL_START - window destruction during cleanup
     if (engine->window) {
@@ -234,6 +248,11 @@ static void engine_handle_scene_transition(Engine* engine) {
     // Copy next scene to current
     strncpy(engine->current_scene, engine->next_scene, ENGINE_MAX_SCENE_NAME);
     engine->scene_changed = false;
+
+    // Clear UI elements on scene change
+    if (engine->ui) {
+        ui_clear(engine->ui);
+    }
 
     // Detect callbacks for the new scene
     engine_detect_scene_callbacks(engine, engine->current_scene);
@@ -453,6 +472,11 @@ static void engine_frame_tick(Engine* engine) {
     engine_update_particles(engine, engine->delta_time);
 #endif
 
+    // Update UI system (before user callbacks so UI can consume input)
+    if (engine->ui) {
+        ui_update(engine->ui, engine->vm, engine->delta_time);
+    }
+
     // LCOV_EXCL_START - game callbacks require compiled game code
     // Call on_update with delta time
     if (engine->on_update) {
@@ -465,6 +489,11 @@ static void engine_frame_tick(Engine* engine) {
         vm_call_closure(engine->vm, engine->on_draw, 0, NULL);
     }
     // LCOV_EXCL_STOP
+
+    // Draw UI (after user draw callback for overlay behavior)
+    if (engine->ui) {
+        ui_draw(engine->ui);
+    }
 
     // Present frame
     if (engine->window) {

@@ -3,6 +3,7 @@
 #include "engine/engine_natives.h"
 #include "engine/engine.h"
 #include "engine/physics.h"
+#include "engine/ui_natives.h"
 #include "runtime/stdlib.h"
 #include "vm/object.h"
 #include "pal/pal.h"
@@ -2123,4 +2124,7 @@ void engine_natives_init(VM* vm) {
     define_constant(vm, "MOUSE_LEFT", NUMBER_VAL((double)PAL_MOUSE_LEFT));
     define_constant(vm, "MOUSE_MIDDLE", NUMBER_VAL((double)PAL_MOUSE_MIDDLE));
     define_constant(vm, "MOUSE_RIGHT", NUMBER_VAL((double)PAL_MOUSE_RIGHT));
+
+    // Initialize UI native functions
+    ui_natives_init(vm);
 }

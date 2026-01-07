@@ -71,6 +71,15 @@ add_executable(test_physics unit/test_physics.c)
 target_link_libraries(test_physics pixel_engine pixel_compiler)
 add_test(NAME test_physics COMMAND test_physics)
 
+add_executable(test_ui unit/test_ui.c)
+target_link_libraries(test_ui pixel_engine pixel_compiler)
+add_test(NAME test_ui COMMAND test_ui)
+
+add_executable(test_ui_docs unit/test_ui_docs.c)
+target_link_libraries(test_ui_docs pixel_core)
+add_test(NAME test_ui_docs COMMAND test_ui_docs)
+set_tests_properties(test_ui_docs PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
 # New unit tests for 100% coverage
 add_executable(test_error unit/test_error.c)
 target_link_libraries(test_error pixel_core)

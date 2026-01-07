@@ -8,6 +8,7 @@
 #include "vm/vm.h"
 #include "vm/object.h"
 #include "pal/pal.h"
+#include "engine/ui.h"
 
 // Default window settings
 #define ENGINE_DEFAULT_WIDTH 800
@@ -56,6 +57,9 @@ typedef struct {
     // Input state for tracking changes
     int last_mouse_x;
     int last_mouse_y;
+
+    // UI system
+    UIManager* ui;
 } Engine;
 
 // ============================================================================

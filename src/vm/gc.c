@@ -342,6 +342,49 @@ static void blacken_object(VM* vm, Object* object) {
         case OBJ_PARTICLE_EMITTER:
             // Particle emitter has no object references
             break;
+
+        case OBJ_UI_ELEMENT: {
+            ObjUIElement* ui = (ObjUIElement*)object;
+
+            // Common references
+            gc_mark_object(vm, (Object*)ui->children);
+            gc_mark_object(vm, (Object*)ui->font);
+            gc_mark_object(vm, (Object*)ui->on_click);
+            gc_mark_object(vm, (Object*)ui->on_change);
+
+            // Kind-specific references
+            switch (ui->kind) {
+                case UI_BUTTON:
+                    gc_mark_object(vm, (Object*)ui->data.button.text);
+                    break;
+                case UI_LABEL:
+                    gc_mark_object(vm, (Object*)ui->data.label.text);
+                    break;
+                case UI_PANEL:
+                    // children already marked above
+                    break;
+                case UI_SLIDER:
+                    // No object references
+                    break;
+                case UI_CHECKBOX:
+                    gc_mark_object(vm, (Object*)ui->data.checkbox.label);
+                    break;
+                case UI_TEXT_INPUT:
+                    gc_mark_object(vm, (Object*)ui->data.text_input.text);
+                    gc_mark_object(vm, (Object*)ui->data.text_input.placeholder);
+                    break;
+                case UI_LIST:
+                    gc_mark_object(vm, (Object*)ui->data.list.items);
+                    break;
+                case UI_IMAGE_BOX:
+                    gc_mark_object(vm, (Object*)ui->data.image_box.image);
+                    break;
+                case UI_PROGRESS_BAR:
+                    // No object references
+                    break;
+            }
+            break;
+        }
     }
 }
 
