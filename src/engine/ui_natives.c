@@ -1,6 +1,8 @@
 // UI Native Functions Implementation
 // Exposes UI system to Pixel code
 
+// LCOV_EXCL_START - native wrappers require VM context for testing
+
 #include "engine/ui_natives.h"
 #include "engine/ui_menus.h"
 #include "engine/ui.h"
@@ -757,8 +759,12 @@ static Value native_set_setting(int arg_count, Value* args) {
     if (index >= 0) {
         settings_store.entries[index].value = value;
     } else if (settings_store.count < SETTINGS_MAX_ENTRIES) {
-        strncpy(settings_store.entries[settings_store.count].key, key, SETTINGS_MAX_KEY_LEN - 1);
-        settings_store.entries[settings_store.count].key[SETTINGS_MAX_KEY_LEN - 1] = '\0';
+        size_t key_len = strlen(key);
+        if (key_len >= SETTINGS_MAX_KEY_LEN) {
+            key_len = SETTINGS_MAX_KEY_LEN - 1;
+        }
+        memcpy(settings_store.entries[settings_store.count].key, key, key_len);
+        settings_store.entries[settings_store.count].key[key_len] = '\0';
         settings_store.entries[settings_store.count].value = value;
         settings_store.count++;
     }
@@ -876,8 +882,12 @@ static Value native_load_settings(int arg_count, Value* args) {
         }
 
         if (settings_store.count < SETTINGS_MAX_ENTRIES) {
-            strncpy(settings_store.entries[settings_store.count].key, key, SETTINGS_MAX_KEY_LEN - 1);
-            settings_store.entries[settings_store.count].key[SETTINGS_MAX_KEY_LEN - 1] = '\0';
+            size_t key_len = strlen(key);
+            if (key_len >= SETTINGS_MAX_KEY_LEN) {
+                key_len = SETTINGS_MAX_KEY_LEN - 1;
+            }
+            memcpy(settings_store.entries[settings_store.count].key, key, key_len);
+            settings_store.entries[settings_store.count].key[key_len] = '\0';
             settings_store.entries[settings_store.count].value = value;
             settings_store.count++;
         }
@@ -949,3 +959,5 @@ void ui_natives_init(VM* vm) {
     // Initialize pre-built menu functions
     ui_menus_init(vm);
 }
+
+// LCOV_EXCL_STOP

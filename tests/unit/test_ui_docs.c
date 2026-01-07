@@ -72,7 +72,7 @@ static void extract_function_name(const char* line, char* name, size_t size) {
 
     size_t len = end - start + 1;
     if (len >= size) len = size - 1;
-    strncpy(name, start, len);
+    memcpy(name, start, len);
     name[len] = '\0';
 }
 
@@ -116,7 +116,12 @@ static int check_file_docs(const char* filename) {
                 }
 
                 if (function_count < MAX_FUNCTIONS) {
-                    strncpy(functions[function_count].name, name, sizeof(functions[function_count].name) - 1);
+                    size_t name_len = strlen(name);
+                    if (name_len >= sizeof(functions[function_count].name)) {
+                        name_len = sizeof(functions[function_count].name) - 1;
+                    }
+                    memcpy(functions[function_count].name, name, name_len);
+                    functions[function_count].name[name_len] = '\0';
                     functions[function_count].line = current_line;
                     functions[function_count].has_doc = has_doc;
                     function_count++;

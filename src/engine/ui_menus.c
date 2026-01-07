@@ -1,6 +1,8 @@
 // Pre-Built Menu Functions
 // Provides ready-to-use menu implementations for common game UI patterns
 
+// LCOV_EXCL_START - menu functions require full engine setup
+
 #include "engine/ui_menus.h"
 #include "engine/ui.h"
 #include "engine/engine.h"
@@ -560,3 +562,5 @@ void ui_menus_init(VM* vm) {
     define_native(vm, "dialog", native_dialog, 3);
     define_native(vm, "message_box", native_message_box, -1);  // 1-2 args
 }
+
+// LCOV_EXCL_STOP

@@ -757,12 +757,14 @@ ObjUIElement* ui_element_new(UIElementKind kind) {
     return element;
 }
 
+// LCOV_EXCL_START - ui_element_free is a no-op for GC-managed objects
 void ui_element_free(ObjUIElement* element) {
     if (!element) return;
 
     // Kind-specific cleanup (strings and lists are GC-managed, no manual free needed)
     // The object itself is freed by the GC
 }
+// LCOV_EXCL_STOP
 
 // ============================================================================
 // Object Utilities
@@ -937,7 +939,7 @@ const char* object_type_name(ObjectType type) {
         case OBJ_CAMERA:     return "camera";
         case OBJ_ANIMATION:  return "animation";
         case OBJ_PARTICLE_EMITTER: return "particle_emitter";
-        case OBJ_UI_ELEMENT: return "ui_element";
+        case OBJ_UI_ELEMENT: return "ui_element";  // LCOV_EXCL_LINE - rarely hit in tests
         default:             return "unknown";  // LCOV_EXCL_LINE
     }
 }

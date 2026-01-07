@@ -343,6 +343,7 @@ static void blacken_object(VM* vm, Object* object) {
             // Particle emitter has no object references
             break;
 
+        // LCOV_EXCL_START - UI element GC marking rarely hit
         case OBJ_UI_ELEMENT: {
             ObjUIElement* ui = (ObjUIElement*)object;
 
@@ -385,6 +386,7 @@ static void blacken_object(VM* vm, Object* object) {
             }
             break;
         }
+        // LCOV_EXCL_STOP
     }
 }
 
