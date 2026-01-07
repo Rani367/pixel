@@ -106,14 +106,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, .scrollbar-hide::-webkit-scrol
 .reveal-fx {
   mask-size: 400% 100%;
   -webkit-mask-size: 400% 100%;
-  transition: all 1.5s ease-in-out;
+  transition: all 0.8s ease-out;
   mask-image: linear-gradient(to right, black 0%, black 25%, transparent 50%);
   -webkit-mask-image: linear-gradient(to right, black 0%, black 25%, transparent 50%);
   mask-position: 100% 0;
   -webkit-mask-position: 100% 0;
-  filter: blur(8px);
+  filter: blur(6px);
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(12px);
 }
 
 .reveal-fx.revealed {
@@ -124,22 +124,25 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, .scrollbar-hide::-webkit-scrol
   transform: translateY(0);
 }
 
-/* Staggered delays for child elements */
-.reveal-fx[data-delay="1"] { transition-delay: 0.1s; }
-.reveal-fx[data-delay="2"] { transition-delay: 0.2s; }
-.reveal-fx[data-delay="3"] { transition-delay: 0.3s; }
-.reveal-fx[data-delay="4"] { transition-delay: 0.4s; }
-.reveal-fx[data-delay="5"] { transition-delay: 0.5s; }
-.reveal-fx[data-delay="6"] { transition-delay: 0.6s; }
-
-/* Speed variants */
-.reveal-fx.fast {
-  transition-duration: 0.8s;
+/* Simple reveal for 3D elements (no mask - it breaks pseudo-elements) */
+.reveal-fx-simple {
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  opacity: 0;
+  transform: translateY(16px);
 }
 
-.reveal-fx.slow {
-  transition-duration: 2.5s;
+.reveal-fx-simple.revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
+
+/* Staggered delays */
+.reveal-fx[data-delay="1"], .reveal-fx-simple[data-delay="1"] { transition-delay: 0s; }
+.reveal-fx[data-delay="2"], .reveal-fx-simple[data-delay="2"] { transition-delay: 0.1s; }
+.reveal-fx[data-delay="3"], .reveal-fx-simple[data-delay="3"] { transition-delay: 0.2s; }
+.reveal-fx[data-delay="4"], .reveal-fx-simple[data-delay="4"] { transition-delay: 0.3s; }
+.reveal-fx[data-delay="5"], .reveal-fx-simple[data-delay="5"] { transition-delay: 0.4s; }
+.reveal-fx[data-delay="6"], .reveal-fx-simple[data-delay="6"] { transition-delay: 0.5s; }
 
 /* Subtle dot grid background */
 .noise-bg {

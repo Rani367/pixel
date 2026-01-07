@@ -19,19 +19,19 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
         A beginner-friendly programming language with a built-in game engine.
         Create games in minutes, not months.
       </p>
-      <div class="reveal-fx flex flex-wrap justify-center gap-6 mb-16" data-delay="3">
-        <a href="/pixel/docs" class="btn-3d">
+      <div class="flex flex-wrap justify-center gap-6 mb-16">
+        <a href="/pixel/docs" class="btn-3d reveal-fx-simple" data-delay="3">
           <div class="btn-3d-top">Get Started</div>
           <div class="btn-3d-bottom"></div>
         </a>
-        <a href="/pixel/playground" class="btn-3d btn-3d-secondary">
+        <a href="/pixel/playground" class="btn-3d btn-3d-secondary reveal-fx-simple" data-delay="4">
           <div class="btn-3d-top">Try Online</div>
           <div class="btn-3d-bottom"></div>
         </a>
       </div>
 
       <!-- Code Example -->
-      <div id="code-zoom" class="reveal-fx max-w-2xl mx-auto text-left" data-delay="4" style="transform-origin: center top; transition: transform 0.1s ease-out;">
+      <div id="code-zoom" class="reveal-fx max-w-2xl mx-auto text-left" data-delay="5" style="transform-origin: center top; transition: transform 0.1s ease-out;">
         <div class="bg-zinc-900 rounded-lg overflow-hidden shadow-2xl">
           <div class="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-zinc-800">
             <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500"></span>
@@ -180,34 +180,35 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
 
     // GLASS SLIDING REVEAL ANIMATION
     (function() {
-      const revealElements = document.querySelectorAll('.reveal-fx');
+      const revealElements = document.querySelectorAll('.reveal-fx, .reveal-fx-simple');
 
+      // Reveal hero section immediately
+      revealElements.forEach(el => {
+        const section = el.closest('section');
+        if (section && section.classList.contains('relative')) {
+          // Hero section - reveal immediately
+          el.classList.add('revealed');
+        }
+      });
+
+      // Use IntersectionObserver for other sections
       const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('revealed');
-            // Optional: stop observing after revealed
-            // revealObserver.unobserve(entry.target);
           }
         });
       }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
+        threshold: 0.15,
+        rootMargin: '0px'
       });
 
       revealElements.forEach(el => {
-        revealObserver.observe(el);
+        const section = el.closest('section');
+        if (!section || !section.classList.contains('relative')) {
+          revealObserver.observe(el);
+        }
       });
-
-      // Also reveal hero elements immediately on load
-      setTimeout(() => {
-        document.querySelectorAll('.reveal-fx[data-delay]').forEach(el => {
-          const section = el.closest('section');
-          if (section && section.classList.contains('relative')) {
-            el.classList.add('revealed');
-          }
-        });
-      }, 100);
     })();
 
     // STUNNING 3D PARTICLE WAVE BACKGROUND
