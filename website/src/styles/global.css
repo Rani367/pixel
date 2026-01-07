@@ -14,6 +14,63 @@
   color-scheme: light dark;
 }
 
+/* Hero gradient background - dramatic aurora-like effect (dark mode) */
+.dark body {
+  background:
+    /* Top aurora glow - cyan */
+    radial-gradient(ellipse 100% 40% at 50% 0%,
+      rgba(0, 212, 255, 0.3) 0%,
+      rgba(0, 212, 255, 0.15) 30%,
+      transparent 60%
+    ),
+    /* Purple accent - right side */
+    radial-gradient(ellipse 50% 50% at 85% 15%,
+      rgba(168, 85, 247, 0.25) 0%,
+      rgba(139, 92, 246, 0.1) 40%,
+      transparent 70%
+    ),
+    /* Pink accent - left side */
+    radial-gradient(ellipse 40% 40% at 15% 25%,
+      rgba(236, 72, 153, 0.2) 0%,
+      transparent 60%
+    ),
+    /* Deep blue mid-section */
+    radial-gradient(ellipse 80% 50% at 50% 40%,
+      rgba(59, 130, 246, 0.15) 0%,
+      transparent 50%
+    ),
+    #09090b;
+}
+
+/* Hero gradient background - visible pastel effect (light mode) */
+body {
+  background:
+    /* Top cyan glow - much stronger */
+    radial-gradient(ellipse 120% 50% at 50% 0%,
+      rgba(0, 212, 255, 0.35) 0%,
+      rgba(0, 212, 255, 0.2) 25%,
+      transparent 55%
+    ),
+    /* Purple accent - right side */
+    radial-gradient(ellipse 60% 60% at 90% 10%,
+      rgba(168, 85, 247, 0.3) 0%,
+      rgba(139, 92, 246, 0.15) 35%,
+      transparent 65%
+    ),
+    /* Pink accent - left side */
+    radial-gradient(ellipse 50% 50% at 10% 20%,
+      rgba(236, 72, 153, 0.25) 0%,
+      rgba(236, 72, 153, 0.1) 35%,
+      transparent 60%
+    ),
+    /* Blue wash mid-section */
+    radial-gradient(ellipse 90% 60% at 50% 35%,
+      rgba(59, 130, 246, 0.12) 0%,
+      transparent 50%
+    ),
+    #ffffff;
+}
+
 /* Code blocks */
 pre {
   @apply rounded-lg p-4 overflow-x-auto text-sm;

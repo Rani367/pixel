@@ -19,18 +19,14 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
         A beginner-friendly programming language with a built-in game engine.
         Create games in minutes, not months.
       </p>
-      <div class="flex flex-wrap justify-center gap-4 mb-16">
-        <a
-          href="/pixel/docs"
-          class="px-6 py-3 bg-cyan-400 text-zinc-900 font-medium rounded-lg hover:bg-cyan-500 transition-colors"
-        >
-          Get Started
+      <div class="flex flex-wrap justify-center gap-6 mb-16">
+        <a href="/pixel/docs" class="btn-3d">
+          <div class="btn-3d-top">Get Started</div>
+          <div class="btn-3d-bottom"></div>
         </a>
-        <a
-          href="/pixel/playground"
-          class="px-6 py-3 border border-zinc-300 dark:border-zinc-700 font-medium rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-        >
-          Try Online
+        <a href="/pixel/playground" class="btn-3d btn-3d-secondary">
+          <div class="btn-3d-top">Try Online</div>
+          <div class="btn-3d-bottom"></div>
         </a>
       </div>
 
@@ -468,6 +464,142 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
     /* Add glow effect to canvas */
     #pixel-bg {
       filter: blur(0px);
+    }
+
+    /* ============ 3D BUTTON ============ */
+
+    .btn-3d {
+      position: relative;
+      background: none;
+      outline: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-3d-top {
+      padding: 14px 28px;
+      background: #00d4ff;
+      font-family: 'Poppins', system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      outline: 2px solid #1a1a2e;
+      transition: transform 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-3d-bottom {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #00a8cc;
+      top: 8px;
+      left: 0;
+      border-radius: 14px;
+      outline: 2px solid #1a1a2e;
+      z-index: -1;
+    }
+
+    .btn-3d-bottom::before {
+      position: absolute;
+      content: "";
+      width: 2px;
+      height: 7px;
+      background: #1a1a2e;
+      bottom: 0;
+      left: 15%;
+    }
+
+    .btn-3d-bottom::after {
+      position: absolute;
+      content: "";
+      width: 2px;
+      height: 7px;
+      background: #1a1a2e;
+      bottom: 0;
+      left: 85%;
+    }
+
+    .btn-3d:active .btn-3d-top {
+      transform: translateY(8px);
+    }
+
+    .btn-3d::before {
+      position: absolute;
+      content: "";
+      width: calc(100% + 2px);
+      height: 100%;
+      background: #555;
+      top: 12px;
+      left: -1px;
+      border-radius: 14px;
+      outline: 2px solid #1a1a2e;
+      z-index: -2;
+    }
+
+    /* Shine effect */
+    .btn-3d-top::before {
+      position: absolute;
+      content: "";
+      width: 20px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: skewX(30deg);
+      left: -30px;
+      transition: left 0.3s ease;
+    }
+
+    .btn-3d:hover .btn-3d-top::before {
+      left: calc(100% + 30px);
+    }
+
+    .btn-3d:active .btn-3d-top::before {
+      left: calc(100% + 30px);
+    }
+
+    /* Secondary button style */
+    .btn-3d-secondary .btn-3d-top {
+      background: #f0f0f0;
+    }
+
+    .btn-3d-secondary .btn-3d-bottom {
+      background: #d0d0d0;
+    }
+
+    /* Dark mode adjustments */
+    .dark .btn-3d-top {
+      outline-color: #0a0a0a;
+    }
+
+    .dark .btn-3d-bottom {
+      outline-color: #0a0a0a;
+    }
+
+    .dark .btn-3d-bottom::before,
+    .dark .btn-3d-bottom::after {
+      background: #0a0a0a;
+    }
+
+    .dark .btn-3d::before {
+      outline-color: #0a0a0a;
+    }
+
+    .dark .btn-3d-secondary .btn-3d-top {
+      background: #2a2a3e;
+      color: #f0f0f0;
+    }
+
+    .dark .btn-3d-secondary .btn-3d-bottom {
+      background: #1a1a2e;
     }
 
     /* Curl command block styles */
