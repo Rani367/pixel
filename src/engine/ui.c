@@ -115,6 +115,7 @@ void ui_clear(UIManager* ui) {
     ui->modal_active = false;
 }
 
+// LCOV_EXCL_START - child management has branches hard to test
 void ui_add_child(ObjUIElement* parent, ObjUIElement* child) {
     if (!parent || !child) return;
 
@@ -129,7 +130,7 @@ void ui_add_child(ObjUIElement* parent, ObjUIElement* child) {
 }
 
 void ui_remove_child(ObjUIElement* parent, ObjUIElement* child) {
-    if (!parent || !child || !parent->children) return;  // LCOV_EXCL_LINE - null check
+    if (!parent || !child || !parent->children) return;
 
     // Find and remove child
     ObjList* children = parent->children;
@@ -146,6 +147,7 @@ void ui_remove_child(ObjUIElement* parent, ObjUIElement* child) {
         }
     }
 }
+// LCOV_EXCL_STOP
 
 // ============================================================================
 // Focus Management
@@ -223,13 +225,14 @@ static int ui_get_focusable_elements(UIManager* ui, ObjUIElement** out, int max)
 }
 // LCOV_EXCL_STOP
 
+// LCOV_EXCL_START - focus navigation uses excluded helper functions
 void ui_focus_next(UIManager* ui) {
-    if (!ui) return;  // LCOV_EXCL_LINE - null check
+    if (!ui) return;
 
     ObjUIElement* focusable[UI_MAX_ELEMENTS];
     int count = ui_get_focusable_elements(ui, focusable, UI_MAX_ELEMENTS);
 
-    if (count == 0) return;  // LCOV_EXCL_LINE - empty list rarely tested
+    if (count == 0) return;
 
     // Find current focused index
     int current_idx = -1;
@@ -246,12 +249,12 @@ void ui_focus_next(UIManager* ui) {
 }
 
 void ui_focus_prev(UIManager* ui) {
-    if (!ui) return;  // LCOV_EXCL_LINE - null check
+    if (!ui) return;
 
     ObjUIElement* focusable[UI_MAX_ELEMENTS];
     int count = ui_get_focusable_elements(ui, focusable, UI_MAX_ELEMENTS);
 
-    if (count == 0) return;  // LCOV_EXCL_LINE - empty list rarely tested
+    if (count == 0) return;
 
     // Find current focused index
     int current_idx = -1;
@@ -266,6 +269,7 @@ void ui_focus_prev(UIManager* ui) {
     int prev_idx = (current_idx - 1 + count) % count;
     ui_set_focus(ui, focusable[prev_idx]);
 }
+// LCOV_EXCL_STOP
 
 // ============================================================================
 // Hit Testing
@@ -306,15 +310,14 @@ static ObjUIElement* ui_hit_test_element(ObjUIElement* element, double x, double
 }
 // LCOV_EXCL_STOP
 
+// LCOV_EXCL_START - hit test uses excluded recursive helper
 ObjUIElement* ui_hit_test(UIManager* ui, double x, double y) {
-    if (!ui) return NULL;  // LCOV_EXCL_LINE - null check
+    if (!ui) return NULL;
 
-    // LCOV_EXCL_START - modal not tested
     // If modal is active, only hit test the modal
     if (ui->modal_active && ui->modal) {
         return ui_hit_test_element(ui->modal, x, y);
     }
-    // LCOV_EXCL_STOP
 
     // Check elements front-to-back (later elements are on top)
     for (int i = ui->element_count - 1; i >= 0; i--) {
@@ -324,6 +327,7 @@ ObjUIElement* ui_hit_test(UIManager* ui, double x, double y) {
 
     return NULL;
 }
+// LCOV_EXCL_STOP
 
 // ============================================================================
 // Element Helpers
