@@ -12,14 +12,14 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
   <!-- Hero Section -->
   <section class="py-20 md:py-32 relative">
     <div class="max-w-6xl mx-auto px-4 text-center">
-      <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+      <h1 class="reveal-fx text-4xl md:text-6xl font-bold tracking-tight mb-6" data-delay="1">
         Pixel: 2D Game Development Made Simple
       </h1>
-      <p class="text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto mb-10">
+      <p class="reveal-fx text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto mb-10" data-delay="2">
         A beginner-friendly programming language with a built-in game engine.
         Create games in minutes, not months.
       </p>
-      <div class="flex flex-wrap justify-center gap-6 mb-16">
+      <div class="reveal-fx flex flex-wrap justify-center gap-6 mb-16" data-delay="3">
         <a href="/pixel/docs" class="btn-3d">
           <div class="btn-3d-top">Get Started</div>
           <div class="btn-3d-bottom"></div>
@@ -31,7 +31,7 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
       </div>
 
       <!-- Code Example -->
-      <div id="code-zoom" class="max-w-2xl mx-auto text-left" style="transform-origin: center top; transition: transform 0.1s ease-out;">
+      <div id="code-zoom" class="reveal-fx max-w-2xl mx-auto text-left" data-delay="4" style="transform-origin: center top; transition: transform 0.1s ease-out;">
         <div class="bg-zinc-900 rounded-lg overflow-hidden shadow-2xl">
           <div class="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-zinc-800">
             <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500"></span>
@@ -64,7 +64,7 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
   <section class="py-16 bg-zinc-50 dark:bg-zinc-900">
     <div class="max-w-6xl mx-auto px-4">
       <div class="grid md:grid-cols-3 gap-8">
-        <div class="p-6">
+        <div class="reveal-fx p-6" data-delay="1">
           <div class="w-12 h-12 bg-[--color-accent]/10 rounded-lg flex items-center justify-center mb-4">
             <svg class="w-6 h-6 text-[--color-accent]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -76,7 +76,7 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
           </p>
         </div>
 
-        <div class="p-6">
+        <div class="reveal-fx p-6" data-delay="2">
           <div class="w-12 h-12 bg-[--color-accent]/10 rounded-lg flex items-center justify-center mb-4">
             <svg class="w-6 h-6 text-[--color-accent]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -89,7 +89,7 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
           </p>
         </div>
 
-        <div class="p-6">
+        <div class="reveal-fx p-6" data-delay="3">
           <div class="w-12 h-12 bg-[--color-accent]/10 rounded-lg flex items-center justify-center mb-4">
             <svg class="w-6 h-6 text-[--color-accent]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -107,7 +107,7 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
   <!-- Install Section -->
   <section class="pt-16 pb-32 min-h-[50vh] bg-zinc-100 dark:bg-zinc-900 relative overflow-hidden noise-bg">
     <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-2xl font-bold text-center mb-8">Quick Start</h2>
+      <h2 class="reveal-fx text-2xl font-bold text-center mb-8">Quick Start</h2>
       <div class="max-w-2xl mx-auto space-y-4">
         <!-- Curl Command Block -->
         <div class="relative">
@@ -177,6 +177,38 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
     window.addEventListener('scroll', updateZoom, { passive: true });
     window.addEventListener('resize', updateZoom);
     updateZoom();
+
+    // GLASS SLIDING REVEAL ANIMATION
+    (function() {
+      const revealElements = document.querySelectorAll('.reveal-fx');
+
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            // Optional: stop observing after revealed
+            // revealObserver.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+
+      revealElements.forEach(el => {
+        revealObserver.observe(el);
+      });
+
+      // Also reveal hero elements immediately on load
+      setTimeout(() => {
+        document.querySelectorAll('.reveal-fx[data-delay]').forEach(el => {
+          const section = el.closest('section');
+          if (section && section.classList.contains('relative')) {
+            el.classList.add('revealed');
+          }
+        });
+      }, 100);
+    })();
 
     // STUNNING 3D PARTICLE WAVE BACKGROUND
     (function() {
