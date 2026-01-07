@@ -80,9 +80,21 @@ jobs:
           COVERAGE=$(lcov --summary coverage.info 2>&1 | grep "lines" | sed 's/.*: *\([0-9.]*\)%.*/\1/')
           echo "Line coverage: $COVERAGE%"
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
-          if [ $(echo "$COVERAGE < 99" | bc -l) -eq 1 ]; then
-            echo "ERROR: Coverage is $COVERAGE%, but 99% is required"
-            echo "New code must have tests, or use LCOV_EXCL markers for untestable code"
+          if [ $(echo "$COVERAGE < 100" | bc -l) -eq 1 ]; then
+            echo "ERROR: Coverage is $COVERAGE%, but 100% is required"
+            echo ""
+            echo "=== UNCOVERED LINES ==="
+            lcov --list coverage.info 2>/dev/null | grep -v "100.0%" | grep -v "^$" | head -50
+            echo ""
+            echo "=== FILES WITH UNCOVERED LINES ==="
+            for f in $(lcov --list coverage.info 2>/dev/null | grep -v "100.0%" | grep "\.c" | awk '{print $1}'); do
+              echo "--- $f ---"
+              genhtml --no-prefix --show-details coverage.info --output-directory /tmp/cov 2>/dev/null
+              # Show line numbers that are uncovered
+              lcov --list-full-path --list coverage.info 2>/dev/null | grep "$f" || true
+            done
+            echo ""
+            echo "Add tests or use LCOV_EXCL markers for untestable code"
             exit 1
           fi
 
