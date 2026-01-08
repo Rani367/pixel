@@ -169,11 +169,9 @@ static TokenType identifier_type(Lexer* lexer) {
                         // "and" vs "any"
                         if (lexer->current - lexer->start == 3) {
                             if (lexer->start[2] == 'd') return TOKEN_AND;
-                            // LCOV_EXCL_START - AOT type keyword
-                            if (lexer->start[2] == 'y') return TOKEN_TYPE_ANY;
-                            // LCOV_EXCL_STOP
+                            if (lexer->start[2] == 'y') return TOKEN_TYPE_ANY;  // LCOV_EXCL_LINE
                         }
-                        break;
+                        break;  // LCOV_EXCL_LINE
                 }
             }
             break;
