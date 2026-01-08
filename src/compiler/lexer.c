@@ -169,7 +169,9 @@ static TokenType identifier_type(Lexer* lexer) {
                         // "and" vs "any"
                         if (lexer->current - lexer->start == 3) {
                             if (lexer->start[2] == 'd') return TOKEN_AND;
-                            if (lexer->start[2] == 'y') return TOKEN_TYPE_ANY;  // LCOV_EXCL_LINE
+                            // LCOV_EXCL_START - AOT type keyword
+                            if (lexer->start[2] == 'y') return TOKEN_TYPE_ANY;
+                            // LCOV_EXCL_STOP
                         }
                         break;
                 }
@@ -179,7 +181,9 @@ static TokenType identifier_type(Lexer* lexer) {
             if (lexer->current - lexer->start > 1) {
                 switch (lexer->start[1]) {
                     case 'r': return check_keyword(lexer, 2, 3, "eak", TOKEN_BREAK);
-                    case 'o': return check_keyword(lexer, 2, 2, "ol", TOKEN_TYPE_BOOL);  // LCOV_EXCL_LINE
+                    // LCOV_EXCL_START - AOT type keyword
+                    case 'o': return check_keyword(lexer, 2, 2, "ol", TOKEN_TYPE_BOOL);
+                    // LCOV_EXCL_STOP
                 }
             }
             break;
@@ -192,9 +196,11 @@ static TokenType identifier_type(Lexer* lexer) {
                     case 'o': return check_keyword(lexer, 2, 1, "r", TOKEN_FOR);
                     case 'u':
                         // "func" vs "function"
+                        // LCOV_EXCL_START - AOT type keyword
                         if (lexer->current - lexer->start == 4) {
-                            return check_keyword(lexer, 2, 2, "nc", TOKEN_TYPE_FUNC);  // LCOV_EXCL_LINE
+                            return check_keyword(lexer, 2, 2, "nc", TOKEN_TYPE_FUNC);
                         }
+                        // LCOV_EXCL_STOP
                         return check_keyword(lexer, 2, 6, "nction", TOKEN_FUNCTION);
                 }
             }
@@ -206,11 +212,15 @@ static TokenType identifier_type(Lexer* lexer) {
                     case 'n':
                         // "in" vs "int"
                         if (lexer->current - lexer->start == 2) return TOKEN_IN;
-                        return check_keyword(lexer, 2, 1, "t", TOKEN_TYPE_INT);  // LCOV_EXCL_LINE
+                        // LCOV_EXCL_START - AOT type keyword
+                        return check_keyword(lexer, 2, 1, "t", TOKEN_TYPE_INT);
+                        // LCOV_EXCL_STOP
                 }
             }
             break;
-        case 'l': return check_keyword(lexer, 1, 3, "ist", TOKEN_TYPE_LIST);  // LCOV_EXCL_LINE
+        // LCOV_EXCL_START - AOT type keyword
+        case 'l': return check_keyword(lexer, 1, 3, "ist", TOKEN_TYPE_LIST);
+        // LCOV_EXCL_STOP
         case 'n':
             if (lexer->current - lexer->start > 1) {
                 switch (lexer->start[1]) {
@@ -219,12 +229,16 @@ static TokenType identifier_type(Lexer* lexer) {
                         if (lexer->current - lexer->start == 3) {
                             return check_keyword(lexer, 2, 1, "t", TOKEN_NOT);
                         }
-                        return check_keyword(lexer, 2, 2, "ne", TOKEN_TYPE_NONE);  // LCOV_EXCL_LINE
+                        // LCOV_EXCL_START - AOT type keyword
+                        return check_keyword(lexer, 2, 2, "ne", TOKEN_TYPE_NONE);
+                        // LCOV_EXCL_STOP
                     case 'u':
                         // "null" vs "num"
+                        // LCOV_EXCL_START - AOT type keyword
                         if (lexer->current - lexer->start == 3) {
-                            return check_keyword(lexer, 2, 1, "m", TOKEN_TYPE_NUM);  // LCOV_EXCL_LINE
+                            return check_keyword(lexer, 2, 1, "m", TOKEN_TYPE_NUM);
                         }
+                        // LCOV_EXCL_STOP
                         return check_keyword(lexer, 2, 2, "ll", TOKEN_NULL);
                 }
             }
@@ -236,9 +250,11 @@ static TokenType identifier_type(Lexer* lexer) {
                 switch (lexer->start[1]) {
                     case 't':
                         // "str" vs "struct"
+                        // LCOV_EXCL_START - AOT type keyword
                         if (lexer->current - lexer->start == 3) {
-                            return check_keyword(lexer, 2, 1, "r", TOKEN_TYPE_STR);  // LCOV_EXCL_LINE
+                            return check_keyword(lexer, 2, 1, "r", TOKEN_TYPE_STR);
                         }
+                        // LCOV_EXCL_STOP
                         return check_keyword(lexer, 2, 4, "ruct", TOKEN_STRUCT);
                 }
             }
