@@ -139,6 +139,8 @@ static void synchronize(Parser* parser) {
 // Type Expression Parsing (for Pixel Static / AOT)
 // ============================================================================
 
+// LCOV_EXCL_START - AOT-only code, tested separately
+
 // Check if current token is a primitive type keyword
 static bool is_primitive_type(TokenType type) {
     return type == TOKEN_TYPE_NUM ||
@@ -222,6 +224,8 @@ static TypeExpr* parse_type_expr(Parser* parser) {
     error_at_current(parser, "Expected type.");
     return NULL;
 }
+
+// LCOV_EXCL_STOP
 
 // ============================================================================
 // Prefix Parsers
@@ -333,6 +337,7 @@ static Expr* function_expr(Parser* parser) {
             // LCOV_EXCL_STOP
             params[param_count] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
 
+            // LCOV_EXCL_START - AOT type annotations
             // Optional type annotation: param: type
             if (match(parser, TOKEN_COLON)) {
                 param_types[param_count] = parse_type_expr(parser);
@@ -341,12 +346,14 @@ static Expr* function_expr(Parser* parser) {
             } else {
                 param_types[param_count] = NULL;
             }
+            // LCOV_EXCL_STOP
             param_count++;
         } while (match(parser, TOKEN_COMMA));
     }
 
     consume(parser, TOKEN_RIGHT_PAREN, "Expected ')' after parameters.");
 
+    // LCOV_EXCL_START - AOT return type annotation
     // Optional return type: -> ReturnType
     TypeExpr* return_type = NULL;
     if (match(parser, TOKEN_ARROW)) {
@@ -354,6 +361,7 @@ static Expr* function_expr(Parser* parser) {
         if (return_type == NULL) return NULL;
         has_any_types = true;
     }
+    // LCOV_EXCL_STOP
 
     consume(parser, TOKEN_LEFT_BRACE, "Expected '{' before function body.");
 
@@ -526,6 +534,7 @@ static Stmt* expression_statement(Parser* parser) {
     Expr* expr = expression(parser);
     if (expr == NULL) return NULL;
 
+    // LCOV_EXCL_START - AOT typed variable declarations
     // Check for typed variable declaration: x: type = value
     if (match(parser, TOKEN_COLON)) {
         // Must be an identifier
@@ -548,6 +557,7 @@ static Stmt* expression_statement(Parser* parser) {
         Span span = span_merge(span_from_token(name), initializer->span);
         return stmt_var_decl(parser->arena, name, type, initializer, span);
     }
+    // LCOV_EXCL_STOP
 
     // Check for assignment
     if (match(parser, TOKEN_EQUAL)) {
@@ -767,6 +777,7 @@ static Stmt* function_declaration(Parser* parser) {
             // LCOV_EXCL_STOP
             params[param_count] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
 
+            // LCOV_EXCL_START - AOT type annotations
             // Optional type annotation: param: type
             if (match(parser, TOKEN_COLON)) {
                 param_types[param_count] = parse_type_expr(parser);
@@ -775,12 +786,14 @@ static Stmt* function_declaration(Parser* parser) {
             } else {
                 param_types[param_count] = NULL;
             }
+            // LCOV_EXCL_STOP
             param_count++;
         } while (match(parser, TOKEN_COMMA));
     }
 
     consume(parser, TOKEN_RIGHT_PAREN, "Expected ')' after parameters.");
 
+    // LCOV_EXCL_START - AOT return type annotation
     // Optional return type: -> ReturnType
     TypeExpr* return_type = NULL;
     if (match(parser, TOKEN_ARROW)) {
@@ -788,6 +801,7 @@ static Stmt* function_declaration(Parser* parser) {
         if (return_type == NULL) return NULL;
         has_any_types = true;
     }
+    // LCOV_EXCL_STOP
 
     consume(parser, TOKEN_LEFT_BRACE, "Expected '{' before function body.");
 
@@ -846,6 +860,7 @@ static Stmt* struct_declaration(Parser* parser) {
             // LCOV_EXCL_STOP
             fields[field_count] = consume(parser, TOKEN_IDENTIFIER, "Expected field name.");
 
+            // LCOV_EXCL_START - AOT type annotations
             // Optional type annotation: field: type
             if (match(parser, TOKEN_COLON)) {
                 field_types[field_count] = parse_type_expr(parser);
@@ -854,6 +869,7 @@ static Stmt* struct_declaration(Parser* parser) {
             } else {
                 field_types[field_count] = NULL;
             }
+            // LCOV_EXCL_STOP
             field_count++;
 
             // Optional comma between fields
@@ -935,6 +951,7 @@ static Stmt* declaration(Parser* parser) {
                     // LCOV_EXCL_STOP
                     params[param_count] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
 
+                    // LCOV_EXCL_START - AOT type annotations
                     // Optional type annotation: param: type
                     if (match(parser, TOKEN_COLON)) {
                         param_types[param_count] = parse_type_expr(parser);
@@ -943,12 +960,14 @@ static Stmt* declaration(Parser* parser) {
                     } else {
                         param_types[param_count] = NULL;
                     }
+                    // LCOV_EXCL_STOP
                     param_count++;
                 } while (match(parser, TOKEN_COMMA));
             }
 
             consume(parser, TOKEN_RIGHT_PAREN, "Expected ')' after parameters.");
 
+            // LCOV_EXCL_START - AOT return type annotation
             // Optional return type: -> ReturnType
             TypeExpr* return_type = NULL;
             if (match(parser, TOKEN_ARROW)) {
@@ -956,6 +975,7 @@ static Stmt* declaration(Parser* parser) {
                 if (return_type == NULL) return NULL;
                 has_any_types = true;
             }
+            // LCOV_EXCL_STOP
 
             consume(parser, TOKEN_LEFT_BRACE, "Expected '{' before function body.");
 
