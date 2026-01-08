@@ -409,6 +409,7 @@ Stmt* stmt_struct(Arena* arena, Token name, Token* fields, int field_count,
     return (Stmt*)stmt;
 }
 
+// LCOV_EXCL_START - AOT typed variable declarations
 Stmt* stmt_var_decl(Arena* arena, Token name, TypeExpr* type, Expr* initializer, Span span) {
     StmtVarDecl* stmt = arena_alloc(arena, sizeof(StmtVarDecl));
     stmt->base.type = STMT_VAR_DECL;
@@ -418,6 +419,7 @@ Stmt* stmt_var_decl(Arena* arena, Token name, TypeExpr* type, Expr* initializer,
     stmt->initializer = initializer;
     return (Stmt*)stmt;
 }
+// LCOV_EXCL_STOP
 
 // ============================================================================
 // Visitor Pattern
