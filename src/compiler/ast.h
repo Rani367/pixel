@@ -7,6 +7,7 @@
 // Forward declarations
 typedef struct Expr Expr;
 typedef struct Stmt Stmt;
+typedef struct TypeExpr TypeExpr;
 
 // Source span for error messages
 typedef struct {
@@ -16,6 +17,58 @@ typedef struct {
     int end_column;
 } Span;
 
+// ============================================================================
+// Type Expression Types (for Pixel Static / AOT compilation)
+// ============================================================================
+
+typedef enum {
+    TYPE_EXPR_PRIMITIVE,   // num, int, str, bool, none
+    TYPE_EXPR_LIST,        // list<T>
+    TYPE_EXPR_FUNC,        // func(T1, T2) -> R
+    TYPE_EXPR_STRUCT,      // User-defined struct type (by name)
+    TYPE_EXPR_ANY,         // Dynamic 'any' type (escape hatch)
+
+    TYPE_EXPR_COUNT
+} TypeExprKind;
+
+// Base type expression (all type expressions embed this)
+struct TypeExpr {
+    TypeExprKind kind;
+    Span span;
+};
+
+// Primitive type: num, int, str, bool, none
+typedef struct {
+    TypeExpr base;
+    TokenType primitive_type;  // TOKEN_TYPE_NUM, TOKEN_TYPE_INT, etc.
+} TypeExprPrimitive;
+
+// List type: list<T>
+typedef struct {
+    TypeExpr base;
+    TypeExpr* element_type;
+} TypeExprList;
+
+// Function type: func(T1, T2) -> R
+typedef struct {
+    TypeExpr base;
+    TypeExpr** param_types;
+    int param_count;
+    TypeExpr* return_type;     // NULL means none/void
+} TypeExprFunc;
+
+// Struct type reference: Player, Enemy, etc.
+typedef struct {
+    TypeExpr base;
+    Token name;
+} TypeExprStruct;
+
+// Any type (for dynamic fallback)
+typedef struct {
+    TypeExpr base;
+} TypeExprAny;
+
+// ============================================================================
 // Expression types
 typedef enum {
     EXPR_LITERAL_NULL,
@@ -51,6 +104,7 @@ typedef enum {
     STMT_CONTINUE,
     STMT_FUNCTION,
     STMT_STRUCT,
+    STMT_VAR_DECL,     // Typed variable declaration: x: num = 42
 
     STMT_COUNT
 } StmtType;
@@ -150,9 +204,11 @@ typedef struct {
 
 typedef struct {
     Expr base;
-    Token* params;      // Arena-allocated array
+    Token* params;          // Arena-allocated array
     int param_count;
-    Stmt* body;         // Block statement
+    TypeExpr** param_types; // Optional type annotations (NULL if untyped)
+    TypeExpr* return_type;  // Optional return type (NULL if untyped)
+    Stmt* body;             // Block statement
 } ExprFunction;
 
 typedef struct {
@@ -224,19 +280,30 @@ typedef struct {
 typedef struct {
     Stmt base;
     Token name;
-    Token* params;      // Arena-allocated array
+    Token* params;          // Arena-allocated array
     int param_count;
-    Stmt* body;         // Block statement
+    TypeExpr** param_types; // Optional type annotations (NULL if untyped)
+    TypeExpr* return_type;  // Optional return type (NULL if untyped)
+    Stmt* body;             // Block statement
 } StmtFunction;
 
 typedef struct {
     Stmt base;
     Token name;
-    Token* fields;      // Arena-allocated array of field names
+    Token* fields;          // Arena-allocated array of field names
     int field_count;
-    Stmt** methods;     // Arena-allocated array of StmtFunction pointers
+    TypeExpr** field_types; // Optional type annotations (NULL if untyped)
+    Stmt** methods;         // Arena-allocated array of StmtFunction pointers
     int method_count;
 } StmtStruct;
+
+// Typed variable declaration: x: num = 42
+typedef struct {
+    Stmt base;
+    Token name;
+    TypeExpr* type;         // Required type annotation
+    Expr* initializer;      // Optional initializer (NULL if none)
+} StmtVarDecl;
 
 // ============================================================================
 // Span Utilities
@@ -247,6 +314,23 @@ Span span_from_token(Token token);
 
 // Merge two spans (start of first, end of second)
 Span span_merge(Span start, Span end);
+
+// ============================================================================
+// Type Expression Constructors
+// ============================================================================
+
+TypeExpr* type_expr_primitive(Arena* arena, TokenType primitive_type, Span span);
+TypeExpr* type_expr_list(Arena* arena, TypeExpr* element_type, Span span);
+TypeExpr* type_expr_func(Arena* arena, TypeExpr** param_types, int param_count,
+                          TypeExpr* return_type, Span span);
+TypeExpr* type_expr_struct(Arena* arena, Token name);
+TypeExpr* type_expr_any(Arena* arena, Span span);
+
+// Get the name of a type expression kind
+const char* type_expr_kind_name(TypeExprKind kind);
+
+// Print a type expression for debugging
+void type_expr_print(TypeExpr* type);
 
 // ============================================================================
 // Expression Constructors
@@ -265,7 +349,9 @@ Expr* expr_set(Arena* arena, Expr* object, Token name, Expr* value);
 Expr* expr_index(Arena* arena, Expr* object, Expr* index, Span span);
 Expr* expr_index_set(Arena* arena, Expr* object, Expr* index, Expr* value);
 Expr* expr_list(Arena* arena, Expr** elements, int count, Span span);
-Expr* expr_function(Arena* arena, Token* params, int param_count, Stmt* body, Span span);
+Expr* expr_function(Arena* arena, Token* params, int param_count,
+                     TypeExpr** param_types, TypeExpr* return_type,
+                     Stmt* body, Span span);
 Expr* expr_vec2(Arena* arena, Expr* x, Expr* y, Span span);
 Expr* expr_postfix(Arena* arena, Expr* operand, Token op);
 
@@ -282,9 +368,12 @@ Stmt* stmt_for(Arena* arena, Token name, Expr* iterable, Stmt* body, Span span);
 Stmt* stmt_return(Arena* arena, Expr* value, Span span);
 Stmt* stmt_break(Arena* arena, Span span);
 Stmt* stmt_continue(Arena* arena, Span span);
-Stmt* stmt_function(Arena* arena, Token name, Token* params, int param_count, Stmt* body, Span span);
+Stmt* stmt_function(Arena* arena, Token name, Token* params, int param_count,
+                     TypeExpr** param_types, TypeExpr* return_type,
+                     Stmt* body, Span span);
 Stmt* stmt_struct(Arena* arena, Token name, Token* fields, int field_count,
-                  Stmt** methods, int method_count, Span span);
+                  TypeExpr** field_types, Stmt** methods, int method_count, Span span);
+Stmt* stmt_var_decl(Arena* arena, Token name, TypeExpr* type, Expr* initializer, Span span);
 
 // ============================================================================
 // Visitor Pattern
@@ -325,6 +414,7 @@ typedef struct {
     StmtVisitFn visit_continue;
     StmtVisitFn visit_function;
     StmtVisitFn visit_struct;
+    StmtVisitFn visit_var_decl;
     void* context;
 } StmtVisitor;
 

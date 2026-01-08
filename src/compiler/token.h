@@ -62,6 +62,16 @@ typedef enum {
     TOKEN_BREAK,
     TOKEN_CONTINUE,
 
+    // Type keywords (for Pixel Static / AOT compilation)
+    TOKEN_TYPE_NUM,        // num
+    TOKEN_TYPE_INT,        // int
+    TOKEN_TYPE_STR,        // str
+    TOKEN_TYPE_BOOL,       // bool
+    TOKEN_TYPE_NONE,       // none
+    TOKEN_TYPE_LIST,       // list
+    TOKEN_TYPE_FUNC,       // func
+    TOKEN_TYPE_ANY,        // any
+
     // Special
     TOKEN_ERROR,           // Lexer error (message in lexeme)
     TOKEN_EOF,

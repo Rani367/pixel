@@ -230,10 +230,10 @@ TEST(e2e_lists) {
     setup();
 
     InterpretResult result = run_source(
-        "list = [1, 2, 3]\n"
-        "first = list[0]\n"
-        "list[1] = 99\n"
-        "length = len(list)\n"
+        "items = [1, 2, 3]\n"
+        "first = items[0]\n"
+        "items[1] = 99\n"
+        "length = len(items)\n"
     );
     ASSERT_EQ(result, INTERPRET_OK);
 

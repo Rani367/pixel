@@ -282,7 +282,7 @@ TEST(expr_function_constructor) {
     body_stmts[0] = stmt_return(arena, expr_literal_number(arena, 42, span), span);
     Stmt* body = stmt_block(arena, body_stmts, 1, span);
 
-    Expr* func = expr_function(arena, params, 2, body, span);
+    Expr* func = expr_function(arena, params, 2, NULL, NULL, body, span);
 
     ASSERT_EQ(func->type, EXPR_FUNCTION);
     ExprFunction* f = (ExprFunction*)func;
@@ -450,7 +450,7 @@ TEST(stmt_function_constructor) {
     body_stmts[0] = stmt_return(arena, expr_literal_number(arena, 42, span), span);
     Stmt* body = stmt_block(arena, body_stmts, 1, span);
 
-    Stmt* func = stmt_function(arena, name, params, 2, body, span);
+    Stmt* func = stmt_function(arena, name, params, 2, NULL, NULL, body, span);
 
     ASSERT_EQ(func->type, STMT_FUNCTION);
     StmtFunction* f = (StmtFunction*)func;
@@ -507,7 +507,7 @@ TEST(stmt_struct_constructor) {
     fields[1] = make_test_token(TOKEN_IDENTIFIER, "y", 2, 8);
 
     // No methods for this test
-    Stmt* struct_stmt = stmt_struct(arena, name, fields, 2, NULL, 0, span);
+    Stmt* struct_stmt = stmt_struct(arena, name, fields, 2, NULL, NULL, 0, span);
 
     ASSERT_EQ(struct_stmt->type, STMT_STRUCT);
     StmtStruct* s = (StmtStruct*)struct_stmt;
@@ -619,7 +619,7 @@ TEST(ast_print_stmt_all_types) {
 
     // Function
     Token fn_name = make_test_token(TOKEN_IDENTIFIER, "test", 1, 1);
-    Stmt* func = stmt_function(arena, fn_name, NULL, 0, block, span);
+    Stmt* func = stmt_function(arena, fn_name, NULL, 0, NULL, NULL, block, span);
     ast_print_stmt(func, 0);
 
     // Assignment
@@ -636,7 +636,7 @@ TEST(ast_print_stmt_all_types) {
 
     // Struct
     Token struct_name = make_test_token(TOKEN_IDENTIFIER, "Point", 1, 1);
-    Stmt* struct_stmt = stmt_struct(arena, struct_name, NULL, 0, NULL, 0, span);
+    Stmt* struct_stmt = stmt_struct(arena, struct_name, NULL, 0, NULL, NULL, 0, span);
     ast_print_stmt(struct_stmt, 0);
 
     arena_free(arena);

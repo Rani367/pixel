@@ -162,8 +162,27 @@ static TokenType check_keyword(Lexer* lexer, int start, int length,
 
 static TokenType identifier_type(Lexer* lexer) {
     switch (lexer->start[0]) {
-        case 'a': return check_keyword(lexer, 1, 2, "nd", TOKEN_AND);
-        case 'b': return check_keyword(lexer, 1, 4, "reak", TOKEN_BREAK);
+        case 'a':
+            if (lexer->current - lexer->start > 1) {
+                switch (lexer->start[1]) {
+                    case 'n':
+                        // "and" vs "any"
+                        if (lexer->current - lexer->start == 3) {
+                            if (lexer->start[2] == 'd') return TOKEN_AND;
+                            if (lexer->start[2] == 'y') return TOKEN_TYPE_ANY;
+                        }
+                        break;
+                }
+            }
+            break;
+        case 'b':
+            if (lexer->current - lexer->start > 1) {
+                switch (lexer->start[1]) {
+                    case 'r': return check_keyword(lexer, 2, 3, "eak", TOKEN_BREAK);
+                    case 'o': return check_keyword(lexer, 2, 2, "ol", TOKEN_TYPE_BOOL);
+                }
+            }
+            break;
         case 'c': return check_keyword(lexer, 1, 7, "ontinue", TOKEN_CONTINUE);
         case 'e': return check_keyword(lexer, 1, 3, "lse", TOKEN_ELSE);
         case 'f':
@@ -171,7 +190,12 @@ static TokenType identifier_type(Lexer* lexer) {
                 switch (lexer->start[1]) {
                     case 'a': return check_keyword(lexer, 2, 3, "lse", TOKEN_FALSE);
                     case 'o': return check_keyword(lexer, 2, 1, "r", TOKEN_FOR);
-                    case 'u': return check_keyword(lexer, 2, 6, "nction", TOKEN_FUNCTION);
+                    case 'u':
+                        // "func" vs "function"
+                        if (lexer->current - lexer->start == 4) {
+                            return check_keyword(lexer, 2, 2, "nc", TOKEN_TYPE_FUNC);
+                        }
+                        return check_keyword(lexer, 2, 6, "nction", TOKEN_FUNCTION);
                 }
             }
             break;
@@ -179,21 +203,46 @@ static TokenType identifier_type(Lexer* lexer) {
             if (lexer->current - lexer->start > 1) {
                 switch (lexer->start[1]) {
                     case 'f': return lexer->current - lexer->start == 2 ? TOKEN_IF : TOKEN_IDENTIFIER;
-                    case 'n': return lexer->current - lexer->start == 2 ? TOKEN_IN : TOKEN_IDENTIFIER;
+                    case 'n':
+                        // "in" vs "int"
+                        if (lexer->current - lexer->start == 2) return TOKEN_IN;
+                        return check_keyword(lexer, 2, 1, "t", TOKEN_TYPE_INT);
                 }
             }
             break;
+        case 'l': return check_keyword(lexer, 1, 3, "ist", TOKEN_TYPE_LIST);
         case 'n':
             if (lexer->current - lexer->start > 1) {
                 switch (lexer->start[1]) {
-                    case 'o': return check_keyword(lexer, 2, 1, "t", TOKEN_NOT);
-                    case 'u': return check_keyword(lexer, 2, 2, "ll", TOKEN_NULL);
+                    case 'o':
+                        // "not" vs "none"
+                        if (lexer->current - lexer->start == 3) {
+                            return check_keyword(lexer, 2, 1, "t", TOKEN_NOT);
+                        }
+                        return check_keyword(lexer, 2, 2, "ne", TOKEN_TYPE_NONE);
+                    case 'u':
+                        // "null" vs "num"
+                        if (lexer->current - lexer->start == 3) {
+                            return check_keyword(lexer, 2, 1, "m", TOKEN_TYPE_NUM);
+                        }
+                        return check_keyword(lexer, 2, 2, "ll", TOKEN_NULL);
                 }
             }
             break;
         case 'o': return check_keyword(lexer, 1, 1, "r", TOKEN_OR);
         case 'r': return check_keyword(lexer, 1, 5, "eturn", TOKEN_RETURN);
-        case 's': return check_keyword(lexer, 1, 5, "truct", TOKEN_STRUCT);
+        case 's':
+            if (lexer->current - lexer->start > 1) {
+                switch (lexer->start[1]) {
+                    case 't':
+                        // "str" vs "struct"
+                        if (lexer->current - lexer->start == 3) {
+                            return check_keyword(lexer, 2, 1, "r", TOKEN_TYPE_STR);
+                        }
+                        return check_keyword(lexer, 2, 4, "ruct", TOKEN_STRUCT);
+                }
+            }
+            break;
         case 't':
             if (lexer->current - lexer->start > 1) {
                 switch (lexer->start[1]) {

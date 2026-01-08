@@ -7,6 +7,9 @@
 #include "compiler/parser.h"
 #include "compiler/analyzer.h"
 #include "compiler/codegen.h"
+#include "compiler/types.h"
+#include "compiler/typechecker.h"
+#include "compiler/ccodegen.h"
 #include "vm/vm.h"
 #include "runtime/stdlib.h"
 #include "engine/engine.h"
@@ -327,6 +330,104 @@ static int cmd_run(const char* filename) {
 }
 
 // ============================================================================
+// AOT Compilation Command
+// ============================================================================
+
+static int cmd_aot(const char* filename, const char* output) {
+    // 1. Read source file
+    char* source = read_file(filename);
+    if (!source) {
+        return 1;
+    }
+
+    // 2. Parse source to AST
+    Arena* arena = arena_new(64 * 1024);
+    Parser parser;
+    parser_init(&parser, source, arena);
+
+    int stmt_count = 0;
+    Stmt** stmts = parser_parse(&parser, &stmt_count);
+
+    if (parser_had_error(&parser)) {
+        arena_free(arena);
+        free(source);
+        return 1;
+    }
+
+    // 3. Semantic analysis (standard)
+    Analyzer analyzer;
+    analyzer_init(&analyzer, filename, source);
+    declare_builtins(&analyzer);
+
+    if (!analyzer_analyze(&analyzer, stmts, stmt_count)) {
+        analyzer_print_errors(&analyzer, stderr);
+        analyzer_free(&analyzer);
+        arena_free(arena);
+        free(source);
+        return 1;
+    }
+    analyzer_free(&analyzer);
+
+    // 4. Type checking
+    TypeChecker tc;
+    typechecker_init(&tc, arena, filename, source);
+
+    // Register all standard library builtins with proper types
+    typechecker_register_builtins(&tc);
+
+    if (!typechecker_check(&tc, stmts, stmt_count)) {
+        fprintf(stderr, "Type checking failed\n");
+        typechecker_free(&tc);
+        arena_free(arena);
+        free(source);
+        return 1;
+    }
+
+    // 5. Generate C code
+    CCodegen gen;
+    ccodegen_init(&gen, arena, &tc, filename);
+
+    char* c_code = ccodegen_generate(&gen, stmts, stmt_count);
+    if (!c_code) {
+        fprintf(stderr, "C code generation failed\n");
+        ccodegen_free(&gen);
+        typechecker_free(&tc);
+        arena_free(arena);
+        free(source);
+        return 1;
+    }
+
+    // 6. Write output
+    if (output) {
+        FILE* f = fopen(output, "w");
+        if (!f) {
+            fprintf(stderr, "Error: Could not open output file '%s'\n", output);
+            free(c_code);
+            ccodegen_free(&gen);
+            typechecker_free(&tc);
+            arena_free(arena);
+            free(source);
+            return 1;
+        }
+        fputs(c_code, f);
+        fclose(f);
+        printf("Generated: %s\n", output);
+    } else {
+        // Print to stdout
+        printf("%s", c_code);
+    }
+
+    // Cleanup
+    free(c_code);
+    ccodegen_free(&gen);
+    typechecker_free(&tc);
+    arena_free(arena);
+    free(source);
+
+    return 0;
+}
+
+// ============================================================================
 // Main Entry Point
 // ============================================================================
 
@@ -337,6 +438,7 @@ static void print_usage(const char* program) {
     fprintf(stderr, "  %s run game.pixel      Run with explicit command\n\n", program);
     fprintf(stderr, "Commands:\n");
     fprintf(stderr, "  run <file>      Run a Pixel script\n");
+    fprintf(stderr, "  aot <file> [-o <out.c>]  Compile to C source code (AOT)\n");
     fprintf(stderr, "  compile <file>  Compile to bytecode\n");
     fprintf(stderr, "  disasm <file>   Disassemble bytecode\n");
     fprintf(stderr, "  version         Print version\n");
@@ -370,6 +472,19 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         return cmd_run(argv[2]);
+    }
+
+    if (strcmp(argv[1], "aot") == 0) {
+        if (argc < 3) {
+            fprintf(stderr, "Error: 'aot' requires a file argument\n");
+            return 1;
+        }
+        const char* output = NULL;
+        // Check for -o option
+        if (argc >= 5 && strcmp(argv[3], "-o") == 0) {
+            output = argv[4];
+        }
+        return cmd_aot(argv[2], output);
     }
 
     if (strcmp(argv[1], "compile") == 0) {

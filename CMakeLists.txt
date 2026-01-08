@@ -66,6 +66,9 @@ add_library(pixel_compiler
     src/compiler/symbols.c
     src/compiler/analyzer.c
     src/compiler/codegen.c
+    src/compiler/types.c
+    src/compiler/typechecker.c
+    src/compiler/ccodegen.c
 )
 target_link_libraries(pixel_compiler pixel_core pixel_vm)
 
@@ -74,6 +77,13 @@ add_library(pixel_runtime
     src/runtime/stdlib.c
 )
 target_link_libraries(pixel_runtime pixel_core pixel_vm)
+
+# AOT Runtime library (for compiled Pixel programs)
+add_library(pixel_aot_runtime
+    src/aot_runtime/px_runtime.c
+)
+target_include_directories(pixel_aot_runtime PUBLIC src/aot_runtime)
+target_link_libraries(pixel_aot_runtime m)
 
 # Platform Abstraction Layer (PAL)
 # Mock backend is always available; SDL2 backend is optional

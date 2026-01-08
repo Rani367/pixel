@@ -1,0 +1,10 @@
+// Simple AOT test program
+
+x: num = 42
+y: num = 3.14
+
+function add(a: num, b: num) -> num {
+    return a + b
+}
+
+result: num = add(x, y)

@@ -25,6 +25,122 @@ Span span_merge(Span start, Span end) {
 }
 
 // ============================================================================
+// Type Expression Constructors
+// ============================================================================
+
+TypeExpr* type_expr_primitive(Arena* arena, TokenType primitive_type, Span span) {
+    TypeExprPrimitive* type = arena_alloc(arena, sizeof(TypeExprPrimitive));
+    type->base.kind = TYPE_EXPR_PRIMITIVE;
+    type->base.span = span;
+    type->primitive_type = primitive_type;
+    return (TypeExpr*)type;
+}
+
+TypeExpr* type_expr_list(Arena* arena, TypeExpr* element_type, Span span) {
+    TypeExprList* type = arena_alloc(arena, sizeof(TypeExprList));
+    type->base.kind = TYPE_EXPR_LIST;
+    type->base.span = span;
+    type->element_type = element_type;
+    return (TypeExpr*)type;
+}
+
+TypeExpr* type_expr_func(Arena* arena, TypeExpr** param_types, int param_count,
+                          TypeExpr* return_type, Span span) {
+    TypeExprFunc* type = arena_alloc(arena, sizeof(TypeExprFunc));
+    type->base.kind = TYPE_EXPR_FUNC;
+    type->base.span = span;
+    type->param_types = param_types;
+    type->param_count = param_count;
+    type->return_type = return_type;
+    return (TypeExpr*)type;
+}
+
+TypeExpr* type_expr_struct(Arena* arena, Token name) {
+    TypeExprStruct* type = arena_alloc(arena, sizeof(TypeExprStruct));
+    type->base.kind = TYPE_EXPR_STRUCT;
+    type->base.span = span_from_token(name);
+    type->name = name;
+    return (TypeExpr*)type;
+}
+
+TypeExpr* type_expr_any(Arena* arena, Span span) {
+    TypeExprAny* type = arena_alloc(arena, sizeof(TypeExprAny));
+    type->base.kind = TYPE_EXPR_ANY;
+    type->base.span = span;
+    return (TypeExpr*)type;
+}
+
+static const char* type_expr_kind_names[] = {
+    [TYPE_EXPR_PRIMITIVE] = "Primitive",
+    [TYPE_EXPR_LIST] = "List",
+    [TYPE_EXPR_FUNC] = "Func",
+    [TYPE_EXPR_STRUCT] = "Struct",
+    [TYPE_EXPR_ANY] = "Any",
+};
+
+const char* type_expr_kind_name(TypeExprKind kind) {
+    if (kind >= 0 && kind < TYPE_EXPR_COUNT) {
+        return type_expr_kind_names[kind];
+    }
+    return "Unknown";
+}
+
+void type_expr_print(TypeExpr* type) {
+    if (!type) {
+        printf("(null type)");
+        return;
+    }
+
+    switch (type->kind) {
+        case TYPE_EXPR_PRIMITIVE: {
+            TypeExprPrimitive* t = (TypeExprPrimitive*)type;
+            switch (t->primitive_type) {
+                case TOKEN_TYPE_NUM:  printf("num"); break;
+                case TOKEN_TYPE_INT:  printf("int"); break;
+                case TOKEN_TYPE_STR:  printf("str"); break;
+                case TOKEN_TYPE_BOOL: printf("bool"); break;
+                case TOKEN_TYPE_NONE: printf("none"); break;
+                default: printf("?primitive?"); break;
+            }
+            break;
+        }
+        case TYPE_EXPR_LIST: {
+            TypeExprList* t = (TypeExprList*)type;
+            printf("list<");
+            type_expr_print(t->element_type);
+            printf(">");
+            break;
+        }
+        case TYPE_EXPR_FUNC: {
+            TypeExprFunc* t = (TypeExprFunc*)type;
+            printf("func(");
+            for (int i = 0; i < t->param_count; i++) {
+                if (i > 0) printf(", ");
+                type_expr_print(t->param_types[i]);
+            }
+            printf(") -> ");
+            if (t->return_type) {
+                type_expr_print(t->return_type);
+            } else {
+                printf("none");
+            }
+            break;
+        }
+        case TYPE_EXPR_STRUCT: {
+            TypeExprStruct* t = (TypeExprStruct*)type;
+            printf("%.*s", t->name.length, t->name.start);
+            break;
+        }
+        case TYPE_EXPR_ANY:
+            printf("any");
+            break;
+        case TYPE_EXPR_COUNT:
+            printf("(invalid)");
+            break;
+    }
+}
+
+// ============================================================================
 // Expression Constructors
 // ============================================================================
 
@@ -147,12 +263,16 @@ Expr* expr_list(Arena* arena, Expr** elements, int count, Span span) {
     return (Expr*)expr;
 }
 
-Expr* expr_function(Arena* arena, Token* params, int param_count, Stmt* body, Span span) {
+Expr* expr_function(Arena* arena, Token* params, int param_count,
+                     TypeExpr** param_types, TypeExpr* return_type,
+                     Stmt* body, Span span) {
     ExprFunction* expr = arena_alloc(arena, sizeof(ExprFunction));
     expr->base.type = EXPR_FUNCTION;
     expr->base.span = span;
     expr->params = params;
     expr->param_count = param_count;
+    expr->param_types = param_types;
+    expr->return_type = return_type;
     expr->body = body;
     return (Expr*)expr;
 }
@@ -256,27 +376,42 @@ Stmt* stmt_continue(Arena* arena, Span span) {
     return (Stmt*)stmt;
 }
 
-Stmt* stmt_function(Arena* arena, Token name, Token* params, int param_count, Stmt* body, Span span) {
+Stmt* stmt_function(Arena* arena, Token name, Token* params, int param_count,
+                     TypeExpr** param_types, TypeExpr* return_type,
+                     Stmt* body, Span span) {
     StmtFunction* stmt = arena_alloc(arena, sizeof(StmtFunction));
     stmt->base.type = STMT_FUNCTION;
     stmt->base.span = span;
     stmt->name = name;
     stmt->params = params;
     stmt->param_count = param_count;
+    stmt->param_types = param_types;
+    stmt->return_type = return_type;
     stmt->body = body;
     return (Stmt*)stmt;
 }
 
 Stmt* stmt_struct(Arena* arena, Token name, Token* fields, int field_count,
-                  Stmt** methods, int method_count, Span span) {
+                  TypeExpr** field_types, Stmt** methods, int method_count, Span span) {
     StmtStruct* stmt = arena_alloc(arena, sizeof(StmtStruct));
     stmt->base.type = STMT_STRUCT;
     stmt->base.span = span;
     stmt->name = name;
     stmt->fields = fields;
     stmt->field_count = field_count;
+    stmt->field_types = field_types;
     stmt->methods = methods;
     stmt->method_count = method_count;
+    return (Stmt*)stmt;
+}
+
+Stmt* stmt_var_decl(Arena* arena, Token name, TypeExpr* type, Expr* initializer, Span span) {
+    StmtVarDecl* stmt = arena_alloc(arena, sizeof(StmtVarDecl));
+    stmt->base.type = STMT_VAR_DECL;
+    stmt->base.span = span;
+    stmt->name = name;
+    stmt->type = type;
+    stmt->initializer = initializer;
     return (Stmt*)stmt;
 }
 
@@ -330,6 +465,7 @@ void stmt_accept(Stmt* stmt, StmtVisitor* visitor) {
         case STMT_CONTINUE:   fn = visitor->visit_continue;   break;
         case STMT_FUNCTION:   fn = visitor->visit_function;   break;
         case STMT_STRUCT:     fn = visitor->visit_struct;     break;
+        case STMT_VAR_DECL:   fn = visitor->visit_var_decl;   break;
         case STMT_COUNT:      break;
     }
 
@@ -373,6 +509,7 @@ static const char* stmt_type_names[] = {
     [STMT_CONTINUE]   = "Continue",
     [STMT_FUNCTION]   = "Function",
     [STMT_STRUCT]     = "Struct",
+    [STMT_VAR_DECL]   = "VarDecl",
 };
 
 const char* expr_type_name(ExprType type) {
@@ -682,6 +819,19 @@ void ast_print_stmt(Stmt* stmt, int indent) {
                 printf("%.*s", s->fields[i].length, s->fields[i].start);
             }
             printf("\n");
+            break;
+        }
+
+        case STMT_VAR_DECL: {
+            StmtVarDecl* s = (StmtVarDecl*)stmt;
+            printf("VarDecl(%.*s: ", s->name.length, s->name.start);
+            type_expr_print(s->type);
+            printf(")\n");
+            if (s->initializer) {
+                print_indent(indent + 1);
+                printf("initializer:\n");
+                ast_print_expr(s->initializer, indent + 2);
+            }
             break;
         }
 

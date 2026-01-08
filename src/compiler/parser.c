@@ -136,6 +136,94 @@ static void synchronize(Parser* parser) {
 }
 
 // ============================================================================
+// Type Expression Parsing (for Pixel Static / AOT)
+// ============================================================================
+
+// Check if current token is a primitive type keyword
+static bool is_primitive_type(TokenType type) {
+    return type == TOKEN_TYPE_NUM ||
+           type == TOKEN_TYPE_INT ||
+           type == TOKEN_TYPE_STR ||
+           type == TOKEN_TYPE_BOOL ||
+           type == TOKEN_TYPE_NONE;
+}
+
+// Forward declaration for recursive type parsing
+static TypeExpr* parse_type_expr(Parser* parser);
+
+// Parse a type expression
+// Handles: num, int, str, bool, none, list<T>, func(T1, T2) -> R, StructName, any
+static TypeExpr* parse_type_expr(Parser* parser) {
+    Span start_span = span_from_token(parser->current);
+
+    // Primitive types: num, int, str, bool, none
+    if (is_primitive_type(parser->current.type)) {
+        TokenType prim = parser->current.type;
+        advance(parser);
+        return type_expr_primitive(parser->arena, prim, start_span);
+    }
+
+    // any type
+    if (match(parser, TOKEN_TYPE_ANY)) {
+        return type_expr_any(parser->arena, start_span);
+    }
+
+    // list<T> type
+    if (match(parser, TOKEN_TYPE_LIST)) {
+        consume(parser, TOKEN_LESS, "Expected '<' after 'list'.");
+        TypeExpr* element = parse_type_expr(parser);
+        if (element == NULL) return NULL;
+        consume(parser, TOKEN_GREATER, "Expected '>' after list element type.");
+        return type_expr_list(parser->arena, element, start_span);
+    }
+
+    // func(T1, T2) -> R type
+    if (match(parser, TOKEN_TYPE_FUNC)) {
+        consume(parser, TOKEN_LEFT_PAREN, "Expected '(' after 'func'.");
+
+        int capacity = 8;
+        int param_count = 0;
+        TypeExpr** param_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * capacity);
+
+        if (!check(parser, TOKEN_RIGHT_PAREN)) {
+            do {
+                if (param_count >= capacity) {
+                    int new_capacity = capacity * 2;
+                    TypeExpr** new_params = arena_alloc(parser->arena, sizeof(TypeExpr*) * new_capacity);
+                    memcpy(new_params, param_types, sizeof(TypeExpr*) * param_count);
+                    param_types = new_params;
+                    capacity = new_capacity;
+                }
+                TypeExpr* ptype = parse_type_expr(parser);
+                if (ptype == NULL) return NULL;
+                param_types[param_count++] = ptype;
+            } while (match(parser, TOKEN_COMMA));
+        }
+
+        consume(parser, TOKEN_RIGHT_PAREN, "Expected ')' after function parameter types.");
+
+        // Optional return type: -> ReturnType
+        TypeExpr* return_type = NULL;
+        if (match(parser, TOKEN_ARROW)) {
+            return_type = parse_type_expr(parser);
+            if (return_type == NULL) return NULL;
+        }
+
+        return type_expr_func(parser->arena, param_types, param_count, return_type, start_span);
+    }
+
+    // Struct type: identifier (e.g., Player, Enemy)
+    if (check(parser, TOKEN_IDENTIFIER)) {
+        Token name = parser->current;
+        advance(parser);
+        return type_expr_struct(parser->arena, name);
+    }
+
+    error_at_current(parser, "Expected type.");
+    return NULL;
+}
+
+// ============================================================================
 // Prefix Parsers
 // ============================================================================
 
@@ -222,10 +310,12 @@ static Expr* function_expr(Parser* parser) {
 
     consume(parser, TOKEN_LEFT_PAREN, "Expected '(' after 'function'.");
 
-    // Collect parameters
+    // Collect parameters and optional type annotations
     int capacity = 8;
     int param_count = 0;
     Token* params = arena_alloc(parser->arena, sizeof(Token) * capacity);
+    TypeExpr** param_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * capacity);
+    bool has_any_types = false;
 
     if (!check(parser, TOKEN_RIGHT_PAREN)) {
         do {
@@ -233,22 +323,45 @@ static Expr* function_expr(Parser* parser) {
             if (param_count >= capacity) {
                 int new_capacity = capacity * 2;
                 Token* new_params = arena_alloc(parser->arena, sizeof(Token) * new_capacity);
+                TypeExpr** new_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * new_capacity);
                 memcpy(new_params, params, sizeof(Token) * param_count);
+                memcpy(new_types, param_types, sizeof(TypeExpr*) * param_count);
                 params = new_params;
+                param_types = new_types;
                 capacity = new_capacity;
             }
             // LCOV_EXCL_STOP
-            params[param_count++] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
+            params[param_count] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
+
+            // Optional type annotation: param: type
+            if (match(parser, TOKEN_COLON)) {
+                param_types[param_count] = parse_type_expr(parser);
+                if (param_types[param_count] == NULL) return NULL;
+                has_any_types = true;
+            } else {
+                param_types[param_count] = NULL;
+            }
+            param_count++;
         } while (match(parser, TOKEN_COMMA));
     }
 
     consume(parser, TOKEN_RIGHT_PAREN, "Expected ')' after parameters.");
+
+    // Optional return type: -> ReturnType
+    TypeExpr* return_type = NULL;
+    if (match(parser, TOKEN_ARROW)) {
+        return_type = parse_type_expr(parser);
+        if (return_type == NULL) return NULL;
+        has_any_types = true;
+    }
+
     consume(parser, TOKEN_LEFT_BRACE, "Expected '{' before function body.");
 
     Stmt* body = block(parser);
     Span span = span_merge(start_span, body->span);
 
-    return expr_function(parser->arena, params, param_count, body, span);
+    return expr_function(parser->arena, params, param_count,
+                         has_any_types ? param_types : NULL, return_type, body, span);
 }
 
 // ============================================================================
@@ -412,6 +525,29 @@ static Expr* expression(Parser* parser) {
 static Stmt* expression_statement(Parser* parser) {
     Expr* expr = expression(parser);
     if (expr == NULL) return NULL;
+
+    // Check for typed variable declaration: x: type = value
+    if (match(parser, TOKEN_COLON)) {
+        // Must be an identifier
+        if (expr->type != EXPR_IDENTIFIER) {
+            error(parser, "Expected identifier before ':'.");
+            return NULL;
+        }
+        ExprIdentifier* ident = (ExprIdentifier*)expr;
+        Token name = ident->name;
+
+        // Parse the type annotation
+        TypeExpr* type = parse_type_expr(parser);
+        if (type == NULL) return NULL;
+
+        // Require initializer for now
+        consume(parser, TOKEN_EQUAL, "Expected '=' after type in variable declaration.");
+        Expr* initializer = expression(parser);
+        if (initializer == NULL) return NULL;
+
+        Span span = span_merge(span_from_token(name), initializer->span);
+        return stmt_var_decl(parser->arena, name, type, initializer, span);
+    }
 
     // Check for assignment
     if (match(parser, TOKEN_EQUAL)) {
@@ -605,10 +741,12 @@ static Stmt* function_declaration(Parser* parser) {
     Token name = consume(parser, TOKEN_IDENTIFIER, "Expected function name.");
     consume(parser, TOKEN_LEFT_PAREN, "Expected '(' after function name.");
 
-    // Collect parameters
+    // Collect parameters and optional type annotations
     int capacity = 8;
     int param_count = 0;
     Token* params = arena_alloc(parser->arena, sizeof(Token) * capacity);
+    TypeExpr** param_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * capacity);
+    bool has_any_types = false;
 
     if (!check(parser, TOKEN_RIGHT_PAREN)) {
         do {
@@ -619,22 +757,46 @@ static Stmt* function_declaration(Parser* parser) {
             if (param_count >= capacity) {
                 int new_capacity = capacity * 2;
                 Token* new_params = arena_alloc(parser->arena, sizeof(Token) * new_capacity);
+                TypeExpr** new_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * new_capacity);
                 memcpy(new_params, params, sizeof(Token) * param_count);
+                memcpy(new_types, param_types, sizeof(TypeExpr*) * param_count);
                 params = new_params;
+                param_types = new_types;
                 capacity = new_capacity;
             }
             // LCOV_EXCL_STOP
-            params[param_count++] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
+            params[param_count] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
+
+            // Optional type annotation: param: type
+            if (match(parser, TOKEN_COLON)) {
+                param_types[param_count] = parse_type_expr(parser);
+                if (param_types[param_count] == NULL) return NULL;
+                has_any_types = true;
+            } else {
+                param_types[param_count] = NULL;
+            }
+            param_count++;
         } while (match(parser, TOKEN_COMMA));
     }
 
     consume(parser, TOKEN_RIGHT_PAREN, "Expected ')' after parameters.");
+
+    // Optional return type: -> ReturnType
+    TypeExpr* return_type = NULL;
+    if (match(parser, TOKEN_ARROW)) {
+        return_type = parse_type_expr(parser);
+        if (return_type == NULL) return NULL;
+        has_any_types = true;
+    }
+
     consume(parser, TOKEN_LEFT_BRACE, "Expected '{' before function body.");
 
     Stmt* body = block(parser);
     Span span = span_merge(start_span, body->span);
 
-    return stmt_function(parser->arena, name, params, param_count, body, span);
+    // Only pass param_types if any were provided
+    return stmt_function(parser->arena, name, params, param_count,
+                         has_any_types ? param_types : NULL, return_type, body, span);
 }
 
 static Stmt* struct_declaration(Parser* parser) {
@@ -643,10 +805,12 @@ static Stmt* struct_declaration(Parser* parser) {
     Token name = consume(parser, TOKEN_IDENTIFIER, "Expected struct name.");
     consume(parser, TOKEN_LEFT_BRACE, "Expected '{' after struct name.");
 
-    // Collect fields
+    // Collect fields and optional type annotations
     int field_capacity = 8;
     int field_count = 0;
     Token* fields = arena_alloc(parser->arena, sizeof(Token) * field_capacity);
+    TypeExpr** field_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * field_capacity);
+    bool has_any_types = false;
 
     // Collect methods
     int method_capacity = 8;
@@ -672,12 +836,25 @@ static Stmt* struct_declaration(Parser* parser) {
             if (field_count >= field_capacity) {
                 int new_capacity = field_capacity * 2;
                 Token* new_fields = arena_alloc(parser->arena, sizeof(Token) * new_capacity);
+                TypeExpr** new_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * new_capacity);
                 memcpy(new_fields, fields, sizeof(Token) * field_count);
+                memcpy(new_types, field_types, sizeof(TypeExpr*) * field_count);
                 fields = new_fields;
+                field_types = new_types;
                 field_capacity = new_capacity;
             }
             // LCOV_EXCL_STOP
-            fields[field_count++] = consume(parser, TOKEN_IDENTIFIER, "Expected field name.");
+            fields[field_count] = consume(parser, TOKEN_IDENTIFIER, "Expected field name.");
+
+            // Optional type annotation: field: type
+            if (match(parser, TOKEN_COLON)) {
+                field_types[field_count] = parse_type_expr(parser);
+                if (field_types[field_count] == NULL) return NULL;
+                has_any_types = true;
+            } else {
+                field_types[field_count] = NULL;
+            }
+            field_count++;
 
             // Optional comma between fields
             match(parser, TOKEN_COMMA);
@@ -687,7 +864,9 @@ static Stmt* struct_declaration(Parser* parser) {
     Token end = consume(parser, TOKEN_RIGHT_BRACE, "Expected '}' after struct body.");
     Span span = span_merge(start_span, span_from_token(end));
 
-    return stmt_struct(parser->arena, name, fields, field_count, methods, method_count, span);
+    // Only pass field_types if any were provided
+    return stmt_struct(parser->arena, name, fields, field_count,
+                       has_any_types ? field_types : NULL, methods, method_count, span);
 }
 
 static Stmt* statement(Parser* parser) {
@@ -737,6 +916,8 @@ static Stmt* declaration(Parser* parser) {
             int capacity = 8;
             int param_count = 0;
             Token* params = arena_alloc(parser->arena, sizeof(Token) * capacity);
+            TypeExpr** param_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * capacity);
+            bool has_any_types = false;
 
             if (!check(parser, TOKEN_RIGHT_PAREN)) {
                 do {
@@ -744,22 +925,45 @@ static Stmt* declaration(Parser* parser) {
                     if (param_count >= capacity) {
                         int new_capacity = capacity * 2;
                         Token* new_params = arena_alloc(parser->arena, sizeof(Token) * new_capacity);
+                        TypeExpr** new_types = arena_alloc(parser->arena, sizeof(TypeExpr*) * new_capacity);
                         memcpy(new_params, params, sizeof(Token) * param_count);
+                        memcpy(new_types, param_types, sizeof(TypeExpr*) * param_count);
                         params = new_params;
+                        param_types = new_types;
                         capacity = new_capacity;
                     }
                     // LCOV_EXCL_STOP
-                    params[param_count++] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
+                    params[param_count] = consume(parser, TOKEN_IDENTIFIER, "Expected parameter name.");
+
+                    // Optional type annotation: param: type
+                    if (match(parser, TOKEN_COLON)) {
+                        param_types[param_count] = parse_type_expr(parser);
+                        if (param_types[param_count] == NULL) return NULL;
+                        has_any_types = true;
+                    } else {
+                        param_types[param_count] = NULL;
+                    }
+                    param_count++;
                 } while (match(parser, TOKEN_COMMA));
             }
 
             consume(parser, TOKEN_RIGHT_PAREN, "Expected ')' after parameters.");
+
+            // Optional return type: -> ReturnType
+            TypeExpr* return_type = NULL;
+            if (match(parser, TOKEN_ARROW)) {
+                return_type = parse_type_expr(parser);
+                if (return_type == NULL) return NULL;
+                has_any_types = true;
+            }
+
             consume(parser, TOKEN_LEFT_BRACE, "Expected '{' before function body.");
 
             Stmt* body = block(parser);
             Span span = span_merge(start_span, body->span);
 
-            Expr* fn_expr = expr_function(parser->arena, params, param_count, body, span);
+            Expr* fn_expr = expr_function(parser->arena, params, param_count,
+                                          has_any_types ? param_types : NULL, return_type, body, span);
             stmt = stmt_expression(parser->arena, fn_expr);
         }
     } else if (match(parser, TOKEN_STRUCT)) {

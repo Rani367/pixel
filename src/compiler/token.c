@@ -57,6 +57,15 @@ static const char* token_names[] = {
     [TOKEN_BREAK] = "BREAK",
     [TOKEN_CONTINUE] = "CONTINUE",
 
+    [TOKEN_TYPE_NUM] = "TYPE_NUM",
+    [TOKEN_TYPE_INT] = "TYPE_INT",
+    [TOKEN_TYPE_STR] = "TYPE_STR",
+    [TOKEN_TYPE_BOOL] = "TYPE_BOOL",
+    [TOKEN_TYPE_NONE] = "TYPE_NONE",
+    [TOKEN_TYPE_LIST] = "TYPE_LIST",
+    [TOKEN_TYPE_FUNC] = "TYPE_FUNC",
+    [TOKEN_TYPE_ANY] = "TYPE_ANY",
+
     [TOKEN_ERROR] = "ERROR",
     [TOKEN_EOF] = "EOF",
 };

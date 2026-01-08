@@ -590,6 +590,17 @@ static void analyze_stmt(Analyzer* analyzer, Stmt* stmt) {
             break;
         }
 
+        case STMT_VAR_DECL: {
+            StmtVarDecl* var = (StmtVarDecl*)stmt;
+            // For typed variable declarations, declare and define
+            declare_variable(analyzer, var->name, SYMBOL_LOCAL);
+            if (var->initializer) {
+                analyze_expr(analyzer, var->initializer);
+            }
+            define_variable(analyzer, var->name);
+            break;
+        }
+
         case STMT_COUNT:
             PH_UNREACHABLE();  // LCOV_EXCL_LINE
     }  // LCOV_EXCL_LINE
