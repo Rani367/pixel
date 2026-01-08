@@ -170,7 +170,7 @@ static TokenType identifier_type(Lexer* lexer) {
                         if (lexer->current - lexer->start == 3) {
                             if (lexer->start[2] == 'd') return TOKEN_AND;
                             if (lexer->start[2] == 'y') return TOKEN_TYPE_ANY;  // LCOV_EXCL_LINE
-                        }
+                        }  // LCOV_EXCL_LINE
                         break;  // LCOV_EXCL_LINE
                 }
             }
