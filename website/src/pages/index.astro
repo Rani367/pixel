@@ -7,10 +7,10 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
 
 <BaseLayout description={description} keywords={keywords}>
   <!-- 3D Background Canvas (decorative) -->
-  <canvas id="pixel-bg" class="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true"></canvas>
+  <canvas id="pixel-bg" class="fixed inset-0 z-0 pointer-events-none" aria-hidden="true"></canvas>
 
   <!-- Hero Section -->
-  <section class="py-20 md:py-32 relative">
+  <section class="py-20 md:py-32 relative z-10">
     <div class="max-w-6xl mx-auto px-4 text-center">
       <h1 class="reveal-fx text-4xl md:text-6xl font-bold tracking-tight mb-6" data-delay="1">
         Pixel: 2D Game Development Made Simple
@@ -61,7 +61,7 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
   </section>
 
   <!-- Features Section -->
-  <section class="py-16 bg-zinc-50 dark:bg-zinc-900">
+  <section class="py-16 bg-zinc-50 dark:bg-zinc-900 relative z-10">
     <div class="max-w-6xl mx-auto px-4">
       <div class="grid md:grid-cols-3 gap-8">
         <div class="reveal-fx p-6" data-delay="1">
@@ -105,7 +105,7 @@ const keywords = ["Pixel programming language", "Pixel game engine", "2D game pr
   </section>
 
   <!-- Install Section -->
-  <section class="pt-16 pb-32 min-h-[50vh] bg-zinc-100 dark:bg-zinc-900 relative overflow-hidden noise-bg">
+  <section class="pt-16 pb-32 min-h-[50vh] bg-zinc-100 dark:bg-zinc-900 relative z-10 overflow-hidden noise-bg">
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="reveal-fx text-2xl font-bold text-center mb-8">Quick Start</h2>
       <div class="max-w-2xl mx-auto space-y-4">
