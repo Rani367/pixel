@@ -25,8 +25,10 @@ Span span_merge(Span start, Span end) {
 }
 
 // ============================================================================
-// Type Expression Constructors
+// Type Expression Constructors (AOT-only)
 // ============================================================================
+
+// LCOV_EXCL_START - AOT type expression constructors
 
 TypeExpr* type_expr_primitive(Arena* arena, TokenType primitive_type, Span span) {
     TypeExprPrimitive* type = arena_alloc(arena, sizeof(TypeExprPrimitive));
@@ -139,6 +141,8 @@ void type_expr_print(TypeExpr* type) {
             break;
     }
 }
+
+// LCOV_EXCL_STOP
 
 // ============================================================================
 // Expression Constructors
